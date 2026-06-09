@@ -1,150 +1,149 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { AddressData, MetricScore } from "@/lib/types";
-import { SAMPLE_ADDRESSES, METRICS_META } from "@/lib/mockData";
+import { AddressMetrics } from '@/lib/types'
 
-const qualityStyles: Record<MetricScore["quality"], string> = {
-  good: "bg-emerald-50 text-emerald-800 border border-emerald-200",
-  mid:  "bg-amber-50 text-amber-800 border border-amber-200",
-  bad:  "bg-red-50 text-red-800 border border-red-200",
-};
+const ACCENT_COLORS = ['#f97316', '#3b82f6', '#a855f7']
 
-const barColors = ["bg-blue-600", "bg-emerald-600"];
+const METRICS: Array<{
+  key: keyof Pick<AddressMetrics, 'aqiScore' | 'walkabilityScore' | 'groceryScore' | 'transitScore' | 'greenScore' | 'overallScore'>
+  label: string
+  higherIsBetter: boolean
+}> = [
+  { key: 'overallScore',     label: 'Overall Score',  higherIsBetter: true },
+  { key: 'aqiScore',         label: 'Air Quality',    higherIsBetter: true },
+  { key: 'walkabilityScore', label: 'Walkability',    higherIsBetter: true },
+  { key: 'groceryScore',     label: 'Grocery Access', higherIsBetter: true },
+  { key: 'transitScore',     label: 'Transit Access', higherIsBetter: true },
+  { key: 'greenScore',       label: 'Green Space',    higherIsBetter: true },
+]
 
-function ScoreBar({ score, colorClass }: { score: number; colorClass: string }) {
-  return (
-    <div className="w-12 h-1 bg-gray-100 rounded-full overflow-hidden">
-      <div
-        className={`h-full rounded-full ${colorClass} transition-all duration-500`}
-        style={{ width: `${score}%` }}
-      />
-    </div>
-  );
+interface AddressCompareProps {
+  addresses: AddressMetrics[]
+  onRemove: (id: string) => void
 }
 
-export default function AddressCompare() {
-  const [addresses] = useState<AddressData[]>(SAMPLE_ADDRESSES);
-  const [inputA, setInputA] = useState(SAMPLE_ADDRESSES[0].fullAddress);
-  const [inputB, setInputB] = useState(SAMPLE_ADDRESSES[1].fullAddress);
+function qualityColor(score: number) {
+  if (score >= 70) return '#22c55e'
+  if (score >= 40) return '#f59e0b'
+  return '#ef4444'
+}
 
-  const dotColors = ["bg-blue-600", "bg-emerald-600"];
-  const borderColors = ["border-blue-500", "border-emerald-500"];
-  const textColors = ["text-blue-700", "text-emerald-700"];
+export default function AddressCompare({ addresses, onRemove }: AddressCompareProps) {
+  if (addresses.length < 2) {
+    return (
+      <div className="text-center py-10" style={{ color: '#a0a0a0' }}>
+        <p className="text-sm">Search and add at least 2 addresses to compare</p>
+      </div>
+    )
+  }
 
   return (
-    <div className="w-full">
-      {/* Address inputs */}
-      <div className="grid grid-cols-2 gap-3 mb-8">
-        {[inputA, inputB].map((val, i) => (
-          <div key={i} className="relative">
-            <span className={`absolute left-3 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full ${dotColors[i]}`} />
-            <input
-              type="text"
-              value={val}
-              onChange={(e) => i === 0 ? setInputA(e.target.value) : setInputB(e.target.value)}
-              className="w-full pl-8 pr-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors"
-              placeholder={`Address ${i === 0 ? "A" : "B"}`}
-            />
+    <div className="flex flex-col gap-6">
+      {/* Address headers */}
+      <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${addresses.length}, 1fr)` }}>
+        {addresses.map((addr, i) => (
+          <div
+            key={addr.id}
+            className="rounded-xl p-4"
+            style={{ backgroundColor: '#1a1a1a', borderLeft: `3px solid ${ACCENT_COLORS[i]}` }}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold mb-1" style={{ color: ACCENT_COLORS[i] }}>
+                  Address {String.fromCharCode(65 + i)}
+                </p>
+                <p className="text-white text-xs leading-snug truncate">{addr.location.formattedAddress}</p>
+              </div>
+              <button
+                onClick={() => onRemove(addr.id)}
+                style={{ color: '#a0a0a0' }}
+                className="text-xs hover:text-white transition-colors shrink-0"
+              >
+                ✕
+              </button>
+            </div>
           </div>
         ))}
       </div>
 
       {/* Comparison table */}
-      <div className="border border-gray-100 rounded-xl overflow-hidden mb-6">
-        {/* Table header */}
-        <div className="grid grid-cols-[180px_1fr_1fr] bg-gray-50 border-b border-gray-100">
-          <div className="px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Metric</div>
-          {addresses.map((addr, i) => (
-            <div key={i} className="px-4 py-3">
-              <div className="flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${dotColors[i]}`} />
-                <span className="text-sm font-medium text-gray-800 truncate">{addr.label}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Rows */}
-        {METRICS_META.map((meta, rowIdx) => {
-          const scores = addresses.map(a => a.metrics[meta.key].score);
-          const winnerIdx = scores[0] >= scores[1] ? 0 : 1;
+      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #2a2a2a' }}>
+        {METRICS.map((metric, mi) => {
+          const values = addresses.map(a => a[metric.key] as number)
+          const best = metric.higherIsBetter ? Math.max(...values) : Math.min(...values)
 
           return (
             <div
-              key={meta.key}
-              className={`grid grid-cols-[180px_1fr_1fr] border-b border-gray-50 last:border-b-0 ${rowIdx % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}
+              key={metric.key}
+              className="flex items-center"
+              style={{
+                borderBottom: mi < METRICS.length - 1 ? '1px solid #2a2a2a' : undefined,
+                backgroundColor: mi % 2 === 0 ? '#1a1a1a' : '#141414',
+              }}
             >
-              <div className="px-4 py-3.5 flex items-center gap-2 text-sm text-gray-500">
-                <span className="text-base">{meta.icon}</span>
-                {meta.label}
+              <div className="py-3 px-4 w-36 shrink-0">
+                <span style={{ color: '#a0a0a0' }} className="text-xs font-medium">
+                  {metric.label}
+                </span>
               </div>
-              {addresses.map((addr, i) => {
-                const m = addr.metrics[meta.key];
-                const isWinner = winnerIdx === i;
-                return (
-                  <div key={i} className="px-4 py-3.5">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${qualityStyles[m.quality]}`}>
-                        {m.tag}
+              <div className="flex flex-1" style={{ borderLeft: '1px solid #2a2a2a' }}>
+                {addresses.map((addr, i) => {
+                  const val = addr[metric.key] as number
+                  const isWinner = val === best
+                  const color = qualityColor(val)
+
+                  return (
+                    <div
+                      key={addr.id}
+                      className="flex-1 py-3 px-4 flex items-center gap-2"
+                      style={{ borderRight: i < addresses.length - 1 ? '1px solid #2a2a2a' : undefined }}
+                    >
+                      <span className="text-sm font-bold" style={{ color: isWinner ? '#f97316' : 'white' }}>
+                        {val}
                       </span>
-                      <ScoreBar score={m.score} colorClass={barColors[i]} />
-                      {isWinner && (
-                        <span className={`text-xs font-medium ${textColors[i]}`}>✓</span>
-                      )}
+                      <div className="flex-1 h-1 rounded-full" style={{ backgroundColor: '#2a2a2a' }}>
+                        <div
+                          className="h-full rounded-full"
+                          style={{ width: `${val}%`, backgroundColor: color }}
+                        />
+                      </div>
+                      {isWinner && <span className="text-xs" style={{ color: '#f97316' }}>★</span>}
                     </div>
-                    <div className="text-xs text-gray-400">{m.raw}</div>
-                  </div>
-                );
-              })}
+                  )
+                })}
+              </div>
             </div>
-          );
+          )
         })}
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
+      <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${addresses.length}, 1fr)` }}>
         {addresses.map((addr, i) => {
-          const isLeader = addr.overallScore >= (addresses[1 - i]?.overallScore ?? 0);
+          const wins = METRICS.filter(m => {
+            const values = addresses.map(a => a[m.key] as number)
+            const best = m.higherIsBetter ? Math.max(...values) : Math.min(...values)
+            return (addr[m.key] as number) === best
+          }).length
+
           return (
             <div
-              key={i}
-              className={`rounded-xl border p-4 bg-white ${isLeader ? `${borderColors[i]} border-2` : "border-gray-100"}`}
+              key={addr.id}
+              className="rounded-xl p-4 text-center"
+              style={{ backgroundColor: '#1a1a1a', border: `1px solid ${ACCENT_COLORS[i]}33` }}
             >
-              {isLeader && (
-                <div className={`text-xs font-medium mb-1.5 ${textColors[i]}`}>Overall leader</div>
-              )}
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <div className="text-sm font-medium text-gray-900 mb-0.5">{addr.label}</div>
-                  <div className="text-xs text-gray-400">
-                    Wins {METRICS_META.filter((m) => {
-                      const scores = addresses.map(a => a.metrics[m.key].score);
-                      return (i === 0 ? scores[0] >= scores[1] : scores[1] > scores[0]);
-                    }).length} of {METRICS_META.length} metrics
-                  </div>
-                </div>
-                <div className="text-3xl font-medium text-gray-900">{addr.overallScore}</div>
-              </div>
-              <div className="space-y-1.5 text-xs text-gray-500">
-                <div className="flex justify-between">
-                  <span>Strongest</span>
-                  <span className="text-gray-700">{addr.strengths.join(" · ")}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Weakest</span>
-                  <span className="text-gray-700">{addr.weaknesses.join(" · ")}</span>
-                </div>
-              </div>
+              <p className="text-xs font-semibold mb-2" style={{ color: ACCENT_COLORS[i] }}>
+                Address {String.fromCharCode(65 + i)}
+              </p>
+              <p className="text-3xl font-bold text-white mb-1">{addr.overallScore}</p>
+              <p style={{ color: '#a0a0a0' }} className="text-xs">overall score</p>
+              <p className="text-xs mt-2 font-medium" style={{ color: '#f97316' }}>
+                {wins} metric{wins !== 1 ? 's' : ''} won
+              </p>
             </div>
-          );
+          )
         })}
       </div>
-
-      {/* Data note */}
-      <p className="text-xs text-gray-400 text-center leading-relaxed">
-        Address-level data uses EPA sensor interpolation, PurpleAir hyperlocal sensors, MTA GTFS proximity, NYC Open Data crime stats, and OpenStreetMap green space radius. Updated weekly. Real API connections coming soon.
-      </p>
     </div>
-  );
+  )
 }

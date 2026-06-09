@@ -1,78 +1,127 @@
-"use client";
+import Link from 'next/link'
 
-import { useState } from "react";
-import AddressCompare from "@/components/AddressCompare";
-import NeighborhoodFinder from "@/components/NeighborhoodFinder";
-
-const TABS = [
-  { key: "compare",      label: "Compare addresses",   desc: "Side-by-side breakdown of any two NYC addresses" },
-  { key: "neighborhoods", label: "Find a neighborhood", desc: "Rank NYC neighborhoods by what matters to you"   },
-] as const;
-
-type Tab = typeof TABS[number]["key"];
+const FEATURES = [
+  { icon: '💨', label: 'Air Quality', desc: 'Real-time AQI from Open-Meteo' },
+  { icon: '🚶', label: 'Walkability', desc: 'Amenities within 800m radius' },
+  { icon: '🌿', label: 'Green Space', desc: 'Parks and nature access' },
+  { icon: '🛒', label: 'Grocery Access', desc: 'Supermarkets and stores nearby' },
+  { icon: '🚌', label: 'Transit Access', desc: 'Bus stops and transit stations' },
+  { icon: '🏘️', label: 'Neighborhood Scores', desc: '10 Columbus neighborhoods ranked' },
+]
 
 export default function Home() {
-  const [tab, setTab] = useState<Tab>("compare");
-
   return (
-    <main className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div>
-            <span className="text-base font-medium text-gray-900">liveability</span>
-            <span className="ml-2 text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">NYC beta</span>
-          </div>
-          <span className="text-xs text-gray-400">Real cost of living · not just rent</span>
+    <main style={{ backgroundColor: '#0f0f0f', minHeight: '100vh' }}>
+      {/* Nav */}
+      <nav className="flex items-center justify-between px-6 py-5 max-w-5xl mx-auto">
+        <span className="text-white font-bold text-lg tracking-tight">liveability</span>
+        <div className="flex gap-3">
+          <Link
+            href="/auth"
+            className="text-sm px-4 py-2 rounded-lg font-medium transition-colors"
+            style={{ color: '#a0a0a0' }}
+          >
+            Log in
+          </Link>
+          <Link
+            href="/auth?mode=signup"
+            className="text-sm px-4 py-2 rounded-lg font-semibold text-white transition-colors"
+            style={{ backgroundColor: '#f97316' }}
+          >
+            Get started
+          </Link>
         </div>
-      </header>
+      </nav>
 
-      <div className="max-w-3xl mx-auto px-6 py-10">
-        {/* Hero */}
-        <div className="mb-10">
-          <h1 className="text-3xl font-medium text-gray-900 mb-3 leading-tight">
-            Find where you can<br />actually live well in NYC.
+      {/* Hero */}
+      <section className="max-w-5xl mx-auto px-6 pt-16 pb-24">
+        <div className="max-w-2xl">
+          <div
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6"
+            style={{ backgroundColor: '#f973161a', color: '#f97316', border: '1px solid #f9731633' }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-[#f97316]" />
+            Columbus, Ohio · Free to use
+          </div>
+
+          <h1 className="text-5xl sm:text-6xl font-black text-white leading-none mb-6 tracking-tight">
+            Find your perfect<br />
+            <span style={{ color: '#f97316' }}>Columbus</span><br />
+            neighborhood.
           </h1>
-          <p className="text-gray-500 text-base leading-relaxed max-w-lg">
-            Rent is one number. Your quality of life is nine. Air quality, noise, sunlight, green space — 
+
+          <p className="text-lg mb-10 leading-relaxed" style={{ color: '#a0a0a0' }}>
+            Rent is one number. Your quality of life is five.
+            Air, walkability, green space, grocery access, transit —
             we surface what listing sites hide.
           </p>
-        </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-8 w-fit">
-          {TABS.map(t => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                tab === t.key
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link
+              href="/auth?mode=signup"
+              className="px-8 py-4 rounded-xl font-bold text-white text-base text-center transition-all hover:opacity-90"
+              style={{ backgroundColor: '#f97316' }}
             >
-              {t.label}
-            </button>
+              Start exploring for free
+            </Link>
+            <Link
+              href="/auth"
+              className="px-8 py-4 rounded-xl font-semibold text-sm text-center transition-all"
+              style={{ backgroundColor: '#1a1a1a', color: '#a0a0a0', border: '1px solid #2a2a2a' }}
+            >
+              Already have an account
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="max-w-5xl mx-auto px-6 pb-24">
+        <p style={{ color: '#a0a0a0' }} className="text-xs font-semibold uppercase tracking-widest mb-8">
+          What we measure
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {FEATURES.map(f => (
+            <div
+              key={f.label}
+              className="rounded-xl p-5"
+              style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
+            >
+              <div className="text-2xl mb-3">{f.icon}</div>
+              <p className="text-white font-semibold text-sm mb-1">{f.label}</p>
+              <p style={{ color: '#a0a0a0' }} className="text-xs leading-relaxed">{f.desc}</p>
+            </div>
           ))}
         </div>
+      </section>
 
-        {/* Tab description */}
-        <p className="text-sm text-gray-400 mb-6">
-          {TABS.find(t => t.key === tab)?.desc}
-        </p>
-
-        {/* Content */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-          {tab === "compare"       && <AddressCompare />}
-          {tab === "neighborhoods" && <NeighborhoodFinder />}
+      {/* CTA */}
+      <section className="max-w-5xl mx-auto px-6 pb-24">
+        <div
+          className="rounded-2xl p-10 text-center"
+          style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
+        >
+          <h2 className="text-3xl font-black text-white mb-4">Ready to find home?</h2>
+          <p style={{ color: '#a0a0a0' }} className="mb-8">
+            Search any Columbus address or browse neighborhood rankings — free.
+          </p>
+          <Link
+            href="/auth?mode=signup"
+            className="inline-block px-10 py-4 rounded-xl font-bold text-white transition-all hover:opacity-90"
+            style={{ backgroundColor: '#f97316' }}
+          >
+            Get started free
+          </Link>
         </div>
+      </section>
 
-        {/* Footer */}
-        <footer className="mt-12 pt-8 border-t border-gray-100 flex justify-between items-center text-xs text-gray-400">
-          <span>liveability · NYC beta · 2025</span>
-          <span>Data: EPA · PurpleAir · MTA GTFS · NYC Open Data · OpenStreetMap</span>
-        </footer>
-      </div>
+      {/* Footer */}
+      <footer className="max-w-5xl mx-auto px-6 py-8" style={{ borderTop: '1px solid #1a1a1a' }}>
+        <div className="flex items-center justify-between text-xs" style={{ color: '#a0a0a0' }}>
+          <span>liveability · Columbus, Ohio</span>
+          <span>Data: Open-Meteo · OpenStreetMap · Google Maps</span>
+        </div>
+      </footer>
     </main>
-  );
+  )
 }

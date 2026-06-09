@@ -1,42 +1,53 @@
-export interface MetricScore {
-  raw: string;
-  score: number; // 0–100
-  tag: string;
-  quality: "good" | "mid" | "bad";
+export interface GeoLocation {
+  lat: number
+  lng: number
+  formattedAddress: string
 }
 
-export interface AddressData {
-  label: string;
-  fullAddress: string;
-  metrics: {
-    rent: MetricScore;
-    aqi: MetricScore;
-    noise: MetricScore;
-    transit: MetricScore;
-    greenSpace: MetricScore;
-    walkability: MetricScore;
-    sunlight: MetricScore;
-    grocery: MetricScore;
-    safety: MetricScore;
-  };
-  overallScore: number;
-  strengths: string[];
-  weaknesses: string[];
+export interface AmenityScores {
+  groceryCount: number
+  transitCount: number
+  parkCount: number
+  groceryScore: number
+  transitScore: number
+  greenScore: number
+  walkabilityScore: number
+}
+
+export interface AddressMetrics {
+  id: string
+  address: string
+  location: GeoLocation
+  aqi: number
+  aqiCategory: string
+  aqiScore: number
+  walkabilityScore: number
+  groceryScore: number
+  transitScore: number
+  greenScore: number
+  groceryCount: number
+  transitCount: number
+  parkCount: number
+  overallScore: number
 }
 
 export interface Neighborhood {
-  name: string;
-  afford: number;
-  air: number;
-  green: number;
-  transit: number;
-  rent: number;
-  notes: string[];
+  name: string
+  walkability: number
+  air: number
+  green: number
+  grocery: number
+  transit: number
+  safety: number
+  rent: number
+  notes: string[]
 }
 
 export interface WeightConfig {
-  afford: number;
-  air: number;
-  green: number;
-  transit: number;
+  walkability: number
+  air: number
+  green: number
+  grocery: number
+  transit: number
+  safety: number
 }
