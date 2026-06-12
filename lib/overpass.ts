@@ -8,6 +8,10 @@ const FALLBACK_SCORES: Omit<AmenityScores, 'radius'> = {
   healthcareCount: 0,
   diningCount: 0,
   gymCount: 0,
+  libraryCount: 0,
+  bankCount: 0,
+  worshipCount: 0,
+  parkingCount: 0,
   groceryScore: 50,
   transitScore: 50,
   greenScore: 50,
@@ -15,12 +19,20 @@ const FALLBACK_SCORES: Omit<AmenityScores, 'radius'> = {
   healthcareScore: 50,
   diningScore: 50,
   gymScore: 50,
+  libraryScore: 50,
+  bankScore: 50,
+  worshipScore: 50,
+  parkingScore: 50,
   walkabilityScore: 50,
   nearestGrocery: null,
   nearestPark: null,
   nearestSchool: null,
   nearestHealthcare: null,
   nearestDining: null,
+  nearestLibrary: null,
+  nearestBank: null,
+  nearestWorship: null,
+  nearestParking: null,
   note: 'estimate - live data unavailable',
 }
 
@@ -100,6 +112,14 @@ export async function fetchAmenityScores(lat: number, lng: number, radius: numbe
 
   const gymElements = elements.filter(e => e.tags?.leisure === 'fitness_centre')
 
+  const libraryElements = elements.filter(e => e.tags?.amenity === 'library')
+
+  const bankElements = elements.filter(e => ['bank', 'atm'].includes(e.tags?.amenity || ''))
+
+  const worshipElements = elements.filter(e => e.tags?.amenity === 'place_of_worship')
+
+  const parkingElements = elements.filter(e => e.tags?.amenity === 'parking')
+
   const groceryCount = groceryElements.length
   const transitCount = transitElements.length
   const parkCount = parkElements.length
@@ -107,6 +127,10 @@ export async function fetchAmenityScores(lat: number, lng: number, radius: numbe
   const healthcareCount = healthcareElements.length
   const diningCount = diningElements.length
   const gymCount = gymElements.length
+  const libraryCount = libraryElements.length
+  const bankCount = bankElements.length
+  const worshipCount = worshipElements.length
+  const parkingCount = parkingElements.length
 
   const groceryScore = Math.min(100, Math.round((groceryCount / 5) * 100))
   const transitScore = Math.min(100, Math.round((transitCount / 10) * 100))
@@ -115,6 +139,10 @@ export async function fetchAmenityScores(lat: number, lng: number, radius: numbe
   const healthcareScore = Math.min(100, Math.round((healthcareCount / 5) * 100))
   const diningScore = Math.min(100, Math.round((diningCount / 8) * 100))
   const gymScore = Math.min(100, Math.round((gymCount / 2) * 100))
+  const libraryScore = Math.min(100, Math.round((libraryCount / 2) * 100))
+  const bankScore = Math.min(100, Math.round((bankCount / 5) * 100))
+  const worshipScore = Math.min(100, Math.round((worshipCount / 3) * 100))
+  const parkingScore = Math.min(100, Math.round((parkingCount / 3) * 100))
   const walkabilityScore = Math.round((groceryScore + transitScore + greenScore) / 3)
 
   return {
@@ -125,6 +153,10 @@ export async function fetchAmenityScores(lat: number, lng: number, radius: numbe
     healthcareCount,
     diningCount,
     gymCount,
+    libraryCount,
+    bankCount,
+    worshipCount,
+    parkingCount,
     groceryScore,
     transitScore,
     greenScore,
@@ -132,6 +164,10 @@ export async function fetchAmenityScores(lat: number, lng: number, radius: numbe
     healthcareScore,
     diningScore,
     gymScore,
+    libraryScore,
+    bankScore,
+    worshipScore,
+    parkingScore,
     walkabilityScore,
     radius: usedRadius,
     nearestGrocery: nearest(groceryElements, lat, lng, 'Grocery store'),
@@ -139,5 +175,9 @@ export async function fetchAmenityScores(lat: number, lng: number, radius: numbe
     nearestSchool: nearest(schoolElements, lat, lng, 'School'),
     nearestHealthcare: nearest(healthcareElements, lat, lng, 'Healthcare facility'),
     nearestDining: nearest(diningElements, lat, lng, 'Restaurant/cafe'),
+    nearestLibrary: nearest(libraryElements, lat, lng, 'Library'),
+    nearestBank: nearest(bankElements, lat, lng, 'Bank/ATM'),
+    nearestWorship: nearest(worshipElements, lat, lng, 'Place of worship'),
+    nearestParking: nearest(parkingElements, lat, lng, 'Parking'),
   }
 }

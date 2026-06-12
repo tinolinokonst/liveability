@@ -17,6 +17,10 @@ export interface AmenityScores {
   healthcareCount: number
   diningCount: number
   gymCount: number
+  libraryCount: number
+  bankCount: number
+  worshipCount: number
+  parkingCount: number
   groceryScore: number
   transitScore: number
   greenScore: number
@@ -24,6 +28,10 @@ export interface AmenityScores {
   healthcareScore: number
   diningScore: number
   gymScore: number
+  libraryScore: number
+  bankScore: number
+  worshipScore: number
+  parkingScore: number
   walkabilityScore: number
   radius: number
   nearestGrocery: NearestAmenity | null
@@ -31,6 +39,10 @@ export interface AmenityScores {
   nearestSchool: NearestAmenity | null
   nearestHealthcare: NearestAmenity | null
   nearestDining: NearestAmenity | null
+  nearestLibrary: NearestAmenity | null
+  nearestBank: NearestAmenity | null
+  nearestWorship: NearestAmenity | null
+  nearestParking: NearestAmenity | null
   note?: string
 }
 
@@ -70,11 +82,39 @@ export interface AddressMetrics {
   diningScore: number
   gymCount: number
   gymScore: number
+  libraryCount: number
+  libraryScore: number
+  bankCount: number
+  bankScore: number
+  worshipCount: number
+  worshipScore: number
+  parkingCount: number
+  parkingScore: number
   crimeIncidentCount: number
   crimeTopTypes: string[]
   safetyScore: number
   safetyNote?: string
   overallScore: number
+  radius: number
+  nearestGrocery: NearestAmenity | null
+  nearestPark: NearestAmenity | null
+  nearestSchool: NearestAmenity | null
+  nearestHealthcare: NearestAmenity | null
+  nearestDining: NearestAmenity | null
+  nearestLibrary: NearestAmenity | null
+  nearestBank: NearestAmenity | null
+  nearestWorship: NearestAmenity | null
+  nearestParking: NearestAmenity | null
+}
+
+export interface SavedAddress {
+  id: string
+  user_id: string
+  address: string
+  lat: number
+  lng: number
+  metrics: AddressMetrics
+  created_at: string
 }
 
 export interface Neighborhood {

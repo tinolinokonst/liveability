@@ -1,17 +1,21 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { geocodeAddress } from '@/lib/geocoding'
-import { fetchAQI, AQIResult } from '@/lib/airquality'
 import { fetchAmenityScores } from '@/lib/overpass'
+import { buildMetrics } from '@/lib/metrics'
+import { fetchAQI, AQIResult } from '@/lib/airquality'
 import { fetchCrimeScore } from '@/lib/crime'
-import { AddressMetrics, GeoLocation, AmenityScores, CrimeResult } from '@/lib/types'
+import { loadGoogleMapsScript } from '@/lib/googleMaps'
+import { saveAddress } from '@/lib/savedAddresses'
+import { AddressMetrics, AmenityScores, CrimeResult } from '@/lib/types'
 import MetricCard from './MetricCard'
 import LocalNews from './LocalNews'
 
 interface AddressSearchProps {
   onAdd?: (metrics: AddressMetrics) => void
   compareCount?: number
+  userId?: string | null
 }
 
 const RADIUS_OPTIONS: Array<{ label: string; meters: number }> = [
@@ -21,61 +25,15 @@ const RADIUS_OPTIONS: Array<{ label: string; meters: number }> = [
   { label: '3km', meters: 3000 },
 ]
 
-function buildMetrics(
-  address: string,
-  location: GeoLocation,
-  aqiData: AQIResult,
-  amenityData: AmenityScores,
-  crimeData: CrimeResult
-): AddressMetrics {
-  const overallScore = Math.round(
-    aqiData.score * 0.20 +
-    amenityData.walkabilityScore * 0.20 +
-    amenityData.groceryScore * 0.10 +
-    amenityData.transitScore * 0.10 +
-    amenityData.greenScore * 0.10 +
-    amenityData.schoolScore * 0.05 +
-    amenityData.healthcareScore * 0.10 +
-    amenityData.diningScore * 0.05 +
-    crimeData.safetyScore * 0.10
-  )
-
-  return {
-    id: crypto.randomUUID(),
-    address,
-    location,
-    aqi: aqiData.aqi,
-    aqiCategory: aqiData.category,
-    aqiScore: aqiData.score,
-    walkabilityScore: amenityData.walkabilityScore,
-    groceryScore: amenityData.groceryScore,
-    transitScore: amenityData.transitScore,
-    greenScore: amenityData.greenScore,
-    groceryCount: amenityData.groceryCount,
-    transitCount: amenityData.transitCount,
-    parkCount: amenityData.parkCount,
-    schoolCount: amenityData.schoolCount,
-    schoolScore: amenityData.schoolScore,
-    healthcareCount: amenityData.healthcareCount,
-    healthcareScore: amenityData.healthcareScore,
-    diningCount: amenityData.diningCount,
-    diningScore: amenityData.diningScore,
-    gymCount: amenityData.gymCount,
-    gymScore: amenityData.gymScore,
-    crimeIncidentCount: crimeData.incidentCount,
-    crimeTopTypes: crimeData.topIncidentTypes,
-    safetyScore: crimeData.safetyScore,
-    safetyNote: crimeData.note,
-    overallScore,
-  }
-}
+const COLUMBUS_CENTER = { lat: 39.9612, lng: -82.9988 }
+const COLUMBUS_BIAS_RADIUS_M = 40000
 
 function nearestLabel(nearest: { name: string; distanceKm: number } | null): string | undefined {
   if (!nearest) return undefined
   return `Nearest: ${nearest.name} — ${nearest.distanceKm}km`
 }
 
-export default function AddressSearch({ onAdd, compareCount = 0 }: AddressSearchProps) {
+export default function AddressSearch({ onAdd, compareCount = 0, userId }: AddressSearchProps) {
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(false)
   const [radiusLoading, setRadiusLoading] = useState(false)
@@ -86,17 +44,58 @@ export default function AddressSearch({ onAdd, compareCount = 0 }: AddressSearch
   const [crimeData, setCrimeData] = useState<CrimeResult | null>(null)
   const [radius, setRadius] = useState(800)
   const [fetchedAt, setFetchedAt] = useState<Date | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
 
-  async function handleSearch(e: React.FormEvent) {
-    e.preventDefault()
-    if (!query.trim()) return
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // Wire up Google Places Autocomplete on the address input
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let autocomplete: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let listener: any
+
+    loadGoogleMapsScript()
+      .then(() => {
+        if (!inputRef.current || !window.google) return
+
+        const center = new window.google.maps.LatLng(COLUMBUS_CENTER.lat, COLUMBUS_CENTER.lng)
+        const circle = new window.google.maps.Circle({ center, radius: COLUMBUS_BIAS_RADIUS_M })
+
+        autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
+          fields: ['formatted_address', 'geometry', 'name'],
+          componentRestrictions: { country: 'us' },
+        })
+        autocomplete.setBounds(circle.getBounds())
+
+        listener = autocomplete.addListener('place_changed', () => {
+          const place = autocomplete!.getPlace()
+          const address = place.formatted_address || place.name
+          if (address) {
+            setQuery(address)
+            runSearch(address)
+          }
+        })
+      })
+      .catch(err => console.log('Google Maps script failed to load:', err))
+
+    return () => {
+      listener?.remove()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  async function runSearch(address: string) {
+    if (!address.trim()) return
 
     setLoading(true)
     setError(null)
     setResult(null)
+    setSaved(false)
 
     try {
-      const location = await geocodeAddress(query.trim())
+      const location = await geocodeAddress(address.trim())
       if (!location) {
         setError('Address not found. Try a more specific Columbus, OH address.')
         return
@@ -112,12 +111,17 @@ export default function AddressSearch({ onAdd, compareCount = 0 }: AddressSearch
       setAmenityData(amenity)
       setCrimeData(crime)
       setFetchedAt(new Date())
-      setResult(buildMetrics(query.trim(), location, aqi, amenity, crime))
+      setResult(buildMetrics(address.trim(), location, aqi, amenity, crime))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }
+  }
+
+  async function handleSearch(e: React.FormEvent) {
+    e.preventDefault()
+    await runSearch(query)
   }
 
   // Re-query Overpass when the amenity radius changes
@@ -132,7 +136,7 @@ export default function AddressSearch({ onAdd, compareCount = 0 }: AddressSearch
         if (cancelled) return
         setAmenityData(amenity)
         setFetchedAt(new Date())
-        setResult(prev => prev && buildMetrics(prev.address, prev.location, aqiData, amenity, crimeData))
+        setResult(prev => prev && buildMetrics(prev.address, prev.location, aqiData, amenity, crimeData, prev.id))
       })
       .finally(() => {
         if (!cancelled) setRadiusLoading(false)
@@ -148,6 +152,20 @@ export default function AddressSearch({ onAdd, compareCount = 0 }: AddressSearch
     if (result && onAdd) onAdd(result)
   }
 
+  async function handleSave() {
+    if (!result || !userId) return
+
+    setSaving(true)
+    try {
+      await saveAddress(userId, result)
+      setSaved(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save address')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const updatedLabel = fetchedAt
     ? `Updated ${Math.max(0, Math.round((Date.now() - fetchedAt.getTime()) / 1000)) < 60 ? 'just now' : 'recently'}`
     : undefined
@@ -156,6 +174,7 @@ export default function AddressSearch({ onAdd, compareCount = 0 }: AddressSearch
     <div className="flex flex-col gap-6">
       <form onSubmit={handleSearch} className="flex gap-3">
         <input
+          ref={inputRef}
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
@@ -199,6 +218,16 @@ export default function AddressSearch({ onAdd, compareCount = 0 }: AddressSearch
                 <p style={{ color: '#a0a0a0' }} className="text-xs">Overall</p>
                 <p className="text-2xl font-bold" style={{ color: '#f97316' }}>{result.overallScore}</p>
               </div>
+              {userId && (
+                <button
+                  onClick={handleSave}
+                  disabled={saving || saved}
+                  className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all disabled:opacity-50"
+                  style={{ backgroundColor: '#2a2a2a', border: '1px solid #3a3a3a' }}
+                >
+                  {saved ? 'Saved ✓' : saving ? 'Saving...' : 'Save this address'}
+                </button>
+              )}
               {onAdd && compareCount < 3 && (
                 <button
                   onClick={handleAdd}
@@ -319,6 +348,50 @@ export default function AddressSearch({ onAdd, compareCount = 0 }: AddressSearch
               description={`Restaurants & cafes within ${amenityData.radius}m`}
               extra={nearestLabel(amenityData.nearestDining) && (
                 <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(amenityData.nearestDining)}</p>
+              )}
+              source="OpenStreetMap (Overpass)"
+              updated={updatedLabel}
+            />
+            <MetricCard
+              label="Libraries"
+              value={`${result.libraryCount} libraries`}
+              score={result.libraryScore}
+              description="Within 1.6km"
+              extra={nearestLabel(amenityData.nearestLibrary) && (
+                <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(amenityData.nearestLibrary)}</p>
+              )}
+              source="OpenStreetMap (Overpass)"
+              updated={updatedLabel}
+            />
+            <MetricCard
+              label="Banks / ATMs"
+              value={`${result.bankCount} found`}
+              score={result.bankScore}
+              description="Within 800m"
+              extra={nearestLabel(amenityData.nearestBank) && (
+                <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(amenityData.nearestBank)}</p>
+              )}
+              source="OpenStreetMap (Overpass)"
+              updated={updatedLabel}
+            />
+            <MetricCard
+              label="Places of Worship"
+              value={`${result.worshipCount} found`}
+              score={result.worshipScore}
+              description="Within 1.6km"
+              extra={nearestLabel(amenityData.nearestWorship) && (
+                <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(amenityData.nearestWorship)}</p>
+              )}
+              source="OpenStreetMap (Overpass)"
+              updated={updatedLabel}
+            />
+            <MetricCard
+              label="Parking"
+              value={`${result.parkingCount} found`}
+              score={result.parkingScore}
+              description="Within 400m"
+              extra={nearestLabel(amenityData.nearestParking) && (
+                <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(amenityData.nearestParking)}</p>
               )}
               source="OpenStreetMap (Overpass)"
               updated={updatedLabel}

@@ -50,6 +50,10 @@ export async function GET(request: NextRequest) {
   // Transit and fitness centers are searched over a fixed radius, independent of the amenity radius selector
   const transitRadius = 800
   const gymRadius = 1000
+  const libraryRadius = 1600
+  const bankRadius = 800
+  const worshipRadius = 1600
+  const parkingRadius = 400
 
   const query = `[out:json][timeout:30];
 (
@@ -67,6 +71,13 @@ export async function GET(request: NextRequest) {
   node["amenity"~"^(restaurant|cafe)$"](around:${radius},${lat},${lng});
   node["leisure"="fitness_centre"](around:${gymRadius},${lat},${lng});
   way["leisure"="fitness_centre"](around:${gymRadius},${lat},${lng});
+  node["amenity"="library"](around:${libraryRadius},${lat},${lng});
+  way["amenity"="library"](around:${libraryRadius},${lat},${lng});
+  node["amenity"~"^(bank|atm)$"](around:${bankRadius},${lat},${lng});
+  node["amenity"="place_of_worship"](around:${worshipRadius},${lat},${lng});
+  way["amenity"="place_of_worship"](around:${worshipRadius},${lat},${lng});
+  node["amenity"="parking"](around:${parkingRadius},${lat},${lng});
+  way["amenity"="parking"](around:${parkingRadius},${lat},${lng});
 );
 out tags center;`
 

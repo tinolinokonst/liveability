@@ -6,14 +6,16 @@ import { createClient } from '@/lib/supabase'
 import AddressSearch from '@/components/AddressSearch'
 import AddressCompare from '@/components/AddressCompare'
 import NeighborhoodFinder from '@/components/NeighborhoodFinder'
+import SavedAddresses from '@/components/SavedAddresses'
 import { AddressMetrics } from '@/lib/types'
 import Link from 'next/link'
 
-type Tab = 'search' | 'neighborhoods'
+type Tab = 'search' | 'neighborhoods' | 'saved'
 
 export default function Dashboard() {
   const router = useRouter()
   const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
   const [tab, setTab] = useState<Tab>('search')
   const [compared, setCompared] = useState<AddressMetrics[]>([])
   const [loading, setLoading] = useState(true)
@@ -25,6 +27,7 @@ export default function Dashboard() {
         router.replace('/auth')
       } else {
         setUserEmail(data.session.user.email ?? null)
+        setUserId(data.session.user.id)
         setLoading(false)
       }
     })
@@ -101,6 +104,7 @@ export default function Dashboard() {
           {([
             { key: 'search' as Tab, label: 'Address Search' },
             { key: 'neighborhoods' as Tab, label: 'Neighborhoods' },
+            { key: 'saved' as Tab, label: 'Saved Addresses' },
           ] as const).map(t => (
             <button
               key={t.key}
@@ -127,7 +131,7 @@ export default function Dashboard() {
               <p style={{ color: '#a0a0a0' }} className="text-xs mb-6">
                 Enter any Columbus, OH address to get real air quality and amenity scores
               </p>
-              <AddressSearch onAdd={addToCompare} compareCount={compared.length} />
+              <AddressSearch onAdd={addToCompare} compareCount={compared.length} userId={userId} />
             </div>
 
             {/* Comparison panel */}
@@ -172,6 +176,19 @@ export default function Dashboard() {
               Adjust the sliders to rank neighborhoods based on what matters to you
             </p>
             <NeighborhoodFinder />
+          </div>
+        )}
+
+        {tab === 'saved' && (
+          <div
+            className="rounded-2xl p-6"
+            style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
+          >
+            <h2 className="text-white font-bold mb-1">Saved Addresses</h2>
+            <p style={{ color: '#a0a0a0' }} className="text-xs mb-6">
+              Addresses you&apos;ve saved, with their last-fetched metrics
+            </p>
+            <SavedAddresses onAdd={addToCompare} compareCount={compared.length} />
           </div>
         )}
       </div>
