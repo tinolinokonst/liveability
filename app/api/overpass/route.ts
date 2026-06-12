@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
   }
 
   const radius = 800
+  const radiusFar = 1000
 
   const query = `[out:json][timeout:30];
 (
@@ -53,6 +54,13 @@ export async function GET(request: NextRequest) {
   node["railway"~"^(station|halt|tram_stop)$"](around:${radius},${lat},${lng});
   way["leisure"="park"](around:${radius},${lat},${lng});
   relation["leisure"="park"](around:${radius},${lat},${lng});
+  node["amenity"="school"](around:${radiusFar},${lat},${lng});
+  way["amenity"="school"](around:${radiusFar},${lat},${lng});
+  node["amenity"~"^(hospital|clinic|pharmacy)$"](around:${radiusFar},${lat},${lng});
+  way["amenity"~"^(hospital|clinic|pharmacy)$"](around:${radiusFar},${lat},${lng});
+  node["amenity"~"^(restaurant|cafe)$"](around:${radius},${lat},${lng});
+  node["leisure"="fitness_centre"](around:${radiusFar},${lat},${lng});
+  way["leisure"="fitness_centre"](around:${radiusFar},${lat},${lng});
 );
 out tags;`
 

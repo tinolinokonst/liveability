@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { geocodeAddress } from '@/lib/geocoding'
 import { fetchAQI } from '@/lib/airquality'
 import { fetchAmenityScores } from '@/lib/overpass'
+import { fetchCrimeScore } from '@/lib/crime'
 import { AddressMetrics } from '@/lib/types'
 import MetricCard from './MetricCard'
 
@@ -33,17 +34,22 @@ export default function AddressSearch({ onAdd, compareCount = 0 }: AddressSearch
         return
       }
 
-      const [aqiData, amenityData] = await Promise.all([
+      const [aqiData, amenityData, crimeData] = await Promise.all([
         fetchAQI(location.lat, location.lng),
         fetchAmenityScores(location.lat, location.lng),
+        fetchCrimeScore(location.lat, location.lng),
       ])
 
       const overallScore = Math.round(
-        aqiData.score * 0.25 +
-        amenityData.walkabilityScore * 0.25 +
-        amenityData.groceryScore * 0.20 +
-        amenityData.transitScore * 0.15 +
-        amenityData.greenScore * 0.15
+        aqiData.score * 0.20 +
+        amenityData.walkabilityScore * 0.20 +
+        amenityData.groceryScore * 0.10 +
+        amenityData.transitScore * 0.10 +
+        amenityData.greenScore * 0.10 +
+        amenityData.schoolScore * 0.05 +
+        amenityData.healthcareScore * 0.10 +
+        amenityData.diningScore * 0.05 +
+        crimeData.safetyScore * 0.10
       )
 
       const metrics: AddressMetrics = {
@@ -60,6 +66,18 @@ export default function AddressSearch({ onAdd, compareCount = 0 }: AddressSearch
         groceryCount: amenityData.groceryCount,
         transitCount: amenityData.transitCount,
         parkCount: amenityData.parkCount,
+        schoolCount: amenityData.schoolCount,
+        schoolScore: amenityData.schoolScore,
+        healthcareCount: amenityData.healthcareCount,
+        healthcareScore: amenityData.healthcareScore,
+        diningCount: amenityData.diningCount,
+        diningScore: amenityData.diningScore,
+        gymCount: amenityData.gymCount,
+        gymScore: amenityData.gymScore,
+        crimeIncidentCount: crimeData.incidentCount,
+        crimeTopTypes: crimeData.topIncidentTypes,
+        safetyScore: crimeData.safetyScore,
+        safetyNote: crimeData.note,
         overallScore,
       }
 
@@ -156,6 +174,30 @@ export default function AddressSearch({ onAdd, compareCount = 0 }: AddressSearch
               value={`${result.parkCount} parks`}
               score={result.greenScore}
               description="Parks within 800m"
+            />
+            <MetricCard
+              label="Safety / Crime"
+              value={`${result.crimeIncidentCount} incidents`}
+              score={result.safetyScore}
+              description={result.safetyNote || (result.crimeTopTypes.length ? `Top: ${result.crimeTopTypes.join(', ')}` : 'Within 1km, last 12 months')}
+            />
+            <MetricCard
+              label="Healthcare Access"
+              value={`${result.healthcareCount} facilities`}
+              score={result.healthcareScore}
+              description="Hospitals, clinics & pharmacies within 1km"
+            />
+            <MetricCard
+              label="Schools Nearby"
+              value={`${result.schoolCount} schools`}
+              score={result.schoolScore}
+              description="Within 1km"
+            />
+            <MetricCard
+              label="Dining & Cafes"
+              value={`${result.diningCount} spots`}
+              score={result.diningScore}
+              description="Restaurants & cafes within 800m"
             />
             <div
               className="rounded-xl border p-4 flex flex-col items-center justify-center"

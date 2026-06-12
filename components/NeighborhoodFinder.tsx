@@ -1,60 +1,97 @@
 "use client"
 
 import { useState } from 'react'
-import { Neighborhood, WeightConfig } from '@/lib/types'
+import { Neighborhood, WeightConfig, Profile, PROFILE_WEIGHTS } from '@/lib/types'
 
 const COLUMBUS_NEIGHBORHOODS: Neighborhood[] = [
   {
     name: 'German Village',
-    walkability: 83, air: 78, green: 82, grocery: 70, transit: 58, safety: 78, rent: 1650,
+    walkability: 83, air: 78, green: 82, grocery: 70, transit: 58, safety: 78,
+    education: 65, healthcare: 70, dining: 85, quiet: 60, rent: 1650,
     notes: ['Historic brick streets', 'Beautiful parks', 'High walkability', 'Good air quality'],
   },
   {
     name: 'Clintonville',
-    walkability: 68, air: 82, green: 88, grocery: 78, transit: 52, safety: 82, rent: 1350,
+    walkability: 68, air: 82, green: 88, grocery: 78, transit: 52, safety: 82,
+    education: 78, healthcare: 65, dining: 70, quiet: 72, rent: 1350,
     notes: ['Excellent air quality', 'Most green space', 'Family friendly', 'Very affordable'],
   },
   {
     name: 'Grandview Heights',
-    walkability: 76, air: 79, green: 70, grocery: 80, transit: 52, safety: 88, rent: 1600,
+    walkability: 76, air: 79, green: 70, grocery: 80, transit: 52, safety: 88,
+    education: 85, healthcare: 72, dining: 80, quiet: 68, rent: 1600,
     notes: ['Very safe', 'Great grocery access', 'Good restaurants', 'Family friendly'],
   },
   {
     name: 'Bexley',
-    walkability: 63, air: 86, green: 88, grocery: 72, transit: 42, safety: 90, rent: 1700,
+    walkability: 63, air: 86, green: 88, grocery: 72, transit: 42, safety: 90,
+    education: 92, healthcare: 75, dining: 65, quiet: 78, rent: 1700,
     notes: ['Excellent safety', 'Best air quality', 'Beautiful parks', 'Suburban feel'],
   },
   {
     name: 'Short North',
-    walkability: 88, air: 68, green: 60, grocery: 82, transit: 75, safety: 55, rent: 1800,
+    walkability: 88, air: 68, green: 60, grocery: 82, transit: 75, safety: 55,
+    education: 55, healthcare: 70, dining: 95, quiet: 30, rent: 1800,
     notes: ['Most walkable', 'Best transit', 'Vibrant nightlife', 'Higher rent'],
   },
   {
     name: 'Victorian Village',
-    walkability: 79, air: 76, green: 80, grocery: 68, transit: 58, safety: 72, rent: 1500,
+    walkability: 79, air: 76, green: 80, grocery: 68, transit: 58, safety: 72,
+    education: 60, healthcare: 68, dining: 78, quiet: 58, rent: 1500,
     notes: ['Historic homes', 'Good green space', 'Near OSU', 'Quiet streets'],
   },
   {
     name: 'Italian Village',
-    walkability: 76, air: 63, green: 55, grocery: 70, transit: 70, safety: 60, rent: 1400,
+    walkability: 76, air: 63, green: 55, grocery: 70, transit: 70, safety: 60,
+    education: 55, healthcare: 62, dining: 82, quiet: 40, rent: 1400,
     notes: ['Near downtown', 'Good transit', 'Trendy & growing', 'Limited green space'],
   },
   {
     name: 'Westerville',
-    walkability: 48, air: 88, green: 80, grocery: 76, transit: 28, safety: 92, rent: 1550,
+    walkability: 48, air: 88, green: 80, grocery: 76, transit: 28, safety: 92,
+    education: 90, healthcare: 70, dining: 55, quiet: 82, rent: 1550,
     notes: ['Very safe', 'Clean air', 'Suburban', 'Car required'],
   },
   {
     name: 'Dublin',
-    walkability: 42, air: 90, green: 84, grocery: 78, transit: 28, safety: 94, rent: 1900,
+    walkability: 42, air: 90, green: 84, grocery: 78, transit: 28, safety: 94,
+    education: 95, healthcare: 78, dining: 60, quiet: 85, rent: 1900,
     notes: ['Cleanest air', 'Safest area', 'Suburban', 'Car required'],
   },
   {
     name: 'Franklinton',
-    walkability: 52, air: 52, green: 45, grocery: 50, transit: 68, safety: 42, rent: 950,
+    walkability: 52, air: 52, green: 45, grocery: 50, transit: 68, safety: 42,
+    education: 45, healthcare: 50, dining: 60, quiet: 45, rent: 950,
     notes: ['Most affordable', 'Arts district', 'Improving rapidly', 'Lower safety scores'],
   },
 ]
+
+const PROFILES: Profile[] = ['Family', 'Young Professional', 'Retiree', 'Nature Lover']
+
+function profileFit(n: Neighborhood, profile: Profile): number {
+  const weights = PROFILE_WEIGHTS[profile]
+  const total = Object.values(weights).reduce((a, b) => a + b, 0)
+  if (total === 0) return 0
+
+  const sum =
+    n.walkability * weights.walkability +
+    n.air * weights.air +
+    n.green * weights.green +
+    n.grocery * weights.grocery +
+    n.transit * weights.transit +
+    n.safety * weights.safety +
+    n.education * weights.education +
+    n.healthcare * weights.healthcare +
+    n.dining * weights.dining +
+    n.quiet * weights.quiet
+
+  return Math.round((sum / total) / 10 * 10) / 10
+}
+
+function bestFit(n: Neighborhood): { profile: Profile; score: number } {
+  const scores = PROFILES.map(profile => ({ profile, score: profileFit(n, profile) }))
+  return scores.sort((a, b) => b.score - a.score)[0]
+}
 
 const DEFAULT_WEIGHTS: WeightConfig = {
   walkability: 20,
@@ -178,6 +215,7 @@ export default function NeighborhoodFinder() {
         {ranked.map((n, i) => {
           const rent = rentLabel(n.rent)
           const bar = qualityColor(n.score)
+          const fit = bestFit(n)
           return (
             <div
               key={n.name}
@@ -214,7 +252,7 @@ export default function NeighborhoodFinder() {
                   ))}
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 mb-3">
                   <div className="flex-1 h-1.5 rounded-full" style={{ backgroundColor: '#2a2a2a' }}>
                     <div
                       className="h-full rounded-full transition-all duration-500"
@@ -223,6 +261,13 @@ export default function NeighborhoodFinder() {
                   </div>
                   <span className="text-sm font-bold text-white shrink-0">{n.score}/100</span>
                 </div>
+
+                <span
+                  className="text-xs px-2 py-1 rounded-full font-medium"
+                  style={{ color: '#f97316', backgroundColor: '#f973161a' }}
+                >
+                  Great fit for: {fit.profile} ({fit.score.toFixed(1)}/10)
+                </span>
               </div>
             </div>
           )

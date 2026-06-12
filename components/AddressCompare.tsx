@@ -5,16 +5,20 @@ import { AddressMetrics } from '@/lib/types'
 const ACCENT_COLORS = ['#f97316', '#3b82f6', '#a855f7']
 
 const METRICS: Array<{
-  key: keyof Pick<AddressMetrics, 'aqiScore' | 'walkabilityScore' | 'groceryScore' | 'transitScore' | 'greenScore' | 'overallScore'>
+  key: keyof Pick<AddressMetrics, 'aqiScore' | 'walkabilityScore' | 'groceryScore' | 'transitScore' | 'greenScore' | 'safetyScore' | 'healthcareScore' | 'schoolScore' | 'diningScore' | 'overallScore'>
   label: string
   higherIsBetter: boolean
 }> = [
-  { key: 'overallScore',     label: 'Overall Score',  higherIsBetter: true },
-  { key: 'aqiScore',         label: 'Air Quality',    higherIsBetter: true },
-  { key: 'walkabilityScore', label: 'Walkability',    higherIsBetter: true },
-  { key: 'groceryScore',     label: 'Grocery Access', higherIsBetter: true },
-  { key: 'transitScore',     label: 'Transit Access', higherIsBetter: true },
-  { key: 'greenScore',       label: 'Green Space',    higherIsBetter: true },
+  { key: 'overallScore',     label: 'Overall Score',     higherIsBetter: true },
+  { key: 'aqiScore',         label: 'Air Quality',        higherIsBetter: true },
+  { key: 'walkabilityScore', label: 'Walkability',        higherIsBetter: true },
+  { key: 'groceryScore',     label: 'Grocery Access',     higherIsBetter: true },
+  { key: 'transitScore',     label: 'Transit Access',     higherIsBetter: true },
+  { key: 'greenScore',       label: 'Green Space',        higherIsBetter: true },
+  { key: 'safetyScore',      label: 'Safety / Crime',     higherIsBetter: true },
+  { key: 'healthcareScore',  label: 'Healthcare Access',  higherIsBetter: true },
+  { key: 'schoolScore',      label: 'Schools Nearby',     higherIsBetter: true },
+  { key: 'diningScore',      label: 'Dining & Cafes',     higherIsBetter: true },
 ]
 
 interface AddressCompareProps {
