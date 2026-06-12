@@ -12,6 +12,7 @@ export interface AmenityScores {
   transitScore: number
   greenScore: number
   walkabilityScore: number
+  note?: string
 }
 
 export interface AddressMetrics {

@@ -6,6 +6,20 @@ export async function fetchAmenityScores(lat: number, lng: number): Promise<Amen
   if (!res.ok) throw new Error('Overpass API fetch failed')
 
   const data = await res.json()
+
+  if (data.fallback) {
+    return {
+      groceryCount: 0,
+      transitCount: 0,
+      parkCount: 0,
+      groceryScore: 50,
+      transitScore: 50,
+      greenScore: 50,
+      walkabilityScore: 50,
+      note: 'estimate - live data unavailable',
+    }
+  }
+
   const elements: Array<{ tags?: Record<string, string> }> = data.elements || []
 
   const groceryCount = elements.filter(e =>

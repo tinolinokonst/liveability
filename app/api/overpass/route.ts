@@ -1,6 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const OVERPASS_URL = 'https://overpass-api.de/api/interpreter'
+const OVERPASS_URLS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+]
+
+const TIMEOUT_MS = 10000
+
+async function queryOverpass(url: string, query: string) {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS)
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      body: query,
+      headers: { 'Content-Type': 'text/plain' },
+      signal: controller.signal,
+    })
+
+    if (!res.ok) {
+      console.log(`Overpass fetch failed for ${url}: status ${res.status}`)
+      return null
+    }
+
+    return await res.json()
+  } catch (err) {
+    console.log(`Overpass fetch error for ${url}:`, err)
+    return null
+  } finally {
+    clearTimeout(timeout)
+  }
+}
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
@@ -25,16 +56,11 @@ export async function GET(request: NextRequest) {
 );
 out tags;`
 
-  const res = await fetch(OVERPASS_URL, {
-    method: 'POST',
-    body: query,
-    headers: { 'Content-Type': 'text/plain' },
-  })
-
-  if (!res.ok) {
-    return NextResponse.json({ error: 'Overpass API fetch failed' }, { status: 502 })
+  for (const url of OVERPASS_URLS) {
+    const data = await queryOverpass(url, query)
+    if (data) return NextResponse.json(data)
   }
 
-  const data = await res.json()
-  return NextResponse.json(data)
+  console.log('All Overpass endpoints failed, returning fallback response')
+  return NextResponse.json({ elements: [], fallback: true })
 }
