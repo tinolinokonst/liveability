@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Neighborhood, WeightConfig, Profile, PROFILE_WEIGHTS } from '@/lib/types'
+import LocalNews from './LocalNews'
 
 const COLUMBUS_NEIGHBORHOODS: Neighborhood[] = [
   {
@@ -147,6 +148,7 @@ function rentLabel(rent: number) {
 export default function NeighborhoodFinder() {
   const [weights, setWeights] = useState<WeightConfig>(DEFAULT_WEIGHTS)
   const [activePreset, setActivePreset] = useState('Balanced')
+  const [expandedNews, setExpandedNews] = useState<string | null>(null)
 
   const ranked = [...COLUMBUS_NEIGHBORHOODS]
     .map(n => ({ ...n, score: scoreNeighborhood(n, weights) }))
@@ -262,12 +264,27 @@ export default function NeighborhoodFinder() {
                   <span className="text-sm font-bold text-white shrink-0">{n.score}/100</span>
                 </div>
 
-                <span
-                  className="text-xs px-2 py-1 rounded-full font-medium"
-                  style={{ color: '#f97316', backgroundColor: '#f973161a' }}
-                >
-                  Great fit for: {fit.profile} ({fit.score.toFixed(1)}/10)
-                </span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span
+                    className="text-xs px-2 py-1 rounded-full font-medium"
+                    style={{ color: '#f97316', backgroundColor: '#f973161a' }}
+                  >
+                    Great fit for: {fit.profile} ({fit.score.toFixed(1)}/10)
+                  </span>
+                  <button
+                    onClick={() => setExpandedNews(expandedNews === n.name ? null : n.name)}
+                    className="text-xs px-2 py-1 rounded-full font-medium transition-colors"
+                    style={{ color: '#a0a0a0', backgroundColor: '#2a2a2a' }}
+                  >
+                    {expandedNews === n.name ? 'Hide local news' : 'Show local news'}
+                  </button>
+                </div>
+
+                {expandedNews === n.name && (
+                  <div className="mt-3">
+                    <LocalNews query={n.name} />
+                  </div>
+                )}
               </div>
             </div>
           )

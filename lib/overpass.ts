@@ -1,6 +1,6 @@
-import { AmenityScores } from './types'
+import { AmenityScores, NearestAmenity } from './types'
 
-const FALLBACK_SCORES: AmenityScores = {
+const FALLBACK_SCORES: Omit<AmenityScores, 'radius'> = {
   groceryCount: 0,
   transitCount: 0,
   parkCount: 0,
@@ -16,45 +16,97 @@ const FALLBACK_SCORES: AmenityScores = {
   diningScore: 50,
   gymScore: 50,
   walkabilityScore: 50,
+  nearestGrocery: null,
+  nearestPark: null,
+  nearestSchool: null,
+  nearestHealthcare: null,
+  nearestDining: null,
   note: 'estimate - live data unavailable',
 }
 
-export async function fetchAmenityScores(lat: number, lng: number): Promise<AmenityScores> {
-  const res = await fetch(`/api/overpass?lat=${lat}&lng=${lng}`)
+interface OverpassElement {
+  tags?: Record<string, string>
+  lat?: number
+  lon?: number
+  center?: { lat: number; lon: number }
+}
+
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371
+  const dLat = ((lat2 - lat1) * Math.PI) / 180
+  const dLon = ((lon2 - lon1) * Math.PI) / 180
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+function elementName(e: OverpassElement, fallback: string): string {
+  return e.tags?.name || fallback
+}
+
+function nearest(elements: OverpassElement[], lat: number, lng: number, fallbackName: string): NearestAmenity | null {
+  let best: NearestAmenity | null = null
+
+  for (const e of elements) {
+    const elat = e.lat ?? e.center?.lat
+    const elon = e.lon ?? e.center?.lon
+    if (elat === undefined || elon === undefined) continue
+
+    const distanceKm = haversineKm(lat, lng, elat, elon)
+    if (!best || distanceKm < best.distanceKm) {
+      best = { name: elementName(e, fallbackName), distanceKm: Math.round(distanceKm * 10) / 10 }
+    }
+  }
+
+  return best
+}
+
+export async function fetchAmenityScores(lat: number, lng: number, radius: number = 800): Promise<AmenityScores> {
+  const res = await fetch(`/api/overpass?lat=${lat}&lng=${lng}&radius=${radius}`)
 
   if (!res.ok) throw new Error('Overpass API fetch failed')
 
   const data = await res.json()
 
   if (data.fallback) {
-    return { ...FALLBACK_SCORES }
+    return { ...FALLBACK_SCORES, radius: data.radius ?? radius }
   }
 
-  const elements: Array<{ tags?: Record<string, string> }> = data.elements || []
+  const elements: OverpassElement[] = data.elements || []
+  const usedRadius: number = data.radius ?? radius
 
-  const groceryCount = elements.filter(e =>
+  const groceryElements = elements.filter(e =>
     ['supermarket', 'grocery', 'convenience', 'food'].includes(e.tags?.shop || '')
-  ).length
+  )
 
-  const transitCount = elements.filter(e =>
+  const transitElements = elements.filter(e =>
     e.tags?.highway === 'bus_stop' ||
     e.tags?.amenity === 'bus_station' ||
     ['station', 'halt', 'tram_stop'].includes(e.tags?.railway || '')
-  ).length
+  )
 
-  const parkCount = elements.filter(e => e.tags?.leisure === 'park').length
+  const parkElements = elements.filter(e => e.tags?.leisure === 'park')
 
-  const schoolCount = elements.filter(e => e.tags?.amenity === 'school').length
+  const schoolElements = elements.filter(e => e.tags?.amenity === 'school')
 
-  const healthcareCount = elements.filter(e =>
+  const healthcareElements = elements.filter(e =>
     ['hospital', 'clinic', 'pharmacy'].includes(e.tags?.amenity || '')
-  ).length
+  )
 
-  const diningCount = elements.filter(e =>
+  const diningElements = elements.filter(e =>
     ['restaurant', 'cafe'].includes(e.tags?.amenity || '')
-  ).length
+  )
 
-  const gymCount = elements.filter(e => e.tags?.leisure === 'fitness_centre').length
+  const gymElements = elements.filter(e => e.tags?.leisure === 'fitness_centre')
+
+  const groceryCount = groceryElements.length
+  const transitCount = transitElements.length
+  const parkCount = parkElements.length
+  const schoolCount = schoolElements.length
+  const healthcareCount = healthcareElements.length
+  const diningCount = diningElements.length
+  const gymCount = gymElements.length
 
   const groceryScore = Math.min(100, Math.round((groceryCount / 5) * 100))
   const transitScore = Math.min(100, Math.round((transitCount / 10) * 100))
@@ -81,5 +133,11 @@ export async function fetchAmenityScores(lat: number, lng: number): Promise<Amen
     diningScore,
     gymScore,
     walkabilityScore,
+    radius: usedRadius,
+    nearestGrocery: nearest(groceryElements, lat, lng, 'Grocery store'),
+    nearestPark: nearest(parkElements, lat, lng, 'Park'),
+    nearestSchool: nearest(schoolElements, lat, lng, 'School'),
+    nearestHealthcare: nearest(healthcareElements, lat, lng, 'Healthcare facility'),
+    nearestDining: nearest(diningElements, lat, lng, 'Restaurant/cafe'),
   }
 }

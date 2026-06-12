@@ -5,6 +5,9 @@ interface MetricCardProps {
   value: string
   score: number
   description?: string
+  source?: string
+  updated?: string
+  extra?: React.ReactNode
 }
 
 function qualityColor(score: number): string {
@@ -19,7 +22,7 @@ function qualityLabel(score: number): string {
   return 'Poor'
 }
 
-export default function MetricCard({ label, value, score, description }: MetricCardProps) {
+export default function MetricCard({ label, value, score, description, source, updated, extra }: MetricCardProps) {
   const color = qualityColor(score)
   const quality = qualityLabel(score)
 
@@ -48,12 +51,23 @@ export default function MetricCard({ label, value, score, description }: MetricC
         </p>
       )}
 
+      {extra}
+
       <div style={{ backgroundColor: '#2a2a2a' }} className="rounded-full h-1.5 w-full overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-500"
           style={{ width: `${score}%`, backgroundColor: color }}
         />
       </div>
+
+      {(source || updated) && (
+        <p style={{ color: '#a0a0a0' }} className="text-xs flex items-center gap-1 -mb-1">
+          <span>ⓘ</span>
+          {source && <span>Source: {source}</span>}
+          {source && updated && <span>·</span>}
+          {updated && <span>{updated}</span>}
+        </p>
+      )}
     </div>
   )
 }

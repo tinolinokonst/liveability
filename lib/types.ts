@@ -4,6 +4,11 @@ export interface GeoLocation {
   formattedAddress: string
 }
 
+export interface NearestAmenity {
+  name: string
+  distanceKm: number
+}
+
 export interface AmenityScores {
   groceryCount: number
   transitCount: number
@@ -20,7 +25,20 @@ export interface AmenityScores {
   diningScore: number
   gymScore: number
   walkabilityScore: number
+  radius: number
+  nearestGrocery: NearestAmenity | null
+  nearestPark: NearestAmenity | null
+  nearestSchool: NearestAmenity | null
+  nearestHealthcare: NearestAmenity | null
+  nearestDining: NearestAmenity | null
   note?: string
+}
+
+export interface NewsItem {
+  title: string
+  link: string
+  pubDate: string
+  source: string
 }
 
 export interface CrimeResult {

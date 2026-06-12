@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+// Columbus does not currently publish a queryable point-level crime incident layer on
+// gis.columbus.gov, maps2.columbus.gov, or opendata.columbus.gov (PublicSafety/MapServer only
+// exposes precincts, zones, cruiser districts and station locations; CPD_Density is a
+// tiles-only raster with no query capability). This endpoint is kept for if/when CPD
+// publishes one; until then the request fails and the fallback below is returned.
 const CRIME_LAYER_URL =
   'https://gis.columbus.gov/arcgis/rest/services/PublicSafety/PoliceIncidents/MapServer/0/query'
 

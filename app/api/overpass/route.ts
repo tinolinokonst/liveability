@@ -6,6 +6,8 @@ const OVERPASS_URLS = [
 ]
 
 const TIMEOUT_MS = 10000
+const ALLOWED_RADII = [400, 800, 1600, 3000]
+const DEFAULT_RADIUS = 800
 
 async function queryOverpass(url: string, query: string) {
   const controller = new AbortController()
@@ -42,33 +44,37 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'lat and lng are required' }, { status: 400 })
   }
 
-  const radius = 800
-  const radiusFar = 1000
+  const requestedRadius = Number(searchParams.get('radius'))
+  const radius = ALLOWED_RADII.includes(requestedRadius) ? requestedRadius : DEFAULT_RADIUS
+
+  // Transit and fitness centers are searched over a fixed radius, independent of the amenity radius selector
+  const transitRadius = 800
+  const gymRadius = 1000
 
   const query = `[out:json][timeout:30];
 (
   node["shop"~"^(supermarket|grocery|convenience|food)$"](around:${radius},${lat},${lng});
   way["shop"~"^(supermarket|grocery|convenience|food)$"](around:${radius},${lat},${lng});
-  node["highway"="bus_stop"](around:${radius},${lat},${lng});
-  node["amenity"="bus_station"](around:${radius},${lat},${lng});
-  node["railway"~"^(station|halt|tram_stop)$"](around:${radius},${lat},${lng});
+  node["highway"="bus_stop"](around:${transitRadius},${lat},${lng});
+  node["amenity"="bus_station"](around:${transitRadius},${lat},${lng});
+  node["railway"~"^(station|halt|tram_stop)$"](around:${transitRadius},${lat},${lng});
   way["leisure"="park"](around:${radius},${lat},${lng});
   relation["leisure"="park"](around:${radius},${lat},${lng});
-  node["amenity"="school"](around:${radiusFar},${lat},${lng});
-  way["amenity"="school"](around:${radiusFar},${lat},${lng});
-  node["amenity"~"^(hospital|clinic|pharmacy)$"](around:${radiusFar},${lat},${lng});
-  way["amenity"~"^(hospital|clinic|pharmacy)$"](around:${radiusFar},${lat},${lng});
+  node["amenity"="school"](around:${radius},${lat},${lng});
+  way["amenity"="school"](around:${radius},${lat},${lng});
+  node["amenity"~"^(hospital|clinic|pharmacy)$"](around:${radius},${lat},${lng});
+  way["amenity"~"^(hospital|clinic|pharmacy)$"](around:${radius},${lat},${lng});
   node["amenity"~"^(restaurant|cafe)$"](around:${radius},${lat},${lng});
-  node["leisure"="fitness_centre"](around:${radiusFar},${lat},${lng});
-  way["leisure"="fitness_centre"](around:${radiusFar},${lat},${lng});
+  node["leisure"="fitness_centre"](around:${gymRadius},${lat},${lng});
+  way["leisure"="fitness_centre"](around:${gymRadius},${lat},${lng});
 );
-out tags;`
+out tags center;`
 
   for (const url of OVERPASS_URLS) {
     const data = await queryOverpass(url, query)
-    if (data) return NextResponse.json(data)
+    if (data) return NextResponse.json({ ...data, radius })
   }
 
   console.log('All Overpass endpoints failed, returning fallback response')
-  return NextResponse.json({ elements: [], fallback: true })
+  return NextResponse.json({ elements: [], fallback: true, radius })
 }
