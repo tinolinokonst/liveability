@@ -1,27 +1,7 @@
 import { AmenityScores } from './types'
 
-const OVERPASS_URL = 'https://overpass-api.de/api/interpreter'
-
 export async function fetchAmenityScores(lat: number, lng: number): Promise<AmenityScores> {
-  const radius = 800
-
-  const query = `[out:json][timeout:30];
-(
-  node["shop"~"^(supermarket|grocery|convenience|food)$"](around:${radius},${lat},${lng});
-  way["shop"~"^(supermarket|grocery|convenience|food)$"](around:${radius},${lat},${lng});
-  node["highway"="bus_stop"](around:${radius},${lat},${lng});
-  node["amenity"="bus_station"](around:${radius},${lat},${lng});
-  node["railway"~"^(station|halt|tram_stop)$"](around:${radius},${lat},${lng});
-  way["leisure"="park"](around:${radius},${lat},${lng});
-  relation["leisure"="park"](around:${radius},${lat},${lng});
-);
-out tags;`
-
-  const res = await fetch(OVERPASS_URL, {
-    method: 'POST',
-    body: query,
-    headers: { 'Content-Type': 'text/plain' },
-  })
+  const res = await fetch(`/api/overpass?lat=${lat}&lng=${lng}`)
 
   if (!res.ok) throw new Error('Overpass API fetch failed')
 

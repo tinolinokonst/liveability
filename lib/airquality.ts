@@ -5,9 +5,7 @@ export interface AQIResult {
 }
 
 export async function fetchAQI(lat: number, lng: number): Promise<AQIResult> {
-  const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lng}&current=us_aqi`
-
-  const res = await fetch(url, { next: { revalidate: 3600 } })
+  const res = await fetch(`/api/airquality?lat=${lat}&lng=${lng}`)
   if (!res.ok) throw new Error('AQI fetch failed')
 
   const data = await res.json()
