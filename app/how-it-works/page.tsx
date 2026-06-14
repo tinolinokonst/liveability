@@ -84,14 +84,23 @@ function FaqItem({ q, a }: { q: string; a: string }) {
         <span className="text-white font-semibold text-sm">{q}</span>
         <ChevronDown
           size={18}
-          style={{ color: '#a0a0a0', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
+          style={{ color: '#a0a0a0', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 250ms ease' }}
         />
       </button>
-      {open && (
-        <p style={{ color: '#a0a0a0' }} className="text-sm leading-relaxed px-4 pb-4">
-          {a}
-        </p>
-      )}
+      <div
+        className="grid overflow-hidden"
+        style={{
+          gridTemplateRows: open ? '1fr' : '0fr',
+          opacity: open ? 1 : 0,
+          transition: 'grid-template-rows 250ms ease, opacity 250ms ease',
+        }}
+      >
+        <div className="overflow-hidden">
+          <p style={{ color: '#a0a0a0' }} className="text-sm leading-relaxed px-4 pb-4">
+            {a}
+          </p>
+        </div>
+      </div>
     </div>
   )
 }

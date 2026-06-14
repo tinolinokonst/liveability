@@ -1,66 +1,80 @@
 "use client"
 
 import { useState } from 'react'
-import { Neighborhood, WeightConfig, Profile, PROFILE_WEIGHTS } from '@/lib/types'
+import { ArrowLeft, Check } from 'lucide-react'
+import { Neighborhood, WeightConfig, Profile, PROFILE_WEIGHTS, AddressMetrics } from '@/lib/types'
+import { fetchFullMetrics } from '@/lib/metrics'
+import { saveAddress } from '@/lib/savedAddresses'
 import LocalNews from './LocalNews'
+import AddressResults from './AddressResults'
 
 const COLUMBUS_NEIGHBORHOODS: Neighborhood[] = [
   {
     name: 'German Village',
+    lat: 39.9509, lng: -82.9959,
     walkability: 83, air: 78, green: 82, grocery: 70, transit: 58, safety: 78,
     education: 65, healthcare: 70, dining: 85, quiet: 60, rent: 1650,
     notes: ['Historic brick streets', 'Beautiful parks', 'High walkability', 'Good air quality'],
   },
   {
     name: 'Clintonville',
+    lat: 40.0334, lng: -83.0094,
     walkability: 68, air: 82, green: 88, grocery: 78, transit: 52, safety: 82,
     education: 78, healthcare: 65, dining: 70, quiet: 72, rent: 1350,
     notes: ['Excellent air quality', 'Most green space', 'Family friendly', 'Very affordable'],
   },
   {
     name: 'Grandview Heights',
+    lat: 39.9764, lng: -83.0316,
     walkability: 76, air: 79, green: 70, grocery: 80, transit: 52, safety: 88,
     education: 85, healthcare: 72, dining: 80, quiet: 68, rent: 1600,
     notes: ['Very safe', 'Great grocery access', 'Good restaurants', 'Family friendly'],
   },
   {
     name: 'Bexley',
+    lat: 39.9690, lng: -82.9377,
     walkability: 63, air: 86, green: 88, grocery: 72, transit: 42, safety: 90,
     education: 92, healthcare: 75, dining: 65, quiet: 78, rent: 1700,
     notes: ['Excellent safety', 'Best air quality', 'Beautiful parks', 'Suburban feel'],
   },
   {
     name: 'Short North',
+    lat: 39.9784, lng: -83.0042,
     walkability: 88, air: 68, green: 60, grocery: 82, transit: 75, safety: 55,
     education: 55, healthcare: 70, dining: 95, quiet: 30, rent: 1800,
     notes: ['Most walkable', 'Best transit', 'Vibrant nightlife', 'Higher rent'],
   },
   {
     name: 'Victorian Village',
+    lat: 39.9743, lng: -83.0073,
     walkability: 79, air: 76, green: 80, grocery: 68, transit: 58, safety: 72,
     education: 60, healthcare: 68, dining: 78, quiet: 58, rent: 1500,
     notes: ['Historic homes', 'Good green space', 'Near OSU', 'Quiet streets'],
   },
   {
     name: 'Italian Village',
+    lat: 39.9777, lng: -82.9989,
     walkability: 76, air: 63, green: 55, grocery: 70, transit: 70, safety: 60,
     education: 55, healthcare: 62, dining: 82, quiet: 40, rent: 1400,
     notes: ['Near downtown', 'Good transit', 'Trendy & growing', 'Limited green space'],
   },
   {
     name: 'Westerville',
+    lat: 40.1262, lng: -82.9291,
     walkability: 48, air: 88, green: 80, grocery: 76, transit: 28, safety: 92,
     education: 90, healthcare: 70, dining: 55, quiet: 82, rent: 1550,
     notes: ['Very safe', 'Clean air', 'Suburban', 'Car required'],
   },
   {
     name: 'Dublin',
+    lat: 40.0992, lng: -83.1141,
     walkability: 42, air: 90, green: 84, grocery: 78, transit: 28, safety: 94,
     education: 95, healthcare: 78, dining: 60, quiet: 85, rent: 1900,
     notes: ['Cleanest air', 'Safest area', 'Suburban', 'Car required'],
   },
   {
     name: 'Franklinton',
+    lat: 39.9614, lng: -83.0197,
     walkability: 52, air: 52, green: 45, grocery: 50, transit: 68, safety: 42,
     education: 45, healthcare: 50, dining: 60, quiet: 45, rent: 950,
     notes: ['Most affordable', 'Arts district', 'Improving rapidly', 'Lower safety scores'],
@@ -145,10 +159,21 @@ function rentLabel(rent: number) {
   return                  { label: 'Pricey',      color: '#ef4444' }
 }
 
-export default function NeighborhoodFinder() {
+interface NeighborhoodFinderProps {
+  userId?: string | null
+}
+
+export default function NeighborhoodFinder({ userId }: NeighborhoodFinderProps) {
   const [weights, setWeights] = useState<WeightConfig>(DEFAULT_WEIGHTS)
   const [activePreset, setActivePreset] = useState('Balanced')
   const [expandedNews, setExpandedNews] = useState<string | null>(null)
+
+  const [selectedName, setSelectedName] = useState<string | null>(null)
+  const [metrics, setMetrics] = useState<AddressMetrics | null>(null)
+  const [metricsLoading, setMetricsLoading] = useState(false)
+  const [metricsError, setMetricsError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
 
   const ranked = [...COLUMBUS_NEIGHBORHOODS]
     .map(n => ({ ...n, score: scoreNeighborhood(n, weights) }))
@@ -162,6 +187,91 @@ export default function NeighborhoodFinder() {
   function handleWeight(key: keyof WeightConfig, value: number) {
     setWeights(prev => ({ ...prev, [key]: value }))
     setActivePreset('Custom')
+  }
+
+  async function handleSelectNeighborhood(n: Neighborhood) {
+    setSelectedName(n.name)
+    setMetrics(null)
+    setMetricsError(null)
+    setSaved(false)
+    setMetricsLoading(true)
+
+    try {
+      const location = { lat: n.lat, lng: n.lng, formattedAddress: n.name }
+      const m = await fetchFullMetrics(n.name, location, 800)
+      setMetrics(m)
+    } catch (err) {
+      setMetricsError(err instanceof Error ? err.message : 'Failed to load neighborhood data')
+    } finally {
+      setMetricsLoading(false)
+    }
+  }
+
+  async function handleSaveNeighborhood() {
+    if (!metrics || !userId) return
+
+    setSaving(true)
+    try {
+      await saveAddress(userId, metrics)
+      setSaved(true)
+    } catch (err) {
+      setMetricsError(err instanceof Error ? err.message : 'Failed to save neighborhood')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (selectedName) {
+    return (
+      <div className="flex flex-col gap-4">
+        <button
+          onClick={() => setSelectedName(null)}
+          className="text-xs mb-1 transition-colors flex items-center gap-1 self-start"
+          style={{ color: '#a0a0a0' }}
+        >
+          <ArrowLeft size={14} /> Back to neighborhood rankings
+        </button>
+
+        {metricsError && (
+          <div className="rounded-xl px-4 py-3 text-sm text-[#ef4444]" style={{ backgroundColor: '#ef44441a', border: '1px solid #ef444433' }}>
+            {metricsError}
+          </div>
+        )}
+
+        {metricsLoading && (
+          <p style={{ color: '#a0a0a0' }} className="text-sm">Loading data for {selectedName}...</p>
+        )}
+
+        {metrics && (
+          <>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p style={{ color: '#a0a0a0' }} className="text-xs mb-1">Results for</p>
+                <p className="text-white font-semibold text-sm">{selectedName} (neighborhood center)</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <p style={{ color: '#a0a0a0' }} className="text-xs">Overall</p>
+                  <p className="text-2xl font-bold" style={{ color: '#f97316' }}>{metrics.overallScore}</p>
+                </div>
+                {userId && (
+                  <button
+                    onClick={handleSaveNeighborhood}
+                    disabled={saving || saved}
+                    className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all disabled:opacity-50 inline-flex items-center gap-1.5"
+                    style={{ backgroundColor: '#2a2a2a', border: '1px solid #3a3a3a' }}
+                  >
+                    {saved ? <>Saved <Check size={14} /></> : saving ? 'Saving...' : 'Save this neighborhood'}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <AddressResults metrics={metrics} />
+          </>
+        )}
+      </div>
+    )
   }
 
   return (
@@ -221,7 +331,8 @@ export default function NeighborhoodFinder() {
           return (
             <div
               key={n.name}
-              className="rounded-xl p-4 flex gap-4 items-start"
+              onClick={() => handleSelectNeighborhood(n)}
+              className="rounded-xl p-4 flex gap-4 items-start cursor-pointer transition-colors hover:border-[#f97316]"
               style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
             >
               <div
@@ -272,7 +383,7 @@ export default function NeighborhoodFinder() {
                     Great fit for: {fit.profile} ({fit.score.toFixed(1)}/10)
                   </span>
                   <button
-                    onClick={() => setExpandedNews(expandedNews === n.name ? null : n.name)}
+                    onClick={e => { e.stopPropagation(); setExpandedNews(expandedNews === n.name ? null : n.name) }}
                     className="text-xs px-2 py-1 rounded-full font-medium transition-colors"
                     style={{ color: '#a0a0a0', backgroundColor: '#2a2a2a' }}
                   >

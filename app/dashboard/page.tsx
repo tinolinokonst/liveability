@@ -182,7 +182,7 @@ export default function Dashboard() {
             <p style={{ color: '#a0a0a0' }} className="text-xs mb-6">
               Adjust the sliders to rank neighborhoods based on what matters to you
             </p>
-            <NeighborhoodFinder />
+            <NeighborhoodFinder userId={userId} />
           </div>
         )}
 
