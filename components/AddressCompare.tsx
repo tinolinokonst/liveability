@@ -1,6 +1,9 @@
 "use client"
 
+import { useState } from 'react'
 import { AddressMetrics } from '@/lib/types'
+import { MetricKey } from '@/lib/metricInfo'
+import MetricInfoModal from './MetricInfoModal'
 
 const ACCENT_COLORS = ['#f97316', '#3b82f6', '#a855f7']
 
@@ -8,17 +11,18 @@ const METRICS: Array<{
   key: keyof Pick<AddressMetrics, 'aqiScore' | 'walkabilityScore' | 'groceryScore' | 'transitScore' | 'greenScore' | 'safetyScore' | 'healthcareScore' | 'schoolScore' | 'diningScore' | 'overallScore'>
   label: string
   higherIsBetter: boolean
+  metricKey?: MetricKey
 }> = [
   { key: 'overallScore',     label: 'Overall Score',     higherIsBetter: true },
-  { key: 'aqiScore',         label: 'Air Quality',        higherIsBetter: true },
-  { key: 'walkabilityScore', label: 'Walkability',        higherIsBetter: true },
-  { key: 'groceryScore',     label: 'Grocery Access',     higherIsBetter: true },
-  { key: 'transitScore',     label: 'Transit Access',     higherIsBetter: true },
-  { key: 'greenScore',       label: 'Green Space',        higherIsBetter: true },
-  { key: 'safetyScore',      label: 'Safety / Crime',     higherIsBetter: true },
-  { key: 'healthcareScore',  label: 'Healthcare Access',  higherIsBetter: true },
-  { key: 'schoolScore',      label: 'Schools Nearby',     higherIsBetter: true },
-  { key: 'diningScore',      label: 'Dining & Cafes',     higherIsBetter: true },
+  { key: 'aqiScore',         label: 'Air Quality',        higherIsBetter: true, metricKey: 'aqi' },
+  { key: 'walkabilityScore', label: 'Walkability',        higherIsBetter: true, metricKey: 'walkability' },
+  { key: 'groceryScore',     label: 'Grocery Access',     higherIsBetter: true, metricKey: 'grocery' },
+  { key: 'transitScore',     label: 'Transit Access',     higherIsBetter: true, metricKey: 'transit' },
+  { key: 'greenScore',       label: 'Green Space',        higherIsBetter: true, metricKey: 'green' },
+  { key: 'safetyScore',      label: 'Safety / Crime',     higherIsBetter: true, metricKey: 'safety' },
+  { key: 'healthcareScore',  label: 'Healthcare Access',  higherIsBetter: true, metricKey: 'healthcare' },
+  { key: 'schoolScore',      label: 'Schools Nearby',     higherIsBetter: true, metricKey: 'school' },
+  { key: 'diningScore',      label: 'Dining & Cafes',     higherIsBetter: true, metricKey: 'dining' },
 ]
 
 interface AddressCompareProps {
@@ -33,6 +37,8 @@ function qualityColor(score: number) {
 }
 
 export default function AddressCompare({ addresses, onRemove }: AddressCompareProps) {
+  const [infoMetric, setInfoMetric] = useState<MetricKey | null>(null)
+
   if (addresses.length < 2) {
     return (
       <div className="text-center py-10" style={{ color: '#a0a0a0' }}>
@@ -86,7 +92,11 @@ export default function AddressCompare({ addresses, onRemove }: AddressComparePr
               }}
             >
               <div className="py-3 px-4 w-36 shrink-0">
-                <span style={{ color: '#a0a0a0' }} className="text-xs font-medium">
+                <span
+                  style={{ color: '#a0a0a0' }}
+                  className={`text-xs font-medium ${metric.metricKey ? 'cursor-pointer hover:text-white transition-colors' : ''}`}
+                  onClick={metric.metricKey ? () => setInfoMetric(metric.metricKey!) : undefined}
+                >
                   {metric.label}
                 </span>
               </div>
@@ -148,6 +158,10 @@ export default function AddressCompare({ addresses, onRemove }: AddressComparePr
           )
         })}
       </div>
+
+      {infoMetric && (
+        <MetricInfoModal metricKey={infoMetric} onClose={() => setInfoMetric(null)} />
+      )}
     </div>
   )
 }

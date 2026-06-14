@@ -1,4 +1,17 @@
-import { AmenityScores, NearestAmenity } from './types'
+import { AmenityPlaces, AmenityScores, NearestAmenity } from './types'
+
+const EMPTY_PLACES: AmenityPlaces = {
+  grocery: [],
+  transit: [],
+  park: [],
+  school: [],
+  healthcare: [],
+  dining: [],
+  library: [],
+  bank: [],
+  worship: [],
+  parking: [],
+}
 
 const FALLBACK_SCORES: Omit<AmenityScores, 'radius'> = {
   groceryCount: 0,
@@ -33,6 +46,7 @@ const FALLBACK_SCORES: Omit<AmenityScores, 'radius'> = {
   nearestBank: null,
   nearestWorship: null,
   nearestParking: null,
+  places: EMPTY_PLACES,
   note: 'estimate - live data unavailable',
 }
 
@@ -72,6 +86,21 @@ function nearest(elements: OverpassElement[], lat: number, lng: number, fallback
   }
 
   return best
+}
+
+function nearestList(elements: OverpassElement[], lat: number, lng: number, fallbackName: string, limit: number = 8): NearestAmenity[] {
+  const places: NearestAmenity[] = []
+
+  for (const e of elements) {
+    const elat = e.lat ?? e.center?.lat
+    const elon = e.lon ?? e.center?.lon
+    if (elat === undefined || elon === undefined) continue
+
+    const distanceKm = haversineKm(lat, lng, elat, elon)
+    places.push({ name: elementName(e, fallbackName), distanceKm: Math.round(distanceKm * 10) / 10 })
+  }
+
+  return places.sort((a, b) => a.distanceKm - b.distanceKm).slice(0, limit)
 }
 
 export async function fetchAmenityScores(lat: number, lng: number, radius: number = 800): Promise<AmenityScores> {
@@ -179,5 +208,17 @@ export async function fetchAmenityScores(lat: number, lng: number, radius: numbe
     nearestBank: nearest(bankElements, lat, lng, 'Bank/ATM'),
     nearestWorship: nearest(worshipElements, lat, lng, 'Place of worship'),
     nearestParking: nearest(parkingElements, lat, lng, 'Parking'),
+    places: {
+      grocery: nearestList(groceryElements, lat, lng, 'Grocery store'),
+      transit: nearestList(transitElements, lat, lng, 'Transit stop'),
+      park: nearestList(parkElements, lat, lng, 'Park'),
+      school: nearestList(schoolElements, lat, lng, 'School'),
+      healthcare: nearestList(healthcareElements, lat, lng, 'Healthcare facility'),
+      dining: nearestList(diningElements, lat, lng, 'Restaurant/cafe'),
+      library: nearestList(libraryElements, lat, lng, 'Library'),
+      bank: nearestList(bankElements, lat, lng, 'Bank/ATM'),
+      worship: nearestList(worshipElements, lat, lng, 'Place of worship'),
+      parking: nearestList(parkingElements, lat, lng, 'Parking'),
+    },
   }
 }

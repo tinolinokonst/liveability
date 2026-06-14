@@ -13,6 +13,10 @@ export function nearestLabel(nearest: NearestAmenity | null): string | undefined
 }
 
 export default function AddressResults({ metrics, updated }: AddressResultsProps) {
+  const fetchedAt = metrics.fetchedAt
+  const radius = metrics.radius
+  const places = metrics.places
+
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -23,6 +27,8 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           description={metrics.aqiCategory}
           source="Open-Meteo Air Quality API"
           updated={updated}
+          metricKey="aqi"
+          fetchedAt={fetchedAt}
         />
         <MetricCard
           label="Walkability"
@@ -31,6 +37,8 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           description="Based on nearby amenities"
           source="OpenStreetMap (Overpass)"
           updated={updated}
+          metricKey="walkability"
+          fetchedAt={fetchedAt}
         />
         <MetricCard
           label="Grocery Access"
@@ -42,6 +50,10 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           )}
           source="OpenStreetMap (Overpass)"
           updated={updated}
+          metricKey="grocery"
+          fetchedAt={fetchedAt}
+          radius={radius}
+          places={places?.grocery}
         />
         <MetricCard
           label="Transit Access"
@@ -50,6 +62,10 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           description="Bus stops & stations within 800m"
           source="OpenStreetMap (Overpass)"
           updated={updated}
+          metricKey="transit"
+          fetchedAt={fetchedAt}
+          radius={radius}
+          places={places?.transit}
         />
         <MetricCard
           label="Green Space"
@@ -61,6 +77,10 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           )}
           source="OpenStreetMap (Overpass)"
           updated={updated}
+          metricKey="green"
+          fetchedAt={fetchedAt}
+          radius={radius}
+          places={places?.park}
         />
         <MetricCard
           label="Safety / Crime"
@@ -69,6 +89,8 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           description={metrics.safetyNote || (metrics.crimeTopTypes.length ? `Top: ${metrics.crimeTopTypes.join(', ')}` : 'Within 1km, last 12 months')}
           source="City of Columbus GIS"
           updated={updated}
+          metricKey="safety"
+          fetchedAt={fetchedAt}
         />
         <MetricCard
           label="Healthcare Access"
@@ -80,6 +102,10 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           )}
           source="OpenStreetMap (Overpass)"
           updated={updated}
+          metricKey="healthcare"
+          fetchedAt={fetchedAt}
+          radius={radius}
+          places={places?.healthcare}
         />
         <MetricCard
           label="Schools Nearby"
@@ -91,6 +117,10 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           )}
           source="OpenStreetMap (Overpass)"
           updated={updated}
+          metricKey="school"
+          fetchedAt={fetchedAt}
+          radius={radius}
+          places={places?.school}
         />
         <MetricCard
           label="Dining & Cafes"
@@ -102,6 +132,10 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           )}
           source="OpenStreetMap (Overpass)"
           updated={updated}
+          metricKey="dining"
+          fetchedAt={fetchedAt}
+          radius={radius}
+          places={places?.dining}
         />
         <MetricCard
           label="Libraries"
@@ -113,6 +147,10 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           )}
           source="OpenStreetMap (Overpass)"
           updated={updated}
+          metricKey="library"
+          fetchedAt={fetchedAt}
+          radius={1600}
+          places={places?.library}
         />
         <MetricCard
           label="Banks / ATMs"
@@ -124,6 +162,10 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           )}
           source="OpenStreetMap (Overpass)"
           updated={updated}
+          metricKey="bank"
+          fetchedAt={fetchedAt}
+          radius={800}
+          places={places?.bank}
         />
         <MetricCard
           label="Places of Worship"
@@ -135,6 +177,10 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           )}
           source="OpenStreetMap (Overpass)"
           updated={updated}
+          metricKey="worship"
+          fetchedAt={fetchedAt}
+          radius={1600}
+          places={places?.worship}
         />
         <MetricCard
           label="Parking"
@@ -146,6 +192,10 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           )}
           source="OpenStreetMap (Overpass)"
           updated={updated}
+          metricKey="parking"
+          fetchedAt={fetchedAt}
+          radius={400}
+          places={places?.parking}
         />
         <div
           className="rounded-xl border p-4 flex flex-col items-center justify-center"

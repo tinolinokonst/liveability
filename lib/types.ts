@@ -9,6 +9,19 @@ export interface NearestAmenity {
   distanceKm: number
 }
 
+export interface AmenityPlaces {
+  grocery: NearestAmenity[]
+  transit: NearestAmenity[]
+  park: NearestAmenity[]
+  school: NearestAmenity[]
+  healthcare: NearestAmenity[]
+  dining: NearestAmenity[]
+  library: NearestAmenity[]
+  bank: NearestAmenity[]
+  worship: NearestAmenity[]
+  parking: NearestAmenity[]
+}
+
 export interface AmenityScores {
   groceryCount: number
   transitCount: number
@@ -43,6 +56,7 @@ export interface AmenityScores {
   nearestBank: NearestAmenity | null
   nearestWorship: NearestAmenity | null
   nearestParking: NearestAmenity | null
+  places: AmenityPlaces
   note?: string
 }
 
@@ -105,6 +119,8 @@ export interface AddressMetrics {
   nearestBank: NearestAmenity | null
   nearestWorship: NearestAmenity | null
   nearestParking: NearestAmenity | null
+  places: AmenityPlaces
+  fetchedAt: string
 }
 
 export interface SavedAddress {

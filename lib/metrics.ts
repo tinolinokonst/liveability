@@ -68,6 +68,8 @@ export function buildMetrics(
     nearestBank: amenityData.nearestBank,
     nearestWorship: amenityData.nearestWorship,
     nearestParking: amenityData.nearestParking,
+    places: amenityData.places,
+    fetchedAt: new Date().toISOString(),
   }
 }
 

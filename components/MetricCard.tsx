@@ -1,5 +1,10 @@
 "use client"
 
+import { useState } from 'react'
+import { MetricKey } from '@/lib/metricInfo'
+import { NearestAmenity } from '@/lib/types'
+import MetricInfoModal from './MetricInfoModal'
+
 interface MetricCardProps {
   label: string
   value: string
@@ -8,6 +13,10 @@ interface MetricCardProps {
   source?: string
   updated?: string
   extra?: React.ReactNode
+  metricKey?: MetricKey
+  fetchedAt?: string
+  radius?: number
+  places?: NearestAmenity[]
 }
 
 function qualityColor(score: number): string {
@@ -22,52 +31,71 @@ function qualityLabel(score: number): string {
   return 'Poor'
 }
 
-export default function MetricCard({ label, value, score, description, source, updated, extra }: MetricCardProps) {
+export default function MetricCard({ label, value, score, description, source, updated, extra, metricKey, fetchedAt, radius, places }: MetricCardProps) {
+  const [showInfo, setShowInfo] = useState(false)
   const color = qualityColor(score)
   const quality = qualityLabel(score)
+  const clickable = !!metricKey
 
   return (
-    <div
-      style={{ backgroundColor: '#1a1a1a', borderColor: '#2a2a2a' }}
-      className="rounded-xl border p-4 flex flex-col gap-3"
-    >
-      <div className="flex items-center justify-between">
-        <span style={{ color: '#a0a0a0' }} className="text-xs font-medium uppercase tracking-wider">
-          {label}
-        </span>
-        <span
-          className="text-xs font-semibold px-2 py-0.5 rounded-full"
-          style={{ color, backgroundColor: `${color}1a` }}
-        >
-          {quality}
-        </span>
+    <>
+      <div
+        style={{ backgroundColor: '#1a1a1a', borderColor: '#2a2a2a' }}
+        className={`rounded-xl border p-4 flex flex-col gap-3 ${clickable ? 'cursor-pointer transition-colors hover:border-[#f97316]' : ''}`}
+        onClick={clickable ? () => setShowInfo(true) : undefined}
+        role={clickable ? 'button' : undefined}
+        tabIndex={clickable ? 0 : undefined}
+      >
+        <div className="flex items-center justify-between">
+          <span style={{ color: '#a0a0a0' }} className="text-xs font-medium uppercase tracking-wider">
+            {label}
+          </span>
+          <span
+            className="text-xs font-semibold px-2 py-0.5 rounded-full"
+            style={{ color, backgroundColor: `${color}1a` }}
+          >
+            {quality}
+          </span>
+        </div>
+
+        <div className="text-2xl font-bold text-white">{value}</div>
+
+        {description && (
+          <p style={{ color: '#a0a0a0' }} className="text-xs leading-relaxed">
+            {description}
+          </p>
+        )}
+
+        {extra}
+
+        <div style={{ backgroundColor: '#2a2a2a' }} className="rounded-full h-1.5 w-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{ width: `${score}%`, backgroundColor: color }}
+          />
+        </div>
+
+        {(source || updated) && (
+          <p style={{ color: '#a0a0a0' }} className="text-xs flex items-center gap-1 -mb-1">
+            <span>ⓘ</span>
+            {source && <span>Source: {source}</span>}
+            {source && updated && <span>·</span>}
+            {updated && <span>{updated}</span>}
+          </p>
+        )}
       </div>
 
-      <div className="text-2xl font-bold text-white">{value}</div>
-
-      {description && (
-        <p style={{ color: '#a0a0a0' }} className="text-xs leading-relaxed">
-          {description}
-        </p>
-      )}
-
-      {extra}
-
-      <div style={{ backgroundColor: '#2a2a2a' }} className="rounded-full h-1.5 w-full overflow-hidden">
-        <div
-          className="h-full rounded-full transition-all duration-500"
-          style={{ width: `${score}%`, backgroundColor: color }}
+      {showInfo && metricKey && (
+        <MetricInfoModal
+          metricKey={metricKey}
+          value={value}
+          score={score}
+          fetchedAt={fetchedAt}
+          radius={radius}
+          places={places}
+          onClose={() => setShowInfo(false)}
         />
-      </div>
-
-      {(source || updated) && (
-        <p style={{ color: '#a0a0a0' }} className="text-xs flex items-center gap-1 -mb-1">
-          <span>ⓘ</span>
-          {source && <span>Source: {source}</span>}
-          {source && updated && <span>·</span>}
-          {updated && <span>{updated}</span>}
-        </p>
       )}
-    </div>
+    </>
   )
 }
