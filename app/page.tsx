@@ -1,12 +1,13 @@
 import Link from 'next/link'
+import { Wind, Footprints, Trees, ShoppingCart, Bus, Building2 } from 'lucide-react'
 
 const FEATURES = [
-  { icon: '💨', label: 'Air Quality', desc: 'Real-time AQI from Open-Meteo' },
-  { icon: '🚶', label: 'Walkability', desc: 'Amenities within 800m radius' },
-  { icon: '🌿', label: 'Green Space', desc: 'Parks and nature access' },
-  { icon: '🛒', label: 'Grocery Access', desc: 'Supermarkets and stores nearby' },
-  { icon: '🚌', label: 'Transit Access', desc: 'Bus stops and transit stations' },
-  { icon: '🏘️', label: 'Neighborhood Scores', desc: '10 Columbus neighborhoods ranked' },
+  { icon: Wind, label: 'Air Quality', desc: 'Real-time AQI from Open-Meteo' },
+  { icon: Footprints, label: 'Walkability', desc: 'Amenities within 800m radius' },
+  { icon: Trees, label: 'Green Space', desc: 'Parks and nature access' },
+  { icon: ShoppingCart, label: 'Grocery Access', desc: 'Supermarkets and stores nearby' },
+  { icon: Bus, label: 'Transit Access', desc: 'Bus stops and transit stations' },
+  { icon: Building2, label: 'Neighborhood Scores', desc: '10 Columbus neighborhoods ranked' },
 ]
 
 export default function Home() {
@@ -87,7 +88,7 @@ export default function Home() {
               className="rounded-xl p-5"
               style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
             >
-              <div className="text-2xl mb-3">{f.icon}</div>
+              <f.icon size={24} className="mb-3" style={{ color: '#f97316' }} />
               <p className="text-white font-semibold text-sm mb-1">{f.label}</p>
               <p style={{ color: '#a0a0a0' }} className="text-xs leading-relaxed">{f.desc}</p>
             </div>

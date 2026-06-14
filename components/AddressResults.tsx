@@ -166,6 +166,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           radius={radius}
           places={places?.grocery}
           center={center}
+          searchRadius={metrics.radius}
           detail={buildDetail('grocery', metrics)}
         />
         <MetricCard
@@ -179,6 +180,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           radius={radius}
           places={places?.transit}
           center={center}
+          searchRadius={metrics.radius}
           detail={buildDetail('transit', metrics)}
         />
         <MetricCard
@@ -195,6 +197,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           radius={radius}
           places={places?.park}
           center={center}
+          searchRadius={metrics.radius}
           detail={buildDetail('green', metrics)}
         />
         <MetricCard
@@ -223,6 +226,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           radius={radius}
           places={places?.healthcare}
           center={center}
+          searchRadius={metrics.radius}
           detail={buildDetail('healthcare', metrics)}
         />
         <MetricCard
@@ -239,6 +243,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           radius={radius}
           places={places?.school}
           center={center}
+          searchRadius={metrics.radius}
           detail={buildDetail('school', metrics)}
         />
         <MetricCard
@@ -255,6 +260,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           radius={radius}
           places={places?.dining}
           center={center}
+          searchRadius={metrics.radius}
           detail={buildDetail('dining', metrics)}
         />
         <MetricCard
@@ -271,6 +277,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           radius={1600}
           places={places?.library}
           center={center}
+          searchRadius={metrics.radius}
           detail={buildDetail('library', metrics)}
         />
         <MetricCard
@@ -287,6 +294,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           radius={800}
           places={places?.bank}
           center={center}
+          searchRadius={metrics.radius}
           detail={buildDetail('bank', metrics)}
         />
         <MetricCard
@@ -303,6 +311,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           radius={1600}
           places={places?.worship}
           center={center}
+          searchRadius={metrics.radius}
           detail={buildDetail('worship', metrics)}
         />
         <MetricCard
@@ -319,6 +328,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           radius={400}
           places={places?.parking}
           center={center}
+          searchRadius={metrics.radius}
           detail={buildDetail('parking', metrics)}
         />
         <div

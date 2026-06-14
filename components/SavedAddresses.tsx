@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from 'react'
+import { ArrowLeft } from 'lucide-react'
 import {
   fetchSavedAddresses,
   updateSavedAddressMetrics,
@@ -89,10 +90,10 @@ export default function SavedAddresses({ onAdd, compareCount = 0 }: SavedAddress
           <div>
             <button
               onClick={() => setSelectedId(null)}
-              className="text-xs mb-2 transition-colors"
+              className="text-xs mb-2 transition-colors flex items-center gap-1"
               style={{ color: '#a0a0a0' }}
             >
-              ← Back to saved addresses
+              <ArrowLeft size={14} /> Back to saved addresses
             </button>
             <p style={{ color: '#a0a0a0' }} className="text-xs mb-1">Results for</p>
             <p className="text-white font-semibold text-sm">{selected.metrics.location.formattedAddress}</p>

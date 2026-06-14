@@ -12,6 +12,7 @@ interface MetricInfoMapProps {
   markers?: NearestAmenity[]
   incidents?: CrimeIncidentLocation[]
   circleRadiusMeters?: number
+  searchRadiusMeters?: number
 }
 
 const DARK_TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
@@ -34,6 +35,7 @@ export default function MetricInfoMap({
   markers = [],
   incidents = [],
   circleRadiusMeters,
+  searchRadiusMeters,
 }: MetricInfoMapProps) {
   const points = markers.filter(m => m.lat !== undefined && m.lng !== undefined)
 
@@ -74,6 +76,14 @@ export default function MetricInfoMap({
             center={[center.lat, center.lng]}
             radius={circleRadiusMeters}
             pathOptions={{ color: '#ef4444', fillOpacity: 0.08 }}
+          />
+        )}
+
+        {searchRadiusMeters !== undefined && (
+          <Circle
+            center={[center.lat, center.lng]}
+            radius={searchRadiusMeters}
+            pathOptions={{ color: '#f97316', fillColor: '#f97316', fillOpacity: 0.1, opacity: 0.4 }}
           />
         )}
       </MapContainer>

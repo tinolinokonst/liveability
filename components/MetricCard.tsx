@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import { Info } from 'lucide-react'
 import { MetricKey } from '@/lib/metricInfo'
 import { CrimeIncidentLocation, NearestAmenity } from '@/lib/types'
 import MetricInfoModal from './MetricInfoModal'
@@ -19,6 +20,7 @@ interface MetricCardProps {
   center?: { lat: number; lng: number }
   category?: string
   crimeIncidents?: CrimeIncidentLocation[]
+  searchRadius?: number
   detail?: React.ReactNode
 }
 
@@ -34,7 +36,7 @@ function qualityLabel(score: number): string {
   return 'Poor'
 }
 
-export default function MetricCard({ label, value, score, description, source, updated, extra, metricKey, radius, places, center, category, crimeIncidents, detail }: MetricCardProps) {
+export default function MetricCard({ label, value, score, description, source, updated, extra, metricKey, radius, places, center, category, crimeIncidents, searchRadius, detail }: MetricCardProps) {
   const [showInfo, setShowInfo] = useState(false)
   const color = qualityColor(score)
   const quality = qualityLabel(score)
@@ -80,7 +82,7 @@ export default function MetricCard({ label, value, score, description, source, u
 
         {(source || updated) && (
           <p style={{ color: '#a0a0a0' }} className="text-xs flex items-center gap-1 -mb-1">
-            <span>ⓘ</span>
+            <Info size={12} />
             {source && <span>Source: {source}</span>}
             {source && updated && <span>·</span>}
             {updated && <span>{updated}</span>}
@@ -98,6 +100,7 @@ export default function MetricCard({ label, value, score, description, source, u
           center={center}
           category={category}
           crimeIncidents={crimeIncidents}
+          searchRadius={searchRadius}
           detail={detail}
           onClose={() => setShowInfo(false)}
         />

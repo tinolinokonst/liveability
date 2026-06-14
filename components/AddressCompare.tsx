@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import { Star, X } from 'lucide-react'
 import { AddressMetrics } from '@/lib/types'
 import { MetricKey } from '@/lib/metricInfo'
 import MetricInfoModal from './MetricInfoModal'
@@ -67,9 +68,9 @@ export default function AddressCompare({ addresses, onRemove }: AddressComparePr
               <button
                 onClick={() => onRemove(addr.id)}
                 style={{ color: '#a0a0a0' }}
-                className="text-xs hover:text-white transition-colors shrink-0"
+                className="hover:text-white transition-colors shrink-0"
               >
-                ✕
+                <X size={14} />
               </button>
             </div>
           </div>
@@ -121,7 +122,7 @@ export default function AddressCompare({ addresses, onRemove }: AddressComparePr
                           style={{ width: `${val}%`, backgroundColor: color }}
                         />
                       </div>
-                      {isWinner && <span className="text-xs" style={{ color: '#f97316' }}>★</span>}
+                      {isWinner && <Star size={12} fill="#f97316" style={{ color: '#f97316' }} />}
                     </div>
                   )
                 })}

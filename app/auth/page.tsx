@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 
 function AuthForm() {
   const router = useRouter()
@@ -154,7 +155,9 @@ function AuthForm() {
         </div>
 
         <p className="text-center text-xs mt-6" style={{ color: '#a0a0a0' }}>
-          <Link href="/" className="hover:text-white transition-colors">← Back to home</Link>
+          <Link href="/" className="hover:text-white transition-colors inline-flex items-center gap-1">
+            <ArrowLeft size={14} /> Back to home
+          </Link>
         </p>
       </div>
     </main>

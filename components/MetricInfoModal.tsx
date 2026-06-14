@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import dynamic from 'next/dynamic'
+import { X } from 'lucide-react'
 import { aqiColor, METRIC_INFO, MetricKey } from '@/lib/metricInfo'
 import { CrimeIncidentLocation, NearestAmenity } from '@/lib/types'
 
@@ -18,11 +19,12 @@ interface MetricInfoModalProps {
   center?: { lat: number; lng: number }
   category?: string
   crimeIncidents?: CrimeIncidentLocation[]
+  searchRadius?: number
   detail?: React.ReactNode
   onClose: () => void
 }
 
-export default function MetricInfoModal({ metricKey, value, score, radius, places, center, category, crimeIncidents, detail, onClose }: MetricInfoModalProps) {
+export default function MetricInfoModal({ metricKey, value, score, radius, places, center, category, crimeIncidents, searchRadius, detail, onClose }: MetricInfoModalProps) {
   const info = METRIC_INFO[metricKey]
 
   useEffect(() => {
@@ -59,10 +61,10 @@ export default function MetricInfoModal({ metricKey, value, score, radius, place
           <button
             onClick={onClose}
             aria-label="Close"
-            className="text-lg leading-none transition-colors"
+            className="leading-none transition-colors"
             style={{ color: '#a0a0a0' }}
           >
-            ✕
+            <X size={18} />
           </button>
         </div>
 
@@ -94,11 +96,12 @@ export default function MetricInfoModal({ metricKey, value, score, radius, place
           </>
         )}
 
-        {center && places && places.length > 0 && info.placesKey && (
+        {center && info.placesKey && (
           <MetricInfoMap
             center={center}
             centerLabel="Searched address"
-            markers={places}
+            markers={places ?? []}
+            searchRadiusMeters={searchRadius}
           />
         )}
 

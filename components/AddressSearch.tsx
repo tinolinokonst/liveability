@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from 'react'
+import { Check } from 'lucide-react'
 import { geocodeAddress } from '@/lib/geocoding'
 import { fetchAmenityScores } from '@/lib/overpass'
 import { buildMetrics } from '@/lib/metrics'
@@ -216,10 +217,10 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId }: Addre
                 <button
                   onClick={handleSave}
                   disabled={saving || saved}
-                  className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all disabled:opacity-50"
+                  className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all disabled:opacity-50 inline-flex items-center gap-1.5"
                   style={{ backgroundColor: '#2a2a2a', border: '1px solid #3a3a3a' }}
                 >
-                  {saved ? 'Saved ✓' : saving ? 'Saving...' : 'Save this address'}
+                  {saved ? <>Saved <Check size={14} /></> : saving ? 'Saving...' : 'Save this address'}
                 </button>
               )}
               {onAdd && compareCount < 3 && (
