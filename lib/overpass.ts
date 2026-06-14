@@ -81,7 +81,7 @@ function nearest(elements: OverpassElement[], lat: number, lng: number, fallback
 
     const distanceKm = haversineKm(lat, lng, elat, elon)
     if (!best || distanceKm < best.distanceKm) {
-      best = { name: elementName(e, fallbackName), distanceKm: Math.round(distanceKm * 10) / 10 }
+      best = { name: elementName(e, fallbackName), distanceKm: Math.round(distanceKm * 10) / 10, lat: elat, lng: elon }
     }
   }
 
@@ -97,7 +97,7 @@ function nearestList(elements: OverpassElement[], lat: number, lng: number, fall
     if (elat === undefined || elon === undefined) continue
 
     const distanceKm = haversineKm(lat, lng, elat, elon)
-    places.push({ name: elementName(e, fallbackName), distanceKm: Math.round(distanceKm * 10) / 10 })
+    places.push({ name: elementName(e, fallbackName), distanceKm: Math.round(distanceKm * 10) / 10, lat: elat, lng: elon })
   }
 
   return places.sort((a, b) => a.distanceKm - b.distanceKm).slice(0, limit)

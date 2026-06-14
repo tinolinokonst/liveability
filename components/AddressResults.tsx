@@ -16,6 +16,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
   const fetchedAt = metrics.fetchedAt
   const radius = metrics.radius
   const places = metrics.places
+  const center = { lat: metrics.location.lat, lng: metrics.location.lng }
 
   return (
     <div className="flex flex-col gap-4">
@@ -29,6 +30,8 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           updated={updated}
           metricKey="aqi"
           fetchedAt={fetchedAt}
+          center={center}
+          category={metrics.aqiCategory}
         />
         <MetricCard
           label="Walkability"
@@ -54,6 +57,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           fetchedAt={fetchedAt}
           radius={radius}
           places={places?.grocery}
+          center={center}
         />
         <MetricCard
           label="Transit Access"
@@ -66,6 +70,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           fetchedAt={fetchedAt}
           radius={radius}
           places={places?.transit}
+          center={center}
         />
         <MetricCard
           label="Green Space"
@@ -81,6 +86,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           fetchedAt={fetchedAt}
           radius={radius}
           places={places?.park}
+          center={center}
         />
         <MetricCard
           label="Safety / Crime"
@@ -91,6 +97,8 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           updated={updated}
           metricKey="safety"
           fetchedAt={fetchedAt}
+          center={center}
+          crimeIncidents={metrics.crimeIncidents}
         />
         <MetricCard
           label="Healthcare Access"
@@ -106,6 +114,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           fetchedAt={fetchedAt}
           radius={radius}
           places={places?.healthcare}
+          center={center}
         />
         <MetricCard
           label="Schools Nearby"
@@ -121,6 +130,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           fetchedAt={fetchedAt}
           radius={radius}
           places={places?.school}
+          center={center}
         />
         <MetricCard
           label="Dining & Cafes"
@@ -136,6 +146,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           fetchedAt={fetchedAt}
           radius={radius}
           places={places?.dining}
+          center={center}
         />
         <MetricCard
           label="Libraries"
@@ -151,6 +162,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           fetchedAt={fetchedAt}
           radius={1600}
           places={places?.library}
+          center={center}
         />
         <MetricCard
           label="Banks / ATMs"
@@ -166,6 +178,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           fetchedAt={fetchedAt}
           radius={800}
           places={places?.bank}
+          center={center}
         />
         <MetricCard
           label="Places of Worship"
@@ -181,6 +194,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           fetchedAt={fetchedAt}
           radius={1600}
           places={places?.worship}
+          center={center}
         />
         <MetricCard
           label="Parking"
@@ -196,6 +210,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           fetchedAt={fetchedAt}
           radius={400}
           places={places?.parking}
+          center={center}
         />
         <div
           className="rounded-xl border p-4 flex flex-col items-center justify-center"

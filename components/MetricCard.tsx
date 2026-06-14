@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { MetricKey } from '@/lib/metricInfo'
-import { NearestAmenity } from '@/lib/types'
+import { CrimeIncidentLocation, NearestAmenity } from '@/lib/types'
 import MetricInfoModal from './MetricInfoModal'
 
 interface MetricCardProps {
@@ -17,6 +17,9 @@ interface MetricCardProps {
   fetchedAt?: string
   radius?: number
   places?: NearestAmenity[]
+  center?: { lat: number; lng: number }
+  category?: string
+  crimeIncidents?: CrimeIncidentLocation[]
 }
 
 function qualityColor(score: number): string {
@@ -31,7 +34,7 @@ function qualityLabel(score: number): string {
   return 'Poor'
 }
 
-export default function MetricCard({ label, value, score, description, source, updated, extra, metricKey, fetchedAt, radius, places }: MetricCardProps) {
+export default function MetricCard({ label, value, score, description, source, updated, extra, metricKey, fetchedAt, radius, places, center, category, crimeIncidents }: MetricCardProps) {
   const [showInfo, setShowInfo] = useState(false)
   const color = qualityColor(score)
   const quality = qualityLabel(score)
@@ -93,6 +96,9 @@ export default function MetricCard({ label, value, score, description, source, u
           fetchedAt={fetchedAt}
           radius={radius}
           places={places}
+          center={center}
+          category={category}
+          crimeIncidents={crimeIncidents}
           onClose={() => setShowInfo(false)}
         />
       )}

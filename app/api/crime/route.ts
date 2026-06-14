@@ -28,9 +28,11 @@ export async function GET(request: NextRequest) {
     distance: '1000',
     units: 'esriSRUnit_Meter',
     inSR: '4326',
+    outSR: '4326',
     spatialRel: 'esriSpatialRelIntersects',
     where: `reporteddate >= ${oneYearAgo}`,
     outFields: '*',
+    returnGeometry: 'true',
     f: 'json',
   })
 
@@ -52,7 +54,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(FALLBACK)
     }
 
-    const features: Array<{ attributes?: Record<string, unknown> }> = data.features
+    const features: Array<{ attributes?: Record<string, unknown>; geometry?: { x?: number; y?: number } }> = data.features
     const incidentCount = features.length
 
     const typeCounts = new Map<string, number>()
@@ -69,7 +71,11 @@ export async function GET(request: NextRequest) {
 
     const safetyScore = Math.max(0, Math.min(100, Math.round(100 - (incidentCount / 50) * 100)))
 
-    return NextResponse.json({ incidentCount, topIncidentTypes, safetyScore })
+    const incidents = features
+      .filter(f => f.geometry?.y !== undefined && f.geometry?.x !== undefined)
+      .map(f => ({ lat: f.geometry!.y as number, lng: f.geometry!.x as number }))
+
+    return NextResponse.json({ incidentCount, topIncidentTypes, safetyScore, incidents })
   } catch (err) {
     console.log('Columbus crime API fetch error:', err)
     return NextResponse.json(FALLBACK)

@@ -1,8 +1,13 @@
 "use client"
 
 import { useEffect } from 'react'
-import { METRIC_INFO, MetricKey } from '@/lib/metricInfo'
-import { NearestAmenity } from '@/lib/types'
+import dynamic from 'next/dynamic'
+import { aqiColor, METRIC_INFO, MetricKey } from '@/lib/metricInfo'
+import { CrimeIncidentLocation, NearestAmenity } from '@/lib/types'
+
+const MetricInfoMap = dynamic(() => import('./MetricInfoMap'), { ssr: false })
+
+const CRIME_RADIUS_METERS = 1000
 
 interface MetricInfoModalProps {
   metricKey: MetricKey
@@ -11,10 +16,13 @@ interface MetricInfoModalProps {
   fetchedAt?: string
   radius?: number
   places?: NearestAmenity[]
+  center?: { lat: number; lng: number }
+  category?: string
+  crimeIncidents?: CrimeIncidentLocation[]
   onClose: () => void
 }
 
-export default function MetricInfoModal({ metricKey, value, score, fetchedAt, radius, places, onClose }: MetricInfoModalProps) {
+export default function MetricInfoModal({ metricKey, value, score, fetchedAt, radius, places, center, category, crimeIncidents, onClose }: MetricInfoModalProps) {
   const info = METRIC_INFO[metricKey]
 
   useEffect(() => {
@@ -69,6 +77,38 @@ export default function MetricInfoModal({ metricKey, value, score, fetchedAt, ra
           {info.description}
           {radius !== undefined && info.placesKey && ` Radius used: ${radius}m.`}
         </p>
+
+        {center && metricKey === 'aqi' && (
+          <MetricInfoMap
+            center={center}
+            centerLabel={`AQI ${value ?? ''} — ${category ?? ''}`}
+            centerColor={aqiColor(category ?? '')}
+          />
+        )}
+
+        {center && metricKey === 'safety' && (
+          <>
+            <MetricInfoMap
+              center={center}
+              centerLabel="Searched address"
+              markers={(crimeIncidents ?? []).map(c => ({ name: 'Incident', distanceKm: 0, lat: c.lat, lng: c.lng }))}
+              circleRadiusMeters={!crimeIncidents || crimeIncidents.length === 0 ? CRIME_RADIUS_METERS : undefined}
+            />
+            {(!crimeIncidents || crimeIncidents.length === 0) && (
+              <p style={{ color: '#a0a0a0' }} className="text-xs">
+                Incident locations not available, showing search radius
+              </p>
+            )}
+          </>
+        )}
+
+        {center && places && places.length > 0 && info.placesKey && (
+          <MetricInfoMap
+            center={center}
+            centerLabel="Searched address"
+            markers={places}
+          />
+        )}
 
         {places && places.length > 0 && (
           <div className="flex flex-col gap-2">

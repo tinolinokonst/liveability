@@ -15,6 +15,19 @@ export type MetricKey =
   | 'worship'
   | 'parking'
 
+// EPA AirNow category colors
+export function aqiColor(category: string): string {
+  switch (category) {
+    case 'Good': return '#22c55e'
+    case 'Moderate': return '#eab308'
+    case 'Unhealthy for Sensitive Groups': return '#f97316'
+    case 'Unhealthy': return '#ef4444'
+    case 'Very Unhealthy': return '#a855f7'
+    case 'Hazardous': return '#7f1d1d'
+    default: return '#a0a0a0'
+  }
+}
+
 export interface MetricInfo {
   label: string
   description: string

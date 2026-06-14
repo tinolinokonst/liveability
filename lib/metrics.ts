@@ -70,6 +70,7 @@ export function buildMetrics(
     nearestParking: amenityData.nearestParking,
     places: amenityData.places,
     fetchedAt: new Date().toISOString(),
+    crimeIncidents: crimeData.incidents,
   }
 }
 

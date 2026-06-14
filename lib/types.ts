@@ -7,6 +7,13 @@ export interface GeoLocation {
 export interface NearestAmenity {
   name: string
   distanceKm: number
+  lat?: number
+  lng?: number
+}
+
+export interface CrimeIncidentLocation {
+  lat: number
+  lng: number
 }
 
 export interface AmenityPlaces {
@@ -72,6 +79,7 @@ export interface CrimeResult {
   topIncidentTypes: string[]
   safetyScore: number
   note?: string
+  incidents?: CrimeIncidentLocation[]
 }
 
 export interface AddressMetrics {
@@ -121,6 +129,7 @@ export interface AddressMetrics {
   nearestParking: NearestAmenity | null
   places: AmenityPlaces
   fetchedAt: string
+  crimeIncidents?: CrimeIncidentLocation[]
 }
 
 export interface SavedAddress {
