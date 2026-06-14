@@ -13,16 +13,16 @@ interface MetricInfoModalProps {
   metricKey: MetricKey
   value?: string
   score?: number
-  fetchedAt?: string
   radius?: number
   places?: NearestAmenity[]
   center?: { lat: number; lng: number }
   category?: string
   crimeIncidents?: CrimeIncidentLocation[]
+  detail?: React.ReactNode
   onClose: () => void
 }
 
-export default function MetricInfoModal({ metricKey, value, score, fetchedAt, radius, places, center, category, crimeIncidents, onClose }: MetricInfoModalProps) {
+export default function MetricInfoModal({ metricKey, value, score, radius, places, center, category, crimeIncidents, detail, onClose }: MetricInfoModalProps) {
   const info = METRIC_INFO[metricKey]
 
   useEffect(() => {
@@ -32,13 +32,6 @@ export default function MetricInfoModal({ metricKey, value, score, fetchedAt, ra
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [onClose])
-
-  const fetchedLabel = fetchedAt
-    ? new Date(fetchedAt).toLocaleString('en-US', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-      })
-    : undefined
 
   return (
     <div
@@ -74,8 +67,7 @@ export default function MetricInfoModal({ metricKey, value, score, fetchedAt, ra
         </div>
 
         <p style={{ color: '#a0a0a0' }} className="text-sm leading-relaxed">
-          {info.description}
-          {radius !== undefined && info.placesKey && ` Radius used: ${radius}m.`}
+          {detail ?? info.description}
         </p>
 
         {center && metricKey === 'aqi' && (
@@ -139,9 +131,6 @@ export default function MetricInfoModal({ metricKey, value, score, fetchedAt, ra
               {info.source}
             </a>
           </p>
-          {fetchedLabel && (
-            <p style={{ color: '#a0a0a0' }} className="text-xs">Data fetched: {fetchedLabel}</p>
-          )}
         </div>
       </div>
     </div>

@@ -14,12 +14,12 @@ interface MetricCardProps {
   updated?: string
   extra?: React.ReactNode
   metricKey?: MetricKey
-  fetchedAt?: string
   radius?: number
   places?: NearestAmenity[]
   center?: { lat: number; lng: number }
   category?: string
   crimeIncidents?: CrimeIncidentLocation[]
+  detail?: React.ReactNode
 }
 
 function qualityColor(score: number): string {
@@ -34,7 +34,7 @@ function qualityLabel(score: number): string {
   return 'Poor'
 }
 
-export default function MetricCard({ label, value, score, description, source, updated, extra, metricKey, fetchedAt, radius, places, center, category, crimeIncidents }: MetricCardProps) {
+export default function MetricCard({ label, value, score, description, source, updated, extra, metricKey, radius, places, center, category, crimeIncidents, detail }: MetricCardProps) {
   const [showInfo, setShowInfo] = useState(false)
   const color = qualityColor(score)
   const quality = qualityLabel(score)
@@ -93,12 +93,12 @@ export default function MetricCard({ label, value, score, description, source, u
           metricKey={metricKey}
           value={value}
           score={score}
-          fetchedAt={fetchedAt}
           radius={radius}
           places={places}
           center={center}
           category={category}
           crimeIncidents={crimeIncidents}
+          detail={detail}
           onClose={() => setShowInfo(false)}
         />
       )}
