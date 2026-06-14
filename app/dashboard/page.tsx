@@ -71,6 +71,13 @@ export default function Dashboard() {
             liveability
           </Link>
           <div className="flex items-center gap-4">
+            <Link
+              href="/how-it-works"
+              className="text-xs font-medium transition-colors hidden sm:block"
+              style={{ color: '#a0a0a0' }}
+            >
+              How It Works
+            </Link>
             {userEmail && (
               <span className="text-xs hidden sm:block" style={{ color: '#a0a0a0' }}>
                 {userEmail}
