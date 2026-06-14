@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import Link from 'next/link'
+import { motion } from 'framer-motion'
 import {
   Wind,
   Footprints,
@@ -18,6 +18,9 @@ import {
   X,
   Check,
 } from 'lucide-react'
+import SiteHeader from '@/components/SiteHeader'
+import BackgroundDecor from '@/components/BackgroundDecor'
+import Reveal from '@/components/Reveal'
 
 const METHODOLOGY = [
   {
@@ -105,204 +108,268 @@ function FaqItem({ q, a }: { q: string; a: string }) {
   )
 }
 
+const cardHover = {
+  whileHover: { y: -4, boxShadow: '0 12px 24px -8px rgba(249, 115, 22, 0.25)', borderColor: '#f9731666' },
+  transition: { duration: 0.25, ease: 'easeOut' },
+} as const
+
 export default function HowItWorks() {
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#0f0f0f' }}>
-      {/* Header */}
-      <header
-        className="sticky top-0 z-10 px-6 py-4"
-        style={{ backgroundColor: '#0f0f0f', borderBottom: '1px solid #1a1a1a' }}
-      >
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link href="/" className="font-black text-white text-lg tracking-tight">
-            liveability
-          </Link>
-          <nav className="flex items-center gap-4">
-            <Link href="/how-it-works" className="text-xs font-semibold" style={{ color: '#f97316' }}>
-              How It Works
-            </Link>
-            <Link
-              href="/auth"
-              className="text-xs px-3 py-1.5 rounded-lg font-medium transition-colors"
-              style={{ backgroundColor: '#1a1a1a', color: '#a0a0a0', border: '1px solid #2a2a2a' }}
-            >
-              Log in
-            </Link>
-          </nav>
-        </div>
-      </header>
+    <div className="min-h-screen relative" style={{ backgroundColor: '#0f0f0f' }}>
+      <BackgroundDecor />
+      <SiteHeader />
 
-      <div className="max-w-4xl mx-auto px-6 py-12 flex flex-col gap-16">
+      <div className="max-w-5xl mx-auto px-6 py-16 flex flex-col gap-32">
         {/* Hero */}
-        <section className="max-w-2xl">
-          <h1 className="text-4xl sm:text-5xl font-black text-white leading-tight mb-4 tracking-tight">
-            Real data, not guesswork.
-          </h1>
-          <p className="text-lg leading-relaxed" style={{ color: '#a0a0a0' }}>
+        <section className="max-w-3xl pt-8">
+          <motion.h1
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: 'easeOut' }}
+            className="text-6xl sm:text-7xl lg:text-8xl font-black text-white leading-[0.95] mb-8 tracking-tight"
+          >
+            Real data,<br />
+            not <span style={{ color: '#f97316' }}>guesswork</span>.
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: 'easeOut', delay: 0.1 }}
+            className="text-lg sm:text-xl leading-relaxed max-w-xl"
+            style={{ color: '#a0a0a0' }}
+          >
             Liveability shows verified, address-level data on air quality, safety, walkability,
             and nearby amenities for Columbus, Ohio — pulled straight from official sources for
             the exact coordinates of the address you search.
-          </p>
+          </motion.p>
         </section>
 
         {/* Why not just ask AI */}
         <section>
-          <h2 className="text-2xl font-black text-white mb-2">Why not just ask AI?</h2>
-          <p style={{ color: '#a0a0a0' }} className="text-sm mb-6 max-w-2xl">
-            General-purpose chatbots are great for a lot of things, but they're not built to give
-            you live, verifiable, address-level data.
-          </p>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="rounded-xl p-5" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
-              <div className="flex items-center gap-2 mb-4">
-                <Bot size={20} style={{ color: '#a0a0a0' }} />
-                <h3 className="text-white font-bold text-sm">AI chatbots</h3>
-              </div>
-              <ul className="flex flex-col gap-2.5 text-sm" style={{ color: '#a0a0a0' }}>
-                <li className="flex items-start gap-2">
-                  <X size={16} className="shrink-0 mt-0.5" style={{ color: '#ef4444' }} />
-                  General knowledge, not tied to a specific address
-                </li>
-                <li className="flex items-start gap-2">
-                  <X size={16} className="shrink-0 mt-0.5" style={{ color: '#ef4444' }} />
-                  Training data can be outdated
-                </li>
-                <li className="flex items-start gap-2">
-                  <X size={16} className="shrink-0 mt-0.5" style={{ color: '#ef4444' }} />
-                  No source citations for specific numbers
-                </li>
-                <li className="flex items-start gap-2">
-                  <X size={16} className="shrink-0 mt-0.5" style={{ color: '#ef4444' }} />
-                  Can't be independently verified
-                </li>
-              </ul>
-            </div>
-            <div className="rounded-xl p-5" style={{ backgroundColor: '#1a1a1a', border: '1px solid #f97316' }}>
-              <div className="flex items-center gap-2 mb-4">
-                <Database size={20} style={{ color: '#f97316' }} />
-                <h3 className="text-white font-bold text-sm">Liveability</h3>
-              </div>
-              <ul className="flex flex-col gap-2.5 text-sm" style={{ color: '#a0a0a0' }}>
-                <li className="flex items-start gap-2">
-                  <Check size={16} className="shrink-0 mt-0.5" style={{ color: '#22c55e' }} />
-                  Live data for the exact coordinates of your address
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check size={16} className="shrink-0 mt-0.5" style={{ color: '#22c55e' }} />
-                  Pulled from EPA AirNow, OpenStreetMap, and City of Columbus GIS
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check size={16} className="shrink-0 mt-0.5" style={{ color: '#22c55e' }} />
-                  Every number links back to its source
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check size={16} className="shrink-0 mt-0.5" style={{ color: '#22c55e' }} />
-                  Updated continuously
-                </li>
-              </ul>
-            </div>
+          <Reveal>
+            <p style={{ color: '#a0a0a0' }} className="text-xs font-semibold uppercase tracking-widest mb-3">
+              The difference
+            </p>
+            <h2 className="text-4xl sm:text-5xl font-black text-white mb-4 tracking-tight">Why not just ask AI?</h2>
+            <p style={{ color: '#a0a0a0' }} className="text-base sm:text-lg mb-10 max-w-2xl leading-relaxed">
+              General-purpose chatbots are great for a lot of things, but they&apos;re not built to give
+              you live, verifiable, address-level data.
+            </p>
+          </Reveal>
+          <div className="grid sm:grid-cols-2 gap-6">
+            <Reveal delay={0.05}>
+              <motion.div
+                className="rounded-2xl p-8 h-full"
+                style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
+                {...cardHover}
+              >
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#2a2a2a' }}>
+                    <Bot size={22} style={{ color: '#a0a0a0' }} />
+                  </div>
+                  <h3 className="text-white font-bold text-lg">AI chatbots</h3>
+                </div>
+                <ul className="flex flex-col gap-4 text-sm" style={{ color: '#a0a0a0' }}>
+                  <li className="flex items-start gap-3">
+                    <X size={18} className="shrink-0 mt-0.5" style={{ color: '#ef4444' }} />
+                    General knowledge, not tied to a specific address
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <X size={18} className="shrink-0 mt-0.5" style={{ color: '#ef4444' }} />
+                    Training data can be outdated
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <X size={18} className="shrink-0 mt-0.5" style={{ color: '#ef4444' }} />
+                    No source citations for specific numbers
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <X size={18} className="shrink-0 mt-0.5" style={{ color: '#ef4444' }} />
+                    Can&apos;t be independently verified
+                  </li>
+                </ul>
+              </motion.div>
+            </Reveal>
+            <Reveal delay={0.15}>
+              <motion.div
+                className="rounded-2xl p-8 h-full relative overflow-hidden"
+                style={{ backgroundColor: '#1a1a1a', border: '1px solid #f97316' }}
+                {...cardHover}
+              >
+                <div
+                  className="pointer-events-none absolute -top-16 -right-16 w-56 h-56 rounded-full"
+                  style={{ background: 'radial-gradient(circle, #f9731633 0%, transparent 70%)' }}
+                />
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#f973161a' }}>
+                    <Database size={22} style={{ color: '#f97316' }} />
+                  </div>
+                  <h3 className="text-white font-bold text-lg">Liveability</h3>
+                </div>
+                <ul className="flex flex-col gap-4 text-sm" style={{ color: '#a0a0a0' }}>
+                  <li className="flex items-start gap-3">
+                    <Check size={18} className="shrink-0 mt-0.5" style={{ color: '#22c55e' }} />
+                    Live data for the exact coordinates of your address
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check size={18} className="shrink-0 mt-0.5" style={{ color: '#22c55e' }} />
+                    Pulled from EPA AirNow, OpenStreetMap, and City of Columbus GIS
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check size={18} className="shrink-0 mt-0.5" style={{ color: '#22c55e' }} />
+                    Every number links back to its source
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Check size={18} className="shrink-0 mt-0.5" style={{ color: '#22c55e' }} />
+                    Updated continuously
+                  </li>
+                </ul>
+              </motion.div>
+            </Reveal>
           </div>
         </section>
 
         {/* Methodology */}
         <section>
-          <h2 className="text-2xl font-black text-white mb-2">How the data works</h2>
-          <p style={{ color: '#a0a0a0' }} className="text-sm mb-6 max-w-2xl">
-            Each metric comes from a specific, named source.
-          </p>
-          <div className="grid sm:grid-cols-2 gap-4">
-            {METHODOLOGY.map(m => (
-              <div key={m.title} className="rounded-xl p-5 flex gap-4" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
-                <m.icon size={24} className="shrink-0" style={{ color: '#f97316' }} />
-                <div>
-                  <h3 className="text-white font-bold text-sm mb-1">{m.title}</h3>
-                  <p style={{ color: '#a0a0a0' }} className="text-xs leading-relaxed">{m.desc}</p>
-                </div>
-              </div>
-            ))}
+          <Reveal>
+            <p style={{ color: '#a0a0a0' }} className="text-xs font-semibold uppercase tracking-widest mb-3">
+              Methodology
+            </p>
+            <h2 className="text-4xl sm:text-5xl font-black text-white mb-4 tracking-tight">How the data works</h2>
+            <p style={{ color: '#a0a0a0' }} className="text-base sm:text-lg mb-12 max-w-2xl leading-relaxed">
+              Each metric comes from a specific, named source.
+            </p>
+          </Reveal>
+          <div className="relative">
+            <div
+              className="hidden sm:block absolute left-[27px] top-12 bottom-12 w-px"
+              style={{ backgroundColor: '#2a2a2a' }}
+            />
+            <div className="flex flex-col gap-6">
+              {METHODOLOGY.map((m, i) => (
+                <Reveal key={m.title} delay={i * 0.08}>
+                  <motion.div
+                    className="rounded-2xl p-6 flex gap-5 items-start relative"
+                    style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
+                    {...cardHover}
+                  >
+                    <div
+                      className="shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black relative z-10"
+                      style={{ backgroundColor: '#f973161a', color: '#f97316', border: '1px solid #f9731633' }}
+                    >
+                      {i + 1}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <m.icon size={18} style={{ color: '#f97316' }} />
+                        <h3 className="text-white font-bold text-base">{m.title}</h3>
+                      </div>
+                      <p style={{ color: '#a0a0a0' }} className="text-sm leading-relaxed">{m.desc}</p>
+                    </div>
+                  </motion.div>
+                </Reveal>
+              ))}
+            </div>
           </div>
         </section>
 
         {/* Scores */}
         <section>
-          <h2 className="text-2xl font-black text-white mb-2">How scores are calculated</h2>
-          <div className="rounded-xl p-5 flex flex-col gap-4" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
-            <div className="flex items-start gap-3">
-              <Calculator size={20} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
-              <p style={{ color: '#a0a0a0' }} className="text-sm leading-relaxed">
-                <span className="text-white font-semibold">Amenity scores</span> (grocery, transit, parks,
-                schools, healthcare, dining, libraries, banks, worship, parking) are based on how many
-                of each are found, and how close they are, within the radius you select.
-              </p>
+          <Reveal>
+            <h2 className="text-4xl sm:text-5xl font-black text-white mb-10 tracking-tight">How scores are calculated</h2>
+          </Reveal>
+          <Reveal>
+            <div className="rounded-2xl p-6 sm:p-8 flex flex-col gap-6" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
+              <div className="flex items-start gap-4">
+                <Calculator size={22} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
+                <p style={{ color: '#a0a0a0' }} className="text-sm sm:text-base leading-relaxed">
+                  <span className="text-white font-semibold">Amenity scores</span> (grocery, transit, parks,
+                  schools, healthcare, dining, libraries, banks, worship, parking) are based on how many
+                  of each are found, and how close they are, within the radius you select.
+                </p>
+              </div>
+              <div className="flex items-start gap-4">
+                <Calculator size={22} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
+                <p style={{ color: '#a0a0a0' }} className="text-sm sm:text-base leading-relaxed">
+                  <span className="text-white font-semibold">Air quality</span> uses the EPA&apos;s standard
+                  AQI categories (Good, Moderate, Unhealthy, etc.) to translate the raw AQI number into a score.
+                </p>
+              </div>
+              <div className="flex items-start gap-4">
+                <Calculator size={22} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
+                <p style={{ color: '#a0a0a0' }} className="text-sm sm:text-base leading-relaxed">
+                  <span className="text-white font-semibold">Safety score</span> is inverse to incident
+                  density — fewer reported incidents nearby means a higher score.
+                </p>
+              </div>
+              <div className="flex items-start gap-4">
+                <Link2 size={22} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
+                <p style={{ color: '#a0a0a0' }} className="text-sm sm:text-base leading-relaxed">
+                  Scores are a quick summary, but the underlying raw numbers — counts, distances,
+                  AQI readings, incident totals — are always visible and clickable for full detail.
+                </p>
+              </div>
             </div>
-            <div className="flex items-start gap-3">
-              <Calculator size={20} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
-              <p style={{ color: '#a0a0a0' }} className="text-sm leading-relaxed">
-                <span className="text-white font-semibold">Air quality</span> uses the EPA&apos;s standard
-                AQI categories (Good, Moderate, Unhealthy, etc.) to translate the raw AQI number into a score.
-              </p>
-            </div>
-            <div className="flex items-start gap-3">
-              <Calculator size={20} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
-              <p style={{ color: '#a0a0a0' }} className="text-sm leading-relaxed">
-                <span className="text-white font-semibold">Safety score</span> is inverse to incident
-                density — fewer reported incidents nearby means a higher score.
-              </p>
-            </div>
-            <div className="flex items-start gap-3">
-              <Link2 size={20} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
-              <p style={{ color: '#a0a0a0' }} className="text-sm leading-relaxed">
-                Scores are a quick summary, but the underlying raw numbers — counts, distances,
-                AQI readings, incident totals — are always visible and clickable for full detail.
-              </p>
-            </div>
-          </div>
+          </Reveal>
         </section>
 
         {/* Data freshness */}
         <section>
-          <h2 className="text-2xl font-black text-white mb-2">Data freshness</h2>
-          <div className="grid sm:grid-cols-2 gap-4">
-            {FRESHNESS.map(f => (
-              <div key={f.title} className="rounded-xl p-5 flex gap-4" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
-                <RefreshCw size={20} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
-                <div>
-                  <h3 className="text-white font-bold text-sm mb-1">{f.title}</h3>
-                  <p style={{ color: '#a0a0a0' }} className="text-xs leading-relaxed">{f.desc}</p>
-                </div>
-              </div>
+          <Reveal>
+            <h2 className="text-4xl sm:text-5xl font-black text-white mb-10 tracking-tight">Data freshness</h2>
+          </Reveal>
+          <div className="grid sm:grid-cols-2 gap-6">
+            {FRESHNESS.map((f, i) => (
+              <Reveal key={f.title} delay={i * 0.05}>
+                <motion.div
+                  className="rounded-2xl p-6 flex gap-4 h-full"
+                  style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
+                  {...cardHover}
+                >
+                  <RefreshCw size={20} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
+                  <div>
+                    <h3 className="text-white font-bold text-sm mb-1.5">{f.title}</h3>
+                    <p style={{ color: '#a0a0a0' }} className="text-sm leading-relaxed">{f.desc}</p>
+                  </div>
+                </motion.div>
+              </Reveal>
             ))}
           </div>
         </section>
 
         {/* Privacy */}
         <section>
-          <h2 className="text-2xl font-black text-white mb-2">Privacy</h2>
-          <div className="rounded-xl p-5 flex gap-4" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
-            <Lock size={20} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
-            <p style={{ color: '#a0a0a0' }} className="text-sm leading-relaxed">
-              Addresses you save are tied to your account only — they&apos;re never shared or sold.
-              You can delete any saved address at any time.
-            </p>
-          </div>
+          <Reveal>
+            <h2 className="text-4xl sm:text-5xl font-black text-white mb-10 tracking-tight">Privacy</h2>
+            <motion.div className="rounded-2xl p-6 sm:p-8 flex gap-4" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }} {...cardHover}>
+              <Lock size={22} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
+              <p style={{ color: '#a0a0a0' }} className="text-sm sm:text-base leading-relaxed">
+                Addresses you save are tied to your account only — they&apos;re never shared or sold.
+                You can delete any saved address at any time.
+              </p>
+            </motion.div>
+          </Reveal>
         </section>
 
         {/* FAQ */}
-        <section>
-          <div className="flex items-center gap-2 mb-2">
-            <Clock size={20} style={{ color: '#f97316' }} />
-            <h2 className="text-2xl font-black text-white">FAQ</h2>
-          </div>
-          <div className="flex flex-col gap-3 mt-4">
-            {FAQ.map(item => (
-              <FaqItem key={item.q} q={item.q} a={item.a} />
+        <section className="pb-16">
+          <Reveal>
+            <div className="flex items-center gap-3 mb-10">
+              <Clock size={28} style={{ color: '#f97316' }} />
+              <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight">FAQ</h2>
+            </div>
+          </Reveal>
+          <div className="flex flex-col gap-3">
+            {FAQ.map((item, i) => (
+              <Reveal key={item.q} delay={i * 0.04}>
+                <FaqItem q={item.q} a={item.a} />
+              </Reveal>
             ))}
           </div>
         </section>
       </div>
 
       {/* Footer */}
-      <footer className="max-w-4xl mx-auto px-6 py-8" style={{ borderTop: '1px solid #1a1a1a' }}>
+      <footer className="max-w-5xl mx-auto px-6 py-8" style={{ borderTop: '1px solid #1a1a1a' }}>
         <div className="flex items-center justify-between text-xs" style={{ color: '#a0a0a0' }}>
           <span>liveability · Columbus, Ohio</span>
           <span>Data: EPA AirNow · OpenStreetMap · City of Columbus GIS</span>
