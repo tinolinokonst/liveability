@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import TransitionWrapper from "@/components/TransitionWrapper";
 
 export const metadata: Metadata = {
   title: "Liveability — Find your perfect Columbus neighborhood",
@@ -18,7 +19,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <TransitionWrapper>{children}</TransitionWrapper>
+      </body>
     </html>
   );
 }

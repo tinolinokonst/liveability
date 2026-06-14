@@ -16,6 +16,21 @@ body {
   color: #ffffff;
 }
 
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-transition {
+  animation: page-enter 0.28s ease-in-out;
+}
+
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
