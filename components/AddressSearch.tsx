@@ -9,8 +9,7 @@ import { fetchCrimeScore } from '@/lib/crime'
 import { loadGoogleMapsScript } from '@/lib/googleMaps'
 import { saveAddress } from '@/lib/savedAddresses'
 import { AddressMetrics, AmenityScores, CrimeResult } from '@/lib/types'
-import MetricCard from './MetricCard'
-import LocalNews from './LocalNews'
+import AddressResults from './AddressResults'
 
 interface AddressSearchProps {
   onAdd?: (metrics: AddressMetrics) => void
@@ -27,11 +26,6 @@ const RADIUS_OPTIONS: Array<{ label: string; meters: number }> = [
 
 const COLUMBUS_CENTER = { lat: 39.9612, lng: -82.9988 }
 const COLUMBUS_BIAS_RADIUS_M = 40000
-
-function nearestLabel(nearest: { name: string; distanceKm: number } | null): string | undefined {
-  if (!nearest) return undefined
-  return `Nearest: ${nearest.name} — ${nearest.distanceKm}km`
-}
 
 export default function AddressSearch({ onAdd, compareCount = 0, userId }: AddressSearchProps) {
   const [query, setQuery] = useState('')
@@ -264,149 +258,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId }: Addre
             {radiusLoading && <span style={{ color: '#a0a0a0' }} className="text-xs">Updating...</span>}
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <MetricCard
-              label="Air Quality (AQI)"
-              value={`${result.aqi}`}
-              score={result.aqiScore}
-              description={result.aqiCategory}
-              source="Open-Meteo Air Quality API"
-              updated={updatedLabel}
-            />
-            <MetricCard
-              label="Walkability"
-              value={`${result.walkabilityScore}/100`}
-              score={result.walkabilityScore}
-              description="Based on nearby amenities"
-              source="OpenStreetMap (Overpass)"
-              updated={updatedLabel}
-            />
-            <MetricCard
-              label="Grocery Access"
-              value={`${result.groceryCount} stores`}
-              score={result.groceryScore}
-              description={`Within ${amenityData.radius}m`}
-              extra={nearestLabel(amenityData.nearestGrocery) && (
-                <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(amenityData.nearestGrocery)}</p>
-              )}
-              source="OpenStreetMap (Overpass)"
-              updated={updatedLabel}
-            />
-            <MetricCard
-              label="Transit Access"
-              value={`${result.transitCount} stops`}
-              score={result.transitScore}
-              description="Bus stops & stations within 800m"
-              source="OpenStreetMap (Overpass)"
-              updated={updatedLabel}
-            />
-            <MetricCard
-              label="Green Space"
-              value={`${result.parkCount} parks`}
-              score={result.greenScore}
-              description={`Parks within ${amenityData.radius}m`}
-              extra={nearestLabel(amenityData.nearestPark) && (
-                <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(amenityData.nearestPark)}</p>
-              )}
-              source="OpenStreetMap (Overpass)"
-              updated={updatedLabel}
-            />
-            <MetricCard
-              label="Safety / Crime"
-              value={`${result.crimeIncidentCount} incidents`}
-              score={result.safetyScore}
-              description={result.safetyNote || (result.crimeTopTypes.length ? `Top: ${result.crimeTopTypes.join(', ')}` : 'Within 1km, last 12 months')}
-              source="City of Columbus GIS"
-              updated={updatedLabel}
-            />
-            <MetricCard
-              label="Healthcare Access"
-              value={`${result.healthcareCount} facilities`}
-              score={result.healthcareScore}
-              description={`Hospitals, clinics & pharmacies within ${amenityData.radius}m`}
-              extra={nearestLabel(amenityData.nearestHealthcare) && (
-                <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(amenityData.nearestHealthcare)}</p>
-              )}
-              source="OpenStreetMap (Overpass)"
-              updated={updatedLabel}
-            />
-            <MetricCard
-              label="Schools Nearby"
-              value={`${result.schoolCount} schools`}
-              score={result.schoolScore}
-              description={`Within ${amenityData.radius}m`}
-              extra={nearestLabel(amenityData.nearestSchool) && (
-                <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(amenityData.nearestSchool)}</p>
-              )}
-              source="OpenStreetMap (Overpass)"
-              updated={updatedLabel}
-            />
-            <MetricCard
-              label="Dining & Cafes"
-              value={`${result.diningCount} spots`}
-              score={result.diningScore}
-              description={`Restaurants & cafes within ${amenityData.radius}m`}
-              extra={nearestLabel(amenityData.nearestDining) && (
-                <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(amenityData.nearestDining)}</p>
-              )}
-              source="OpenStreetMap (Overpass)"
-              updated={updatedLabel}
-            />
-            <MetricCard
-              label="Libraries"
-              value={`${result.libraryCount} libraries`}
-              score={result.libraryScore}
-              description="Within 1.6km"
-              extra={nearestLabel(amenityData.nearestLibrary) && (
-                <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(amenityData.nearestLibrary)}</p>
-              )}
-              source="OpenStreetMap (Overpass)"
-              updated={updatedLabel}
-            />
-            <MetricCard
-              label="Banks / ATMs"
-              value={`${result.bankCount} found`}
-              score={result.bankScore}
-              description="Within 800m"
-              extra={nearestLabel(amenityData.nearestBank) && (
-                <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(amenityData.nearestBank)}</p>
-              )}
-              source="OpenStreetMap (Overpass)"
-              updated={updatedLabel}
-            />
-            <MetricCard
-              label="Places of Worship"
-              value={`${result.worshipCount} found`}
-              score={result.worshipScore}
-              description="Within 1.6km"
-              extra={nearestLabel(amenityData.nearestWorship) && (
-                <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(amenityData.nearestWorship)}</p>
-              )}
-              source="OpenStreetMap (Overpass)"
-              updated={updatedLabel}
-            />
-            <MetricCard
-              label="Parking"
-              value={`${result.parkingCount} found`}
-              score={result.parkingScore}
-              description="Within 400m"
-              extra={nearestLabel(amenityData.nearestParking) && (
-                <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(amenityData.nearestParking)}</p>
-              )}
-              source="OpenStreetMap (Overpass)"
-              updated={updatedLabel}
-            />
-            <div
-              className="rounded-xl border p-4 flex flex-col items-center justify-center"
-              style={{ backgroundColor: '#1a1a1a', borderColor: '#2a2a2a' }}
-            >
-              <p style={{ color: '#a0a0a0' }} className="text-xs mb-1 uppercase tracking-wider font-medium">Overall Score</p>
-              <p className="text-4xl font-bold" style={{ color: '#f97316' }}>{result.overallScore}</p>
-              <p style={{ color: '#a0a0a0' }} className="text-xs mt-1">out of 100</p>
-            </div>
-          </div>
-
-          <LocalNews query={result.address} />
+          <AddressResults metrics={result} updated={updatedLabel} />
         </div>
       )}
     </div>
