@@ -33,7 +33,7 @@ export default function Home() {
             style={{ backgroundColor: '#f973161a', color: '#f97316', border: '1px solid #f9731633' }}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-[#f97316]" />
-            Columbus, Ohio · Free to use
+            Free to use
           </motion.div>
 
           <motion.h1
@@ -43,9 +43,18 @@ export default function Home() {
             className="text-6xl sm:text-7xl lg:text-8xl font-black text-white leading-[0.95] mb-8 tracking-tight"
           >
             Find your perfect<br />
-            <span style={{ color: '#f97316' }}>Columbus</span><br />
-            neighborhood.
+            <span style={{ color: '#f97316' }}>neighborhood</span>.
           </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 0 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: 'easeOut', delay: 0.15 }}
+            className="text-sm font-semibold mb-6"
+            style={{ color: '#f97316' }}
+          >
+            Currently focused on Columbus, Ohio
+          </motion.p>
 
           <motion.p
             initial={{ opacity: 0, y: 24 }}

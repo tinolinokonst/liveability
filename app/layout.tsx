@@ -3,12 +3,12 @@ import "./globals.css";
 import TransitionWrapper from "@/components/TransitionWrapper";
 
 export const metadata: Metadata = {
-  title: "Liveability — Find your perfect Columbus neighborhood",
+  title: "Liveability — Find your perfect neighborhood",
   description:
-    "Search any Columbus, OH address or browse neighborhood rankings by air quality, walkability, green space, grocery access, and transit.",
+    "Browse neighborhood rankings and address-level scores for air quality, walkability, green space, grocery access, and transit. Currently available for Columbus, OH.",
   openGraph: {
-    title: "Liveability — Columbus, Ohio",
-    description: "Find your perfect Columbus neighborhood beyond just rent.",
+    title: "Liveability — Find your perfect neighborhood",
+    description: "Find your perfect neighborhood beyond just rent. Currently available for Columbus, Ohio.",
   },
 };
 

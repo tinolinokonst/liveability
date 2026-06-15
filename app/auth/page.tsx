@@ -64,7 +64,10 @@ function AuthForm() {
             liveability
           </Link>
           <p style={{ color: '#a0a0a0' }} className="text-sm mt-2">
-            Columbus, Ohio neighborhood intelligence
+            Neighborhood intelligence beyond the listing
+          </p>
+          <p className="text-xs font-semibold mt-1" style={{ color: '#f97316' }}>
+            Currently covering Columbus, Ohio
           </p>
         </div>
 

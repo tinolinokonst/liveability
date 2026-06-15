@@ -97,9 +97,12 @@ export default function Dashboard() {
       <div className="max-w-4xl mx-auto px-6 py-8">
         {/* Page title */}
         <div className="mb-8">
-          <h1 className="text-3xl font-black text-white mb-2">Columbus, Ohio</h1>
+          <h1 className="text-3xl font-black text-white mb-2">Find your next neighborhood</h1>
           <p style={{ color: '#a0a0a0' }} className="text-sm">
             Search any address or explore neighborhood rankings
+          </p>
+          <p className="text-xs font-semibold mt-1" style={{ color: '#f97316' }}>
+            Currently covering Columbus, Ohio
           </p>
         </div>
 
@@ -178,9 +181,9 @@ export default function Dashboard() {
             className="rounded-2xl p-6"
             style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
           >
-            <h2 className="text-white font-bold mb-1">Columbus Neighborhoods</h2>
+            <h2 className="text-white font-bold mb-1">Neighborhoods</h2>
             <p style={{ color: '#a0a0a0' }} className="text-xs mb-6">
-              Adjust the sliders to rank neighborhoods based on what matters to you
+              Adjust the sliders to rank neighborhoods based on what matters to you. Currently covering Columbus, Ohio.
             </p>
             <NeighborhoodFinder userId={userId} />
           </div>
