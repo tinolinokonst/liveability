@@ -16,6 +16,29 @@ interface SavedAddressesProps {
   compareCount?: number
 }
 
+function isMetricsIncomplete(metrics: AddressMetrics): boolean {
+  return (
+    metrics.groceryCount === undefined ||
+    metrics.transitCount === undefined ||
+    metrics.parkCount === undefined ||
+    metrics.schoolCount === undefined ||
+    metrics.healthcareCount === undefined ||
+    metrics.diningCount === undefined ||
+    metrics.libraryCount === undefined ||
+    metrics.bankCount === undefined ||
+    metrics.worshipCount === undefined ||
+    metrics.parkingCount === undefined ||
+    metrics.places === undefined ||
+    metrics.places?.school === undefined ||
+    metrics.places?.healthcare === undefined ||
+    metrics.places?.dining === undefined ||
+    metrics.places?.library === undefined ||
+    metrics.places?.bank === undefined ||
+    metrics.places?.worship === undefined ||
+    metrics.places?.parking === undefined
+  )
+}
+
 export default function SavedAddresses({ onAdd, compareCount = 0 }: SavedAddressesProps) {
   const [addresses, setAddresses] = useState<SavedAddress[]>([])
   const [loading, setLoading] = useState(true)
@@ -96,15 +119,23 @@ export default function SavedAddresses({ onAdd, compareCount = 0 }: SavedAddress
               <ArrowLeft size={14} /> Back to saved addresses
             </button>
             <p style={{ color: '#a0a0a0' }} className="text-xs mb-1">Results for</p>
-            <p className="text-white font-semibold text-sm">{selected.metrics.location.formattedAddress}</p>
+            <p className="text-white font-semibold text-sm">{selected.metrics.location?.formattedAddress ?? selected.address}</p>
             <p style={{ color: '#a0a0a0' }} className="text-xs mt-1">
               Saved on {new Date(selected.created_at).toLocaleDateString()}
             </p>
+            {isMetricsIncomplete(selected.metrics) && (
+              <p
+                className="text-xs font-semibold px-2 py-1 rounded-lg w-fit mt-2"
+                style={{ color: '#f97316', backgroundColor: '#f973161a', border: '1px solid #f9731633' }}
+              >
+                Data outdated — click &quot;Refresh data&quot; to load new metrics
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-3">
             <div className="text-right">
               <p style={{ color: '#a0a0a0' }} className="text-xs">Overall</p>
-              <p className="text-2xl font-bold" style={{ color: '#f97316' }}>{selected.metrics.overallScore}</p>
+              <p className="text-2xl font-bold" style={{ color: '#f97316' }}>{selected.metrics.overallScore ?? '—'}</p>
             </div>
             <button
               onClick={() => handleRefresh(selected)}
@@ -156,21 +187,21 @@ export default function SavedAddresses({ onAdd, compareCount = 0 }: SavedAddress
               <p className="text-white font-semibold text-sm">{saved.address}</p>
               <div className="text-right shrink-0">
                 <p style={{ color: '#a0a0a0' }} className="text-xs">Overall</p>
-                <p className="text-xl font-bold" style={{ color: '#f97316' }}>{saved.metrics.overallScore}</p>
+                <p className="text-xl font-bold" style={{ color: '#f97316' }}>{saved.metrics.overallScore ?? '—'}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-2 text-xs" style={{ color: '#a0a0a0' }}>
               <div>
-                <p className="font-semibold text-white">{saved.metrics.aqi}</p>
+                <p className="font-semibold text-white">{saved.metrics.aqi ?? '—'}</p>
                 <p>AQI</p>
               </div>
               <div>
-                <p className="font-semibold text-white">{saved.metrics.walkabilityScore}</p>
+                <p className="font-semibold text-white">{saved.metrics.walkabilityScore ?? '—'}</p>
                 <p>Walkability</p>
               </div>
               <div>
-                <p className="font-semibold text-white">{saved.metrics.safetyScore}</p>
+                <p className="font-semibold text-white">{saved.metrics.safetyScore ?? '—'}</p>
                 <p>Safety</p>
               </div>
             </div>
@@ -178,6 +209,15 @@ export default function SavedAddresses({ onAdd, compareCount = 0 }: SavedAddress
             <p style={{ color: '#a0a0a0' }} className="text-xs">
               Saved {new Date(saved.created_at).toLocaleDateString()}
             </p>
+
+            {isMetricsIncomplete(saved.metrics) && (
+              <p
+                className="text-xs font-semibold px-2 py-1 rounded-lg w-fit"
+                style={{ color: '#f97316', backgroundColor: '#f973161a', border: '1px solid #f9731633' }}
+              >
+                Data outdated — refresh to load new metrics
+              </p>
+            )}
 
             <div className="flex items-center gap-2 mt-1">
               <button
