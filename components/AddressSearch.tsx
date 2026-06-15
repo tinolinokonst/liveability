@@ -7,6 +7,9 @@ import { fetchAmenityScores } from '@/lib/overpass'
 import { buildMetrics } from '@/lib/metrics'
 import { fetchAQI, AQIResult } from '@/lib/airquality'
 import { fetchCrimeScore } from '@/lib/crime'
+import { fetchSunlight } from '@/lib/sunlight'
+import { fetchNoiseEstimate } from '@/lib/noise'
+import { fetchDemographics } from '@/lib/demographics'
 import { loadGoogleMapsScript } from '@/lib/googleMaps'
 import { saveAddress } from '@/lib/savedAddresses'
 import { AddressMetrics, AmenityScores, CrimeResult } from '@/lib/types'
@@ -96,17 +99,20 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId }: Addre
         return
       }
 
-      const [aqi, amenity, crime] = await Promise.all([
+      const [aqi, amenity, crime, sunlight, noise, demographics] = await Promise.all([
         fetchAQI(location.lat, location.lng),
         fetchAmenityScores(location.lat, location.lng, radius),
         fetchCrimeScore(location.lat, location.lng),
+        fetchSunlight(location.lat, location.lng),
+        fetchNoiseEstimate(location.lat, location.lng),
+        fetchDemographics(location.lat, location.lng),
       ])
 
       setAqiData(aqi)
       setAmenityData(amenity)
       setCrimeData(crime)
       setFetchedAt(new Date())
-      setResult(buildMetrics(address.trim(), location, aqi, amenity, crime))
+      setResult(buildMetrics(address.trim(), location, aqi, amenity, crime, sunlight, noise, demographics))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
     } finally {
@@ -131,7 +137,17 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId }: Addre
         if (cancelled) return
         setAmenityData(amenity)
         setFetchedAt(new Date())
-        setResult(prev => prev && buildMetrics(prev.address, prev.location, aqiData, amenity, crimeData, prev.id))
+        setResult(prev => prev && buildMetrics(
+          prev.address,
+          prev.location,
+          aqiData,
+          amenity,
+          crimeData,
+          prev.sunlight ?? { score: null, hoursPerYear: null, available: false },
+          prev.noise ?? { score: null, level: null, nearestRoad: null, available: false },
+          prev.demographics ?? { medianHouseholdIncome: null, totalPopulation: null, available: false },
+          prev.id
+        ))
       })
       .finally(() => {
         if (!cancelled) setRadiusLoading(false)

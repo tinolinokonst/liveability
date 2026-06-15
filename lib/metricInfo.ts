@@ -14,6 +14,9 @@ export type MetricKey =
   | 'bank'
   | 'worship'
   | 'parking'
+  | 'sunlight'
+  | 'noise'
+  | 'demographics'
 
 // EPA AirNow category colors
 export function aqiColor(category: string): string {
@@ -137,5 +140,26 @@ export const METRIC_INFO: Record<MetricKey, MetricInfo> = {
     source: 'OpenStreetMap (Overpass)',
     sourceUrl: 'https://www.openstreetmap.org',
     placesKey: 'parking',
+  },
+  sunlight: {
+    label: 'Sunlight',
+    description:
+      "Estimates how much direct sunlight this building's roof receives over a year, based on Google's Solar API rooftop exposure modeling (which accounts for nearby buildings, trees, and roof geometry). A higher score reflects more annual sunshine hours, scaled against a typical US range of roughly 1,000-2,200 hours per year.",
+    source: 'Google Solar API',
+    sourceUrl: 'https://developers.google.com/maps/documentation/solar/overview',
+  },
+  noise: {
+    label: 'Noise Estimate',
+    description:
+      "This is an ESTIMATE, not a direct noise measurement. It's derived from how close this address is to roads in OpenStreetMap and their classification (e.g. a nearby motorway lowers the score more than a residential street). A higher score suggests a quieter location, but actual noise levels depend on traffic volume, time of day, and other factors not captured here.",
+    source: 'OpenStreetMap (Overpass)',
+    sourceUrl: 'https://www.openstreetmap.org',
+  },
+  demographics: {
+    label: 'Neighborhood Demographics',
+    description:
+      "Demographic data from the US Census Bureau's American Community Survey, reflecting the Census tract this address falls within. This is informational context only and is not factored into the overall livability score.",
+    source: 'US Census Bureau (ACS 5-Year Estimates)',
+    sourceUrl: 'https://www.census.gov/programs-surveys/acs',
   },
 }

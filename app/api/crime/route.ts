@@ -11,6 +11,49 @@ const CRIME_LAYER_URL =
 const TIMEOUT_MS = 10000
 const FALLBACK = { incidentCount: 0, topIncidentTypes: [], safetyScore: 60, note: 'data unavailable' }
 
+// FBI Crime Data Explorer API - state-level violent crime rate trends, used as secondary
+// context alongside the local incident data above. Gated on NEXT_PUBLIC_DATA_GOV_API_KEY;
+// returns undefined if the key is missing or the request fails so callers can omit it.
+const FBI_STATE_ABBR = 'OH'
+
+async function fetchStateCrimeContext() {
+  const apiKey = process.env.NEXT_PUBLIC_DATA_GOV_API_KEY
+  if (!apiKey) return undefined
+
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS)
+
+  try {
+    const url = `https://api.usa.gov/crime/fbi/cde/summarized/state/${FBI_STATE_ABBR}/violent-crime?from=2018&to=2022&API_KEY=${apiKey}`
+    const res = await fetch(url, { signal: controller.signal, next: { revalidate: 86400 } })
+
+    if (!res.ok) {
+      console.log(`FBI Crime Data API fetch failed: status ${res.status}`)
+      return undefined
+    }
+
+    const data = await res.json()
+    const results = data?.results ?? data?.data
+    if (!Array.isArray(results) || results.length === 0) {
+      console.log('FBI Crime Data API returned no results')
+      return undefined
+    }
+
+    const latest = results[results.length - 1]
+    const rate = latest?.rate ?? latest?.crime_rate ?? null
+    const year = latest?.year ?? latest?.data_year
+
+    if (typeof rate !== 'number') return undefined
+
+    return { state: 'Ohio', rate, year, available: true }
+  } catch (err) {
+    console.log('FBI Crime Data API fetch error:', err)
+    return undefined
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const lat = searchParams.get('lat')
@@ -44,14 +87,16 @@ export async function GET(request: NextRequest) {
 
     if (!res.ok) {
       console.log(`Columbus crime API fetch failed: status ${res.status}`)
-      return NextResponse.json(FALLBACK)
+      const stateContext = await fetchStateCrimeContext()
+      return NextResponse.json({ ...FALLBACK, ...(stateContext ? { stateContext } : {}) })
     }
 
     const data = await res.json()
 
     if (data.error || !Array.isArray(data.features)) {
       console.log('Columbus crime API returned an error or unexpected payload:', data.error || data)
-      return NextResponse.json(FALLBACK)
+      const stateContext = await fetchStateCrimeContext()
+      return NextResponse.json({ ...FALLBACK, ...(stateContext ? { stateContext } : {}) })
     }
 
     const features: Array<{ attributes?: Record<string, unknown>; geometry?: { x?: number; y?: number } }> = data.features
@@ -75,10 +120,12 @@ export async function GET(request: NextRequest) {
       .filter(f => f.geometry?.y !== undefined && f.geometry?.x !== undefined)
       .map(f => ({ lat: f.geometry!.y as number, lng: f.geometry!.x as number }))
 
-    return NextResponse.json({ incidentCount, topIncidentTypes, safetyScore, incidents })
+    const stateContext = await fetchStateCrimeContext()
+    return NextResponse.json({ incidentCount, topIncidentTypes, safetyScore, incidents, ...(stateContext ? { stateContext } : {}) })
   } catch (err) {
     console.log('Columbus crime API fetch error:', err)
-    return NextResponse.json(FALLBACK)
+    const stateContext = await fetchStateCrimeContext()
+    return NextResponse.json({ ...FALLBACK, ...(stateContext ? { stateContext } : {}) })
   } finally {
     clearTimeout(timeout)
   }

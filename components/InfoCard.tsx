@@ -3,44 +3,21 @@
 import { useState } from 'react'
 import { Info, LucideIcon } from 'lucide-react'
 import { MetricKey } from '@/lib/metricInfo'
-import { CrimeIncidentLocation, NearestAmenity } from '@/lib/types'
 import MetricInfoModal from './MetricInfoModal'
 
-interface MetricCardProps {
+interface InfoCardProps {
   label: string
   value: string
-  score: number
   description?: string
   source?: string
   updated?: string
-  extra?: React.ReactNode
   metricKey?: MetricKey
-  radius?: number
-  places?: NearestAmenity[]
-  center?: { lat: number; lng: number }
-  category?: string
-  crimeIncidents?: CrimeIncidentLocation[]
-  searchRadius?: number
   detail?: React.ReactNode
   icon?: LucideIcon
 }
 
-function qualityColor(score: number): string {
-  if (score >= 70) return '#22c55e'
-  if (score >= 40) return '#f59e0b'
-  return '#ef4444'
-}
-
-function qualityLabel(score: number): string {
-  if (score >= 70) return 'Good'
-  if (score >= 40) return 'Fair'
-  return 'Poor'
-}
-
-export default function MetricCard({ label, value, score, description, source, updated, extra, metricKey, radius, places, center, category, crimeIncidents, searchRadius, detail, icon: Icon }: MetricCardProps) {
+export default function InfoCard({ label, value, description, source, updated, metricKey, detail, icon: Icon }: InfoCardProps) {
   const [showInfo, setShowInfo] = useState(false)
-  const color = qualityColor(score)
-  const quality = qualityLabel(score)
   const clickable = !!metricKey
 
   return (
@@ -57,12 +34,6 @@ export default function MetricCard({ label, value, score, description, source, u
             {Icon && <Icon size={14} />}
             {label}
           </span>
-          <span
-            className="text-xs font-semibold px-2 py-0.5 rounded-full"
-            style={{ color, backgroundColor: `${color}1a` }}
-          >
-            {quality}
-          </span>
         </div>
 
         <div className="text-2xl font-bold text-white">{value}</div>
@@ -72,15 +43,6 @@ export default function MetricCard({ label, value, score, description, source, u
             {description}
           </p>
         )}
-
-        {extra}
-
-        <div style={{ backgroundColor: '#2a2a2a' }} className="rounded-full h-1.5 w-full overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-500"
-            style={{ width: `${score}%`, backgroundColor: color }}
-          />
-        </div>
 
         {(source || updated) && (
           <p style={{ color: '#a0a0a0' }} className="text-xs flex items-center gap-1 -mb-1">
@@ -95,14 +57,6 @@ export default function MetricCard({ label, value, score, description, source, u
       {showInfo && metricKey && (
         <MetricInfoModal
           metricKey={metricKey}
-          value={value}
-          score={score}
-          radius={radius}
-          places={places}
-          center={center}
-          category={category}
-          crimeIncidents={crimeIncidents}
-          searchRadius={searchRadius}
           detail={detail}
           onClose={() => setShowInfo(false)}
         />

@@ -1,7 +1,10 @@
 import { fetchAQI, AQIResult } from './airquality'
 import { fetchAmenityScores } from './overpass'
 import { fetchCrimeScore } from './crime'
-import { AddressMetrics, AmenityScores, CrimeResult, GeoLocation } from './types'
+import { fetchSunlight } from './sunlight'
+import { fetchNoiseEstimate } from './noise'
+import { fetchDemographics } from './demographics'
+import { AddressMetrics, AmenityScores, CrimeResult, GeoLocation, SunlightResult, NoiseResult, DemographicsResult } from './types'
 
 export function buildMetrics(
   address: string,
@@ -9,6 +12,9 @@ export function buildMetrics(
   aqiData: AQIResult,
   amenityData: AmenityScores,
   crimeData: CrimeResult,
+  sunlightData: SunlightResult,
+  noiseData: NoiseResult,
+  demographicsData: DemographicsResult,
   id?: string
 ): AddressMetrics {
   const overallScore = Math.round(
@@ -71,6 +77,10 @@ export function buildMetrics(
     places: amenityData.places,
     fetchedAt: new Date().toISOString(),
     crimeIncidents: crimeData.incidents,
+    stateCrimeContext: crimeData.stateContext,
+    sunlight: sunlightData,
+    noise: noiseData,
+    demographics: demographicsData,
   }
 }
 
@@ -80,11 +90,14 @@ export async function fetchFullMetrics(
   radius: number = 800,
   id?: string
 ): Promise<AddressMetrics> {
-  const [aqi, amenity, crime] = await Promise.all([
+  const [aqi, amenity, crime, sunlight, noise, demographics] = await Promise.all([
     fetchAQI(location.lat, location.lng),
     fetchAmenityScores(location.lat, location.lng, radius),
     fetchCrimeScore(location.lat, location.lng),
+    fetchSunlight(location.lat, location.lng),
+    fetchNoiseEstimate(location.lat, location.lng),
+    fetchDemographics(location.lat, location.lng),
   ])
 
-  return buildMetrics(address, location, aqi, amenity, crime, id)
+  return buildMetrics(address, location, aqi, amenity, crime, sunlight, noise, demographics, id)
 }

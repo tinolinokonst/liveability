@@ -1,5 +1,7 @@
+import { Sun, Volume2, Users } from 'lucide-react'
 import { AddressMetrics, AmenityPlaces, NearestAmenity } from '@/lib/types'
 import MetricCard from './MetricCard'
+import InfoCard from './InfoCard'
 import LocalNews from './LocalNews'
 
 interface AddressResultsProps {
@@ -171,11 +173,64 @@ function buildDetail(metricKey: string, metrics: AddressMetrics): React.ReactNod
         return <p>{NA}</p>
       }
       const count = metrics.crimeIncidentCount
+      const stateContext = metrics.stateCrimeContext
+      return (
+        <>
+          <p>
+            This area has a safety score of <strong>{metrics.safetyScore}/100</strong>, based on{' '}
+            <strong>{count} incident{count === 1 ? '' : 's'}</strong> in the past 12 months within 1km.
+            {metrics.safetyNote ? ` ${metrics.safetyNote}` : ''}
+          </p>
+          {stateContext?.available && stateContext.rate !== null && (
+            <p>
+              <strong>State-level context:</strong> {stateContext.state} reported a violent crime rate of{' '}
+              <strong>{stateContext.rate} per 100,000 residents</strong>
+              {stateContext.year ? ` in ${stateContext.year}` : ''}, according to the FBI Crime Data Explorer.
+              This is statewide context and is separate from the local incident count above.
+            </p>
+          )}
+        </>
+      )
+    }
+    case 'sunlight': {
+      if (!metrics.sunlight?.available || metrics.sunlight.score === null) {
+        return <p>{metrics.sunlight?.message ?? 'Solar data not available for this building'}</p>
+      }
       return (
         <p>
-          This area has a safety score of <strong>{metrics.safetyScore}/100</strong>, based on{' '}
-          <strong>{count} incident{count === 1 ? '' : 's'}</strong> in the past 12 months within 1km.
-          {metrics.safetyNote ? ` ${metrics.safetyNote}` : ''}
+          This building&apos;s roof receives an estimated <strong>{metrics.sunlight.hoursPerYear} hours</strong> of
+          sunshine per year, giving it a sunlight score of <strong>{metrics.sunlight.score}/100</strong> based on
+          Google&apos;s Solar API rooftop exposure modeling.
+        </p>
+      )
+    }
+    case 'noise': {
+      if (!metrics.noise?.available || metrics.noise.score === null) {
+        return <p>{metrics.noise?.message ?? 'Noise estimate unavailable'}</p>
+      }
+      const road = metrics.noise.nearestRoad
+      return (
+        <p>
+          This is an <strong>estimate</strong>, not a direct noise measurement. Based on nearby roads in
+          OpenStreetMap, this address has a noise score of <strong>{metrics.noise.score}/100 ({metrics.noise.level})</strong>.
+          {road && (
+            <> The nearest classified road is <strong>{road.name}</strong> ({road.classification}),{' '}
+            {road.distanceKm}km away.</>
+          )}
+        </p>
+      )
+    }
+    case 'demographics': {
+      if (!metrics.demographics?.available) {
+        return <p>{metrics.demographics?.message ?? 'Demographic data unavailable for this location'}</p>
+      }
+      const { medianHouseholdIncome, totalPopulation, tract } = metrics.demographics
+      return (
+        <p>
+          Demographic data from the US Census Bureau&apos;s American Community Survey for the Census tract this
+          address falls within{tract ? ` (tract ${tract})` : ''}.{' '}
+          {medianHouseholdIncome !== null && <>Median household income is <strong>${medianHouseholdIncome.toLocaleString()}</strong>. </>}
+          {totalPopulation !== null && <>Total population is <strong>{totalPopulation.toLocaleString()}</strong>.</>}
         </p>
       )
     }
@@ -396,6 +451,46 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           center={center}
           searchRadius={radius}
           detail={buildDetail('parking', metrics)}
+        />
+        <MetricCard
+          label="Sunlight"
+          value={metrics.sunlight?.available && metrics.sunlight.hoursPerYear !== null ? `${metrics.sunlight.hoursPerYear} hrs/yr` : NA}
+          score={metrics.sunlight?.score ?? 0}
+          description="Estimated annual rooftop sunshine"
+          source="Google Solar API"
+          updated={updated}
+          metricKey="sunlight"
+          icon={Sun}
+          detail={buildDetail('sunlight', metrics)}
+        />
+        <MetricCard
+          label="Noise Estimate"
+          value={metrics.noise?.available && metrics.noise.level !== null ? metrics.noise.level : NA}
+          score={metrics.noise?.score ?? 0}
+          description="ESTIMATE based on nearby roads, not a direct measurement"
+          source="OpenStreetMap (Overpass)"
+          updated={updated}
+          metricKey="noise"
+          icon={Volume2}
+          detail={buildDetail('noise', metrics)}
+        />
+        <InfoCard
+          label="Neighborhood Demographics"
+          value={
+            metrics.demographics?.available && metrics.demographics.medianHouseholdIncome !== null
+              ? `$${metrics.demographics.medianHouseholdIncome.toLocaleString()} median income`
+              : 'Demographic data unavailable for this location'
+          }
+          description={
+            metrics.demographics?.available && metrics.demographics.totalPopulation !== null
+              ? `Population: ${metrics.demographics.totalPopulation.toLocaleString()}`
+              : undefined
+          }
+          source="US Census Bureau (ACS)"
+          updated={updated}
+          metricKey="demographics"
+          icon={Users}
+          detail={buildDetail('demographics', metrics)}
         />
         <div
           className="rounded-xl border p-4 flex flex-col items-center justify-center"

@@ -75,12 +75,50 @@ export interface NewsItem {
   source: string
 }
 
+export interface StateCrimeContext {
+  state: string
+  rate: number | null
+  year?: number
+  available: boolean
+  message?: string
+}
+
 export interface CrimeResult {
   incidentCount: number
   topIncidentTypes: string[]
   safetyScore: number
   note?: string
   incidents?: CrimeIncidentLocation[]
+  stateContext?: StateCrimeContext
+}
+
+export interface SunlightResult {
+  score: number | null
+  hoursPerYear: number | null
+  available: boolean
+  message?: string
+}
+
+export interface NoiseRoad {
+  name: string
+  distanceKm: number
+  classification: string
+}
+
+export interface NoiseResult {
+  score: number | null
+  level: string | null
+  nearestRoad: NoiseRoad | null
+  available: boolean
+  message?: string
+}
+
+export interface DemographicsResult {
+  medianHouseholdIncome: number | null
+  totalPopulation: number | null
+  tract?: string
+  available: boolean
+  message?: string
 }
 
 export interface AddressMetrics {
@@ -131,6 +169,10 @@ export interface AddressMetrics {
   places: AmenityPlaces
   fetchedAt: string
   crimeIncidents?: CrimeIncidentLocation[]
+  stateCrimeContext?: StateCrimeContext
+  sunlight?: SunlightResult
+  noise?: NoiseResult
+  demographics?: DemographicsResult
 }
 
 export interface SavedAddress {
