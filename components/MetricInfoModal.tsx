@@ -11,6 +11,10 @@ const MetricInfoMap = dynamic(() => import('./MetricInfoMap'), { ssr: false })
 const CRIME_RADIUS_METERS = 1000
 const AQI_CONTEXT_RADIUS_METERS = 5000
 
+const AMENITY_NOUN: Partial<Record<MetricKey, string>> = {
+  school: 'schools',
+}
+
 const AQI_LEGEND = [
   { color: '#22c55e', category: 'Good', label: 'Good' },
   { color: '#eab308', category: 'Moderate', label: 'Moderate' },
@@ -78,9 +82,9 @@ export default function MetricInfoModal({ metricKey, value, score, radius, place
           </button>
         </div>
 
-        <p style={{ color: '#a0a0a0' }} className="text-sm leading-relaxed">
+        <div style={{ color: '#a0a0a0' }} className="text-sm leading-relaxed flex flex-col gap-2">
           {detail ?? info.description}
-        </p>
+        </div>
 
         {center && metricKey === 'aqi' && (
           <MetricInfoMap
@@ -131,7 +135,7 @@ export default function MetricInfoModal({ metricKey, value, score, radius, place
           </>
         )}
 
-        {center && info.placesKey && (
+        {center && (info.placesKey || metricKey === 'walkability') && (
           <MetricInfoMap
             center={center}
             centerLabel="Searched address"
@@ -139,25 +143,9 @@ export default function MetricInfoModal({ metricKey, value, score, radius, place
             searchRadiusMeters={searchRadius}
             legend={[
               { color: '#f97316', label: 'Your address' },
-              { color: '#9ca3af', label: `Nearby ${info.label}` },
+              { color: '#9ca3af', label: metricKey === 'walkability' ? 'Nearby amenities' : `Nearby ${AMENITY_NOUN[metricKey] ?? info.label}` },
             ]}
           />
-        )}
-
-        {places && places.length > 0 && (
-          <div className="flex flex-col gap-2">
-            <p style={{ color: '#a0a0a0' }} className="text-xs font-medium uppercase tracking-wider">
-              Nearby places found
-            </p>
-            <ul className="flex flex-col gap-1.5">
-              {places.map((place, i) => (
-                <li key={i} className="flex items-center justify-between text-sm gap-3">
-                  <span className="text-white truncate">{place.name}</span>
-                  <span style={{ color: '#a0a0a0' }} className="shrink-0">{place.distanceKm}km</span>
-                </li>
-              ))}
-            </ul>
-          </div>
         )}
 
         <div className="pt-3 flex flex-col gap-1" style={{ borderTop: '1px solid #2a2a2a' }}>

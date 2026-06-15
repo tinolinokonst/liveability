@@ -9,6 +9,7 @@ export interface NearestAmenity {
   distanceKm: number
   lat?: number
   lng?: number
+  category?: string
 }
 
 export interface CrimeIncidentLocation {

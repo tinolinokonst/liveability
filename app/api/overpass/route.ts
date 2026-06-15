@@ -64,10 +64,10 @@ export async function GET(request: NextRequest) {
   node["railway"~"^(station|halt|tram_stop)$"](around:${transitRadius},${lat},${lng});
   way["leisure"="park"](around:${radius},${lat},${lng});
   relation["leisure"="park"](around:${radius},${lat},${lng});
-  node["amenity"="school"](around:${radius},${lat},${lng});
-  way["amenity"="school"](around:${radius},${lat},${lng});
-  node["amenity"~"^(hospital|clinic|pharmacy)$"](around:${radius},${lat},${lng});
-  way["amenity"~"^(hospital|clinic|pharmacy)$"](around:${radius},${lat},${lng});
+  node["amenity"~"^(school|college)$"](around:${radius},${lat},${lng});
+  way["amenity"~"^(school|college)$"](around:${radius},${lat},${lng});
+  node["amenity"~"^(hospital|clinic|pharmacy|doctors)$"](around:${radius},${lat},${lng});
+  way["amenity"~"^(hospital|clinic|pharmacy|doctors)$"](around:${radius},${lat},${lng});
   node["amenity"~"^(restaurant|cafe)$"](around:${radius},${lat},${lng});
   node["leisure"="fitness_centre"](around:${gymRadius},${lat},${lng});
   way["leisure"="fitness_centre"](around:${gymRadius},${lat},${lng});

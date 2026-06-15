@@ -1,4 +1,4 @@
-import { AddressMetrics, NearestAmenity } from '@/lib/types'
+import { AddressMetrics, AmenityPlaces, NearestAmenity } from '@/lib/types'
 import MetricCard from './MetricCard'
 import LocalNews from './LocalNews'
 
@@ -36,25 +36,46 @@ const AQI_INFO: Record<string, { quality: string; risk: string }> = {
   'Hazardous': { quality: 'hazardous', risk: 'serious risk of health effects for the entire population' },
 }
 
+function placesParagraph(places: NearestAmenity[] | undefined, label: string, radiusMeters: number): React.ReactNode {
+  if (!places || places.length === 0) return null
+  const radiusStr = radiusLabel(radiusMeters)
+  const shown = places.slice(0, 5)
+  const items = shown.map(p => `${p.name} (${p.distanceKm}km)`).join(', ')
+  const more = places.length > 5 ? `, + ${places.length - 5} more within ${radiusStr}` : ''
+  return <p>{label} within {radiusStr}: {items}{more}.</p>
+}
+
+function combinedWalkabilityPlaces(places: AmenityPlaces): NearestAmenity[] {
+  return [...(places.grocery ?? []), ...(places.transit ?? []), ...(places.park ?? [])]
+    .sort((a, b) => a.distanceKm - b.distanceKm)
+}
+
 function amenityDetail(
   nearest: NearestAmenity | null,
   count: number,
   nearestNoun: string,
   countSingular: string,
   countPlural: string,
-  radiusMeters: number
+  radiusMeters: number,
+  places: NearestAmenity[] | undefined,
+  placesLabel: string
 ): React.ReactNode {
   const radiusStr = radiusLabel(radiusMeters)
   const countNoun = count === 1 ? countSingular : countPlural
 
-  if (!nearest) {
-    return <>There are no {countPlural} within {radiusStr}.</>
-  }
+  const summary = !nearest ? (
+    <p>There are no {countPlural} within {radiusStr}.</p>
+  ) : (
+    <p>
+      The nearest {nearestNoun} is <strong>{nearest.name}, {nearest.distanceKm}km away</strong>. There {isAre(count)}{' '}
+      <strong>{count} {countNoun}</strong> within {radiusStr}.
+    </p>
+  )
 
   return (
     <>
-      The nearest {nearestNoun} is <strong>{nearest.name}, {nearest.distanceKm}km away</strong>. There {isAre(count)}{' '}
-      <strong>{count} {countNoun}</strong> within {radiusStr}.
+      {summary}
+      {placesParagraph(places, placesLabel, radiusMeters)}
     </>
   )
 }
@@ -67,10 +88,10 @@ function buildDetail(metricKey: string, metrics: AddressMetrics): React.ReactNod
     case 'aqi': {
       const info = AQI_INFO[metrics.aqiCategory] ?? { quality: 'uncertain', risk: 'an uncertain level of risk' }
       return (
-        <>
+        <p>
           This area has an AQI of <strong>{metrics.aqi} ({metrics.aqiCategory})</strong>. Air quality is considered{' '}
           {info.quality}, and air pollution poses <strong>{info.risk}</strong>.
-        </>
+        </p>
       )
     }
     case 'walkability': {
@@ -80,41 +101,45 @@ function buildDetail(metricKey: string, metrics: AddressMetrics): React.ReactNod
       if (metrics.transitCount > 0) types.push('transit stops')
       if (metrics.parkCount > 0) types.push('green spaces')
       const including = types.length ? `, including ${joinAnd(types)}` : ''
+      const combined = combinedWalkabilityPlaces(places)
       return (
         <>
-          This address has a walkability score of <strong>{metrics.walkabilityScore}/100</strong>. There {isAre(count)}{' '}
-          <strong>{count} amenit{count === 1 ? 'y' : 'ies'}</strong> within an <strong>{radius}m</strong> walk{including}.
+          <p>
+            This address has a walkability score of <strong>{metrics.walkabilityScore}/100</strong>. There {isAre(count)}{' '}
+            <strong>{count} amenit{count === 1 ? 'y' : 'ies'}</strong> within an <strong>{radius}m</strong> walk{including}.
+          </p>
+          {placesParagraph(combined, 'Nearby amenities', radius)}
         </>
       )
     }
     case 'grocery':
-      return amenityDetail(places?.grocery?.[0] ?? null, metrics.groceryCount, 'grocery store', 'grocery option', 'grocery options', radius)
+      return amenityDetail(places?.grocery?.[0] ?? null, metrics.groceryCount, 'grocery store', 'grocery option', 'grocery options', radius, places?.grocery, 'Grocery stores')
     case 'transit':
-      return amenityDetail(places?.transit?.[0] ?? null, metrics.transitCount, 'transit stop', 'transit stop', 'transit stops', 800)
+      return amenityDetail(places?.transit?.[0] ?? null, metrics.transitCount, 'transit stop', 'transit stop', 'transit stops', 800, places?.transit, 'Transit stops')
     case 'green':
-      return amenityDetail(places?.park?.[0] ?? null, metrics.parkCount, 'park', 'green space', 'green spaces', radius)
+      return amenityDetail(places?.park?.[0] ?? null, metrics.parkCount, 'park', 'green space', 'green spaces', radius, places?.park, 'Green spaces')
     case 'healthcare':
-      return amenityDetail(places?.healthcare?.[0] ?? null, metrics.healthcareCount, 'healthcare facility', 'healthcare facility', 'healthcare facilities', radius)
+      return amenityDetail(places?.healthcare?.[0] ?? null, metrics.healthcareCount, 'healthcare facility', 'healthcare facility', 'healthcare facilities', radius, places?.healthcare, 'Healthcare facilities')
     case 'school':
-      return amenityDetail(places?.school?.[0] ?? null, metrics.schoolCount, 'school', 'school', 'schools', radius)
+      return amenityDetail(places?.school?.[0] ?? null, metrics.schoolCount, 'school', 'school', 'schools', radius, places?.school, 'Schools')
     case 'dining':
-      return amenityDetail(places?.dining?.[0] ?? null, metrics.diningCount, 'dining option', 'dining option', 'dining options', radius)
+      return amenityDetail(places?.dining?.[0] ?? null, metrics.diningCount, 'dining option', 'dining option', 'dining options', radius, places?.dining, 'Dining options')
     case 'library':
-      return amenityDetail(places?.library?.[0] ?? null, metrics.libraryCount, 'library', 'library', 'libraries', 1600)
+      return amenityDetail(places?.library?.[0] ?? null, metrics.libraryCount, 'library', 'library', 'libraries', 1600, places?.library, 'Libraries')
     case 'bank':
-      return amenityDetail(places?.bank?.[0] ?? null, metrics.bankCount, 'bank or ATM', 'bank/ATM', 'banks/ATMs', 800)
+      return amenityDetail(places?.bank?.[0] ?? null, metrics.bankCount, 'bank or ATM', 'bank/ATM', 'banks/ATMs', 800, places?.bank, 'Banks/ATMs')
     case 'worship':
-      return amenityDetail(places?.worship?.[0] ?? null, metrics.worshipCount, 'place of worship', 'place of worship', 'places of worship', 1600)
+      return amenityDetail(places?.worship?.[0] ?? null, metrics.worshipCount, 'place of worship', 'place of worship', 'places of worship', 1600, places?.worship, 'Places of worship')
     case 'parking':
-      return amenityDetail(places?.parking?.[0] ?? null, metrics.parkingCount, 'parking option', 'parking option', 'parking options', 400)
+      return amenityDetail(places?.parking?.[0] ?? null, metrics.parkingCount, 'parking option', 'parking option', 'parking options', 400, places?.parking, 'Parking options')
     case 'safety': {
       const count = metrics.crimeIncidentCount
       return (
-        <>
+        <p>
           This area has a safety score of <strong>{metrics.safetyScore}/100</strong>, based on{' '}
           <strong>{count} incident{count === 1 ? '' : 's'}</strong> in the past 12 months within 1km.
           {metrics.safetyNote ? ` ${metrics.safetyNote}` : ''}
-        </>
+        </p>
       )
     }
     default:
@@ -150,6 +175,9 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
           source="OpenStreetMap (Overpass)"
           updated={updated}
           metricKey="walkability"
+          center={center}
+          places={combinedWalkabilityPlaces(places).slice(0, 8)}
+          searchRadius={metrics.radius}
           detail={buildDetail('walkability', metrics)}
         />
         <MetricCard

@@ -71,7 +71,54 @@ function elementName(e: OverpassElement, fallback: string): string {
   return e.tags?.name || fallback
 }
 
-function nearest(elements: OverpassElement[], lat: number, lng: number, fallbackName: string): NearestAmenity | null {
+type AmenityKind = 'grocery' | 'transit' | 'park' | 'school' | 'healthcare' | 'dining' | 'library' | 'bank' | 'worship' | 'parking'
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
+function elementCategory(e: OverpassElement, kind: AmenityKind): string | undefined {
+  const tags = e.tags || {}
+
+  switch (kind) {
+    case 'grocery': {
+      const shopLabels: Record<string, string> = {
+        supermarket: 'Supermarket',
+        convenience: 'Convenience store',
+        grocery: 'Grocery store',
+        food: 'Food shop',
+      }
+      return tags.shop ? shopLabels[tags.shop] : undefined
+    }
+    case 'school': {
+      const typeLabels: Record<string, string> = { school: 'School', college: 'College' }
+      const base = typeLabels[tags.amenity ?? '']
+      if (!base) return undefined
+      return tags['isced:level'] ? `${base} (ISCED ${tags['isced:level']})` : base
+    }
+    case 'healthcare': {
+      const typeLabels: Record<string, string> = {
+        hospital: 'Hospital',
+        clinic: 'Clinic',
+        pharmacy: 'Pharmacy',
+        doctors: "Doctor's office",
+      }
+      return typeLabels[tags.amenity ?? '']
+    }
+    case 'dining': {
+      const type = tags.amenity === 'cafe' ? 'Cafe' : 'Restaurant'
+      if (tags.cuisine) {
+        const cuisine = capitalize(tags.cuisine.split(';')[0].replace(/_/g, ' '))
+        return `${type} · ${cuisine}`
+      }
+      return type
+    }
+    default:
+      return undefined
+  }
+}
+
+function nearest(elements: OverpassElement[], lat: number, lng: number, fallbackName: string, kind?: AmenityKind): NearestAmenity | null {
   let best: NearestAmenity | null = null
 
   for (const e of elements) {
@@ -81,14 +128,20 @@ function nearest(elements: OverpassElement[], lat: number, lng: number, fallback
 
     const distanceKm = haversineKm(lat, lng, elat, elon)
     if (!best || distanceKm < best.distanceKm) {
-      best = { name: elementName(e, fallbackName), distanceKm: Math.round(distanceKm * 10) / 10, lat: elat, lng: elon }
+      best = {
+        name: elementName(e, fallbackName),
+        distanceKm: Math.round(distanceKm * 10) / 10,
+        lat: elat,
+        lng: elon,
+        category: kind ? elementCategory(e, kind) : undefined,
+      }
     }
   }
 
   return best
 }
 
-function nearestList(elements: OverpassElement[], lat: number, lng: number, fallbackName: string, limit: number = 8): NearestAmenity[] {
+function nearestList(elements: OverpassElement[], lat: number, lng: number, fallbackName: string, kind?: AmenityKind, limit: number = 8): NearestAmenity[] {
   const places: NearestAmenity[] = []
 
   for (const e of elements) {
@@ -97,7 +150,13 @@ function nearestList(elements: OverpassElement[], lat: number, lng: number, fall
     if (elat === undefined || elon === undefined) continue
 
     const distanceKm = haversineKm(lat, lng, elat, elon)
-    places.push({ name: elementName(e, fallbackName), distanceKm: Math.round(distanceKm * 10) / 10, lat: elat, lng: elon })
+    places.push({
+      name: elementName(e, fallbackName),
+      distanceKm: Math.round(distanceKm * 10) / 10,
+      lat: elat,
+      lng: elon,
+      category: kind ? elementCategory(e, kind) : undefined,
+    })
   }
 
   return places.sort((a, b) => a.distanceKm - b.distanceKm).slice(0, limit)
@@ -129,10 +188,10 @@ export async function fetchAmenityScores(lat: number, lng: number, radius: numbe
 
   const parkElements = elements.filter(e => e.tags?.leisure === 'park')
 
-  const schoolElements = elements.filter(e => e.tags?.amenity === 'school')
+  const schoolElements = elements.filter(e => ['school', 'college'].includes(e.tags?.amenity || ''))
 
   const healthcareElements = elements.filter(e =>
-    ['hospital', 'clinic', 'pharmacy'].includes(e.tags?.amenity || '')
+    ['hospital', 'clinic', 'pharmacy', 'doctors'].includes(e.tags?.amenity || '')
   )
 
   const diningElements = elements.filter(e =>
@@ -199,26 +258,26 @@ export async function fetchAmenityScores(lat: number, lng: number, radius: numbe
     parkingScore,
     walkabilityScore,
     radius: usedRadius,
-    nearestGrocery: nearest(groceryElements, lat, lng, 'Grocery store'),
-    nearestPark: nearest(parkElements, lat, lng, 'Park'),
-    nearestSchool: nearest(schoolElements, lat, lng, 'School'),
-    nearestHealthcare: nearest(healthcareElements, lat, lng, 'Healthcare facility'),
-    nearestDining: nearest(diningElements, lat, lng, 'Restaurant/cafe'),
-    nearestLibrary: nearest(libraryElements, lat, lng, 'Library'),
-    nearestBank: nearest(bankElements, lat, lng, 'Bank/ATM'),
-    nearestWorship: nearest(worshipElements, lat, lng, 'Place of worship'),
-    nearestParking: nearest(parkingElements, lat, lng, 'Parking'),
+    nearestGrocery: nearest(groceryElements, lat, lng, 'Grocery store (no name in OSM)', 'grocery'),
+    nearestPark: nearest(parkElements, lat, lng, 'Park (no name in OSM)', 'park'),
+    nearestSchool: nearest(schoolElements, lat, lng, 'School (no name in OSM)', 'school'),
+    nearestHealthcare: nearest(healthcareElements, lat, lng, 'Healthcare facility (no name in OSM)', 'healthcare'),
+    nearestDining: nearest(diningElements, lat, lng, 'Restaurant/cafe (no name in OSM)', 'dining'),
+    nearestLibrary: nearest(libraryElements, lat, lng, 'Library (no name in OSM)', 'library'),
+    nearestBank: nearest(bankElements, lat, lng, 'Bank/ATM (no name in OSM)', 'bank'),
+    nearestWorship: nearest(worshipElements, lat, lng, 'Place of worship (no name in OSM)', 'worship'),
+    nearestParking: nearest(parkingElements, lat, lng, 'Parking (no name in OSM)', 'parking'),
     places: {
-      grocery: nearestList(groceryElements, lat, lng, 'Grocery store'),
-      transit: nearestList(transitElements, lat, lng, 'Transit stop'),
-      park: nearestList(parkElements, lat, lng, 'Park'),
-      school: nearestList(schoolElements, lat, lng, 'School'),
-      healthcare: nearestList(healthcareElements, lat, lng, 'Healthcare facility'),
-      dining: nearestList(diningElements, lat, lng, 'Restaurant/cafe'),
-      library: nearestList(libraryElements, lat, lng, 'Library'),
-      bank: nearestList(bankElements, lat, lng, 'Bank/ATM'),
-      worship: nearestList(worshipElements, lat, lng, 'Place of worship'),
-      parking: nearestList(parkingElements, lat, lng, 'Parking'),
+      grocery: nearestList(groceryElements, lat, lng, 'Grocery store (no name in OSM)', 'grocery'),
+      transit: nearestList(transitElements, lat, lng, 'Transit stop (no name in OSM)', 'transit'),
+      park: nearestList(parkElements, lat, lng, 'Park (no name in OSM)', 'park'),
+      school: nearestList(schoolElements, lat, lng, 'School (no name in OSM)', 'school'),
+      healthcare: nearestList(healthcareElements, lat, lng, 'Healthcare facility (no name in OSM)', 'healthcare'),
+      dining: nearestList(diningElements, lat, lng, 'Restaurant/cafe (no name in OSM)', 'dining'),
+      library: nearestList(libraryElements, lat, lng, 'Library (no name in OSM)', 'library'),
+      bank: nearestList(bankElements, lat, lng, 'Bank/ATM (no name in OSM)', 'bank'),
+      worship: nearestList(worshipElements, lat, lng, 'Place of worship (no name in OSM)', 'worship'),
+      parking: nearestList(parkingElements, lat, lng, 'Parking (no name in OSM)', 'parking'),
     },
   }
 }

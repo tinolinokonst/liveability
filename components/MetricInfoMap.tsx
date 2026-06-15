@@ -129,7 +129,14 @@ export default function MetricInfoMap({
 
         {points.map((m, i) => (
           <Marker key={i} position={[m.lat as number, m.lng as number]} icon={dotIcon('#9ca3af', 10)}>
-            <Popup>{m.name} — {m.distanceKm}km</Popup>
+            <Popup>
+              <div className="flex flex-col gap-0.5">
+                <span className="font-semibold text-white text-xs">{m.name}</span>
+                <span className="text-xs" style={{ color: '#a0a0a0' }}>
+                  {m.category ? `${m.category} · ` : ''}{m.distanceKm}km away
+                </span>
+              </div>
+            </Popup>
           </Marker>
         ))}
 
