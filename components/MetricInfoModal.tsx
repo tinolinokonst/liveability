@@ -1,23 +1,23 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { X } from 'lucide-react'
 import { aqiColor, METRIC_INFO, MetricKey } from '@/lib/metricInfo'
 import { CrimeIncidentLocation, NearestAmenity } from '@/lib/types'
-import type { MapSensor } from './MetricInfoMap'
 
 const MetricInfoMap = dynamic(() => import('./MetricInfoMap'), { ssr: false })
 
 const CRIME_RADIUS_METERS = 1000
+const AQI_CONTEXT_RADIUS_METERS = 5000
 
 const AQI_LEGEND = [
-  { color: '#22c55e', label: 'Good' },
-  { color: '#eab308', label: 'Moderate' },
-  { color: '#f97316', label: 'Unhealthy (sensitive)' },
-  { color: '#ef4444', label: 'Unhealthy' },
-  { color: '#a855f7', label: 'Very unhealthy' },
-  { color: '#7f1d1d', label: 'Hazardous' },
+  { color: '#22c55e', category: 'Good', label: 'Good' },
+  { color: '#eab308', category: 'Moderate', label: 'Moderate' },
+  { color: '#f97316', category: 'Unhealthy for Sensitive Groups', label: 'Unhealthy (sensitive)' },
+  { color: '#ef4444', category: 'Unhealthy', label: 'Unhealthy' },
+  { color: '#a855f7', category: 'Very Unhealthy', label: 'Very unhealthy' },
+  { color: '#7f1d1d', category: 'Hazardous', label: 'Hazardous' },
 ]
 
 interface MetricInfoModalProps {
@@ -36,7 +36,6 @@ interface MetricInfoModalProps {
 
 export default function MetricInfoModal({ metricKey, value, score, radius, places, center, category, crimeIncidents, searchRadius, detail, onClose }: MetricInfoModalProps) {
   const info = METRIC_INFO[metricKey]
-  const [sensors, setSensors] = useState<MapSensor[]>([])
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -45,18 +44,6 @@ export default function MetricInfoModal({ metricKey, value, score, radius, place
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [onClose])
-
-  useEffect(() => {
-    if (metricKey !== 'aqi' || !center) return
-    let cancelled = false
-    fetch(`/api/purpleair?lat=${center.lat}&lng=${center.lng}`)
-      .then(res => res.json())
-      .then(data => {
-        if (!cancelled && Array.isArray(data.sensors)) setSensors(data.sensors)
-      })
-      .catch(() => {})
-    return () => { cancelled = true }
-  }, [metricKey, center])
 
   return (
     <div
@@ -98,10 +85,21 @@ export default function MetricInfoModal({ metricKey, value, score, radius, place
         {center && metricKey === 'aqi' && (
           <MetricInfoMap
             center={center}
-            centerLabel={`AQI ${value ?? ''} — ${category ?? ''}`}
+            centerLabel={
+              <div className="flex flex-col gap-0.5">
+                <span className="font-semibold text-white text-xs">Nearest air quality reading</span>
+                <span className="text-xs" style={{ color: '#a0a0a0' }}>
+                  AQI {value ?? '—'} · {category ?? 'Unknown'}
+                </span>
+              </div>
+            }
             centerColor={aqiColor(category ?? '')}
-            sensors={sensors}
-            legend={[{ color: aqiColor(category ?? ''), label: 'Searched address' }, ...AQI_LEGEND]}
+            contextCircle={{
+              radiusMeters: AQI_CONTEXT_RADIUS_METERS,
+              label: 'Approximate area represented by this reading',
+              color: aqiColor(category ?? ''),
+            }}
+            legend={AQI_LEGEND.map(item => ({ ...item, active: item.category === category }))}
           />
         )}
 
@@ -109,13 +107,21 @@ export default function MetricInfoModal({ metricKey, value, score, radius, place
           <>
             <MetricInfoMap
               center={center}
-              centerLabel="Searched address"
+              centerLabel="Your address"
               incidents={crimeIncidents ?? []}
               circleRadiusMeters={!crimeIncidents || crimeIncidents.length === 0 ? CRIME_RADIUS_METERS : undefined}
-              legend={[
-                { color: '#f97316', label: 'Your address' },
-                { color: '#ef4444', label: 'Reported incident' },
-              ]}
+              circleLabel="Approximate search radius (~1km) — incident locations not available"
+              legend={
+                crimeIncidents && crimeIncidents.length > 0
+                  ? [
+                      { color: '#f97316', label: 'Your address' },
+                      { color: '#ef4444', label: 'Reported incident' },
+                    ]
+                  : [
+                      { color: '#f97316', label: 'Your address' },
+                      { color: '#ef4444', label: 'Search radius (~1km)' },
+                    ]
+              }
             />
             {(!crimeIncidents || crimeIncidents.length === 0) && (
               <p style={{ color: '#a0a0a0' }} className="text-xs">

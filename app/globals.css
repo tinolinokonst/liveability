@@ -102,3 +102,29 @@ input[type="range"]::-moz-range-thumb {
 .pac-icon {
   display: none;
 }
+
+/* Leaflet popups for dark theme */
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.leaflet-popup-content-wrapper {
+  border: 1px solid #2a2a2a;
+}
+
+.leaflet-popup-content {
+  margin: 10px 12px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.leaflet-popup-close-button {
+  color: #a0a0a0 !important;
+}
+
+.leaflet-popup-close-button:hover {
+  color: #ffffff !important;
+}

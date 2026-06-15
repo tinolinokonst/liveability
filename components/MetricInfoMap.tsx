@@ -1,31 +1,33 @@
 "use client"
 
+import { ReactNode } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { CrimeIncidentLocation, NearestAmenity } from '@/lib/types'
 
-export interface MapSensor {
-  lat: number
-  lng: number
-  color: string
-  aqi?: number
-}
-
 export interface LegendItem {
   color: string
   label: string
+  active?: boolean
+}
+
+export interface ContextCircle {
+  radiusMeters: number
+  label: string
+  color?: string
 }
 
 interface MetricInfoMapProps {
   center: { lat: number; lng: number }
-  centerLabel: string
+  centerLabel: ReactNode
   centerColor?: string
   markers?: NearestAmenity[]
   incidents?: CrimeIncidentLocation[]
   circleRadiusMeters?: number
+  circleLabel?: ReactNode
   searchRadiusMeters?: number
-  sensors?: MapSensor[]
+  contextCircle?: ContextCircle
   legend?: LegendItem[]
   height?: number
 }
@@ -78,8 +80,9 @@ export default function MetricInfoMap({
   markers = [],
   incidents = [],
   circleRadiusMeters,
+  circleLabel,
   searchRadiusMeters,
-  sensors = [],
+  contextCircle,
   legend,
   height = 380,
 }: MetricInfoMapProps) {
@@ -90,7 +93,6 @@ export default function MetricInfoMap({
     [center.lat, center.lng],
     ...points.map(p => [p.lat as number, p.lng as number] as [number, number]),
     ...clusters.map(c => [c.lat, c.lng] as [number, number]),
-    ...sensors.map(s => [s.lat, s.lng] as [number, number]),
   ]
 
   return (
@@ -105,11 +107,21 @@ export default function MetricInfoMap({
       >
         <TileLayer url={DARK_TILE_URL} attribution={DARK_TILE_ATTRIBUTION} />
 
-        {sensors.map((s, i) => (
-          <Marker key={`sensor-${i}`} position={[s.lat, s.lng]} icon={dotIcon(s.color, 8)}>
-            <Popup>PurpleAir sensor — AQI {s.aqi}</Popup>
-          </Marker>
-        ))}
+        {contextCircle && (
+          <Circle
+            center={[center.lat, center.lng]}
+            radius={contextCircle.radiusMeters}
+            pathOptions={{
+              color: contextCircle.color ?? centerColor,
+              fillColor: contextCircle.color ?? centerColor,
+              fillOpacity: 0.04,
+              opacity: 0.25,
+              weight: 1,
+            }}
+          >
+            <Popup>{contextCircle.label}</Popup>
+          </Circle>
+        )}
 
         <Marker position={[center.lat, center.lng]} icon={dotIcon(centerColor, 22)}>
           <Popup>{centerLabel}</Popup>
@@ -132,7 +144,9 @@ export default function MetricInfoMap({
             center={[center.lat, center.lng]}
             radius={circleRadiusMeters}
             pathOptions={{ color: '#ef4444', fillOpacity: 0.08 }}
-          />
+          >
+            {circleLabel && <Popup>{circleLabel}</Popup>}
+          </Circle>
         )}
 
         {searchRadiusMeters !== undefined && (
@@ -153,9 +167,18 @@ export default function MetricInfoMap({
             <div key={i} className="flex items-center gap-1.5">
               <span
                 className="rounded-full shrink-0"
-                style={{ width: 8, height: 8, backgroundColor: item.color }}
+                style={{
+                  width: 8,
+                  height: 8,
+                  backgroundColor: item.color,
+                  boxShadow: item.active ? `0 0 0 2px ${item.color}55` : undefined,
+                }}
               />
-              <span style={{ color: '#e5e5e5', fontSize: 10, lineHeight: 1.1 }}>{item.label}</span>
+              <span
+                style={{ color: item.active ? '#ffffff' : '#e5e5e5', fontSize: 10, lineHeight: 1.1, fontWeight: item.active ? 700 : 400 }}
+              >
+                {item.label}
+              </span>
             </div>
           ))}
         </div>
