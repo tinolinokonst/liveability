@@ -47,7 +47,7 @@ const FALLBACK_SCORES: Omit<AmenityScores, 'radius'> = {
   nearestWorship: null,
   nearestParking: null,
   places: EMPTY_PLACES,
-  note: 'estimate - live data unavailable',
+  note: 'Amenity data unavailable — please try again',
 }
 
 interface OverpassElement {
@@ -98,11 +98,15 @@ function elementCategory(e: OverpassElement, kind: AmenityKind): string | undefi
         convenience: 'Convenience store',
         grocery: 'Grocery store',
         food: 'Food shop',
+        deli: 'Deli',
+        greengrocer: 'Greengrocer',
+        organic: 'Organic store',
+        health_food: 'Health food store',
       }
       return tags.shop ? shopLabels[tags.shop] : undefined
     }
     case 'school': {
-      const typeLabels: Record<string, string> = { school: 'School', college: 'College' }
+      const typeLabels: Record<string, string> = { school: 'School', college: 'College', university: 'University', kindergarten: 'Kindergarten' }
       const base = typeLabels[tags.amenity ?? '']
       if (!base) return undefined
       return tags['isced:level'] ? `${base} (ISCED ${tags['isced:level']})` : base
@@ -117,7 +121,7 @@ function elementCategory(e: OverpassElement, kind: AmenityKind): string | undefi
       return typeLabels[tags.amenity ?? '']
     }
     case 'dining': {
-      const type = tags.amenity === 'cafe' ? 'Cafe' : 'Restaurant'
+      const type = tags.amenity === 'cafe' ? 'Cafe' : tags.amenity === 'fast_food' ? 'Fast food' : 'Restaurant'
       if (tags.cuisine) {
         const cuisine = capitalize(tags.cuisine.split(';')[0].replace(/_/g, ' '))
         return `${type} · ${cuisine}`
@@ -188,7 +192,7 @@ export async function fetchAmenityScores(lat: number, lng: number, radius: numbe
   const usedRadius: number = data.radius ?? radius
 
   const groceryElements = elements.filter(e =>
-    ['supermarket', 'grocery', 'convenience', 'food'].includes(e.tags?.shop || '')
+    ['supermarket', 'grocery', 'convenience', 'food', 'deli', 'greengrocer', 'organic', 'health_food'].includes(e.tags?.shop || '')
   )
 
   const transitElements = elements.filter(e =>
@@ -198,16 +202,20 @@ export async function fetchAmenityScores(lat: number, lng: number, radius: numbe
     ['station', 'halt', 'tram_stop'].includes(e.tags?.railway || '')
   )
 
-  const parkElements = elements.filter(e => e.tags?.leisure === 'park')
+  const parkElements = elements.filter(e =>
+    e.tags?.leisure === 'park' ||
+    e.tags?.leisure === 'garden' ||
+    e.tags?.landuse === 'recreation_ground'
+  )
 
-  const schoolElements = elements.filter(e => ['school', 'college'].includes(e.tags?.amenity || ''))
+  const schoolElements = elements.filter(e => ['school', 'college', 'university', 'kindergarten'].includes(e.tags?.amenity || ''))
 
   const healthcareElements = elements.filter(e =>
     ['hospital', 'clinic', 'pharmacy', 'doctors'].includes(e.tags?.amenity || '')
   )
 
   const diningElements = elements.filter(e =>
-    ['restaurant', 'cafe'].includes(e.tags?.amenity || '')
+    ['restaurant', 'cafe', 'fast_food'].includes(e.tags?.amenity || '')
   )
 
   const gymElements = elements.filter(e => e.tags?.leisure === 'fitness_centre')

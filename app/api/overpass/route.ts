@@ -5,7 +5,7 @@ const OVERPASS_URLS = [
   'https://overpass.kumi.systems/api/interpreter',
 ]
 
-const TIMEOUT_MS = 10000
+const TIMEOUT_MS = 15000
 const ALLOWED_RADII = [400, 800, 1600, 3000]
 const DEFAULT_RADIUS = 800
 
@@ -57,19 +57,25 @@ export async function GET(request: NextRequest) {
 
   const query = `[out:json][timeout:30];
 (
-  node["shop"~"^(supermarket|grocery|convenience|food)$"](around:${radius},${lat},${lng});
-  way["shop"~"^(supermarket|grocery|convenience|food)$"](around:${radius},${lat},${lng});
+  node["shop"~"^(supermarket|grocery|convenience|food|deli|greengrocer|organic|health_food)$"](around:${radius},${lat},${lng});
+  way["shop"~"^(supermarket|grocery|convenience|food|deli|greengrocer|organic|health_food)$"](around:${radius},${lat},${lng});
   node["highway"="bus_stop"](around:${transitRadius},${lat},${lng});
   node["amenity"="bus_station"](around:${transitRadius},${lat},${lng});
   node["railway"~"^(station|halt|tram_stop)$"](around:${transitRadius},${lat},${lng});
   node["public_transport"="stop_position"](around:${transitRadius},${lat},${lng});
+  node["leisure"="park"](around:${radius},${lat},${lng});
   way["leisure"="park"](around:${radius},${lat},${lng});
   relation["leisure"="park"](around:${radius},${lat},${lng});
-  node["amenity"~"^(school|college)$"](around:${radius},${lat},${lng});
-  way["amenity"~"^(school|college)$"](around:${radius},${lat},${lng});
+  node["leisure"="garden"](around:${radius},${lat},${lng});
+  way["leisure"="garden"](around:${radius},${lat},${lng});
+  node["landuse"="recreation_ground"](around:${radius},${lat},${lng});
+  way["landuse"="recreation_ground"](around:${radius},${lat},${lng});
+  node["amenity"~"^(school|college|university|kindergarten)$"](around:${radius},${lat},${lng});
+  way["amenity"~"^(school|college|university|kindergarten)$"](around:${radius},${lat},${lng});
   node["amenity"~"^(hospital|clinic|pharmacy|doctors)$"](around:${radius},${lat},${lng});
   way["amenity"~"^(hospital|clinic|pharmacy|doctors)$"](around:${radius},${lat},${lng});
-  node["amenity"~"^(restaurant|cafe)$"](around:${radius},${lat},${lng});
+  node["amenity"~"^(restaurant|cafe|fast_food)$"](around:${radius},${lat},${lng});
+  way["amenity"~"^(restaurant|cafe|fast_food)$"](around:${radius},${lat},${lng});
   node["leisure"="fitness_centre"](around:${gymRadius},${lat},${lng});
   way["leisure"="fitness_centre"](around:${gymRadius},${lat},${lng});
   node["amenity"="library"](around:${libraryRadius},${lat},${lng});

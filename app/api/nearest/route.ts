@@ -86,17 +86,22 @@ export async function GET(request: NextRequest) {
   node["railway"="station"](around:${SEARCH_RADIUS},${lat},${lng});
   way["railway"="station"](around:${SEARCH_RADIUS},${lat},${lng});
   node["highway"="bus_stop"](around:${SEARCH_RADIUS},${lat},${lng});
-  node["shop"~"^(supermarket|grocery|convenience)$"](around:${SEARCH_RADIUS},${lat},${lng});
-  way["shop"~"^(supermarket|grocery|convenience)$"](around:${SEARCH_RADIUS},${lat},${lng});
+  node["shop"~"^(supermarket|grocery|convenience|food|deli|greengrocer|organic|health_food)$"](around:${SEARCH_RADIUS},${lat},${lng});
+  way["shop"~"^(supermarket|grocery|convenience|food|deli|greengrocer|organic|health_food)$"](around:${SEARCH_RADIUS},${lat},${lng});
   node["amenity"="hospital"](around:${SEARCH_RADIUS},${lat},${lng});
   way["amenity"="hospital"](around:${SEARCH_RADIUS},${lat},${lng});
   node["amenity"="pharmacy"](around:${SEARCH_RADIUS},${lat},${lng});
-  node["amenity"="school"](around:${SEARCH_RADIUS},${lat},${lng});
-  way["amenity"="school"](around:${SEARCH_RADIUS},${lat},${lng});
+  node["amenity"~"^(school|college|university|kindergarten)$"](around:${SEARCH_RADIUS},${lat},${lng});
+  way["amenity"~"^(school|college|university|kindergarten)$"](around:${SEARCH_RADIUS},${lat},${lng});
   node["amenity"="library"](around:${SEARCH_RADIUS},${lat},${lng});
   way["amenity"="library"](around:${SEARCH_RADIUS},${lat},${lng});
+  node["leisure"="park"](around:${SEARCH_RADIUS},${lat},${lng});
   way["leisure"="park"](around:${SEARCH_RADIUS},${lat},${lng});
   relation["leisure"="park"](around:${SEARCH_RADIUS},${lat},${lng});
+  node["leisure"="garden"](around:${SEARCH_RADIUS},${lat},${lng});
+  way["leisure"="garden"](around:${SEARCH_RADIUS},${lat},${lng});
+  node["landuse"="recreation_ground"](around:${SEARCH_RADIUS},${lat},${lng});
+  way["landuse"="recreation_ground"](around:${SEARCH_RADIUS},${lat},${lng});
   node["amenity"~"^(bank|atm)$"](around:${SEARCH_RADIUS},${lat},${lng});
   node["amenity"~"^(restaurant|cafe|fast_food)$"](around:${SEARCH_RADIUS},${lat},${lng});
   way["amenity"~"^(restaurant|cafe|fast_food)$"](around:${SEARCH_RADIUS},${lat},${lng});
@@ -116,12 +121,12 @@ out tags center;`
     return NextResponse.json({
       trainStation: findNearest(els.filter(e => e.tags?.railway === 'station'), latN, lngN),
       busStop:      findNearest(els.filter(e => e.tags?.highway === 'bus_stop'), latN, lngN),
-      grocery:      findNearest(els.filter(e => ['supermarket', 'grocery', 'convenience'].includes(e.tags?.shop ?? '')), latN, lngN),
+      grocery:      findNearest(els.filter(e => ['supermarket', 'grocery', 'convenience', 'food', 'deli', 'greengrocer', 'organic', 'health_food'].includes(e.tags?.shop ?? '')), latN, lngN),
       hospital:     findNearest(els.filter(e => e.tags?.amenity === 'hospital'), latN, lngN),
       pharmacy:     findNearest(els.filter(e => e.tags?.amenity === 'pharmacy'), latN, lngN),
-      school:       findNearest(els.filter(e => e.tags?.amenity === 'school'), latN, lngN),
+      school:       findNearest(els.filter(e => ['school', 'college', 'university', 'kindergarten'].includes(e.tags?.amenity ?? '')), latN, lngN),
       library:      findNearest(els.filter(e => e.tags?.amenity === 'library'), latN, lngN),
-      park:         findNearest(els.filter(e => e.tags?.leisure === 'park'), latN, lngN),
+      park:         findNearest(els.filter(e => e.tags?.leisure === 'park' || e.tags?.leisure === 'garden' || e.tags?.landuse === 'recreation_ground'), latN, lngN),
       bank:         findNearest(els.filter(e => ['bank', 'atm'].includes(e.tags?.amenity ?? '')), latN, lngN),
       dining:       findNearest(els.filter(e => ['restaurant', 'cafe', 'fast_food'].includes(e.tags?.amenity ?? '')), latN, lngN),
       worship:      findNearest(els.filter(e => e.tags?.amenity === 'place_of_worship'), latN, lngN),
