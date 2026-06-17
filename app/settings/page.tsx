@@ -3,15 +3,30 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { User, Shield, Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 
-type Section = 'profile' | 'email' | 'password' | 'delete'
+type NavSection = 'profile' | 'security' | 'danger'
+
+interface NavItem {
+  key: NavSection
+  label: string
+  icon: React.ElementType
+  danger?: boolean
+}
+
+const NAV: NavItem[] = [
+  { key: 'profile',  label: 'Profile',     icon: User },
+  { key: 'security', label: 'Security',    icon: Shield },
+  { key: 'danger',   label: 'Danger Zone', icon: Trash2, danger: true },
+]
 
 export default function SettingsPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [userEmail, setUserEmail] = useState<string>('')
   const [accessToken, setAccessToken] = useState<string>('')
+  const [activeSection, setActiveSection] = useState<NavSection>('profile')
 
   // Email change
   const [newEmail, setNewEmail] = useState('')
@@ -29,8 +44,6 @@ export default function SettingsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState('')
   const [deleteMsg, setDeleteMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
-
-  const [activeSection, setActiveSection] = useState<Section>('profile')
 
   useEffect(() => {
     const supabase = createClient()
@@ -75,7 +88,6 @@ export default function SettingsPage() {
     setPasswordLoading(true)
     setPasswordMsg(null)
     const supabase = createClient()
-    // Re-authenticate first
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email: userEmail,
       password: currentPassword,
@@ -129,90 +141,133 @@ export default function SettingsPage() {
     )
   }
 
-  const sections: Array<{ key: Section; label: string }> = [
-    { key: 'profile', label: 'Profile' },
-    { key: 'email', label: 'Change Email' },
-    { key: 'password', label: 'Change Password' },
-    { key: 'delete', label: 'Delete Account' },
-  ]
-
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0f0f0f' }}>
+      {/* Header */}
       <header
         className="sticky top-0 z-10 px-6 py-4"
         style={{ backgroundColor: '#0f0f0f', borderBottom: '1px solid #1a1a1a' }}
       >
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <Link href="/" className="font-black text-white text-lg tracking-tight">
-            liveability
+            Liveability
           </Link>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/dashboard"
-              className="text-xs font-medium transition-colors"
-              style={{ color: '#a0a0a0' }}
-            >
-              Dashboard
-            </Link>
-          </div>
+          <Link
+            href="/dashboard"
+            className="text-xs font-medium transition-colors"
+            style={{ color: '#a0a0a0' }}
+          >
+            Dashboard
+          </Link>
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-6 py-10">
-        <h1 className="text-2xl font-black text-white mb-2">Account Settings</h1>
+      <div className="max-w-4xl mx-auto px-6 py-10">
+        <h1 className="text-2xl font-black text-white mb-1">Account Settings</h1>
         <p className="text-sm mb-8" style={{ color: '#a0a0a0' }}>Manage your account details and security</p>
 
-        {/* Section nav */}
-        <div className="flex gap-1 flex-wrap mb-8">
-          {sections.map(s => (
-            <button
-              key={s.key}
-              onClick={() => setActiveSection(s.key)}
-              className="px-4 py-2 rounded-lg text-xs font-semibold transition-all"
-              style={{
-                backgroundColor: activeSection === s.key ? '#f97316' : '#1a1a1a',
-                color: activeSection === s.key ? 'white' : '#a0a0a0',
-                border: '1px solid #2a2a2a',
-              }}
-            >
-              {s.label}
-            </button>
-          ))}
+        {/* Mobile tabs */}
+        <div className="flex gap-1 mb-6 sm:hidden">
+          {NAV.map(item => {
+            const Icon = item.icon
+            const active = activeSection === item.key
+            return (
+              <button
+                key={item.key}
+                onClick={() => setActiveSection(item.key)}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all"
+                style={{
+                  backgroundColor: active ? (item.danger ? '#ef4444' : '#f97316') : '#1a1a1a',
+                  color: active ? 'white' : (item.danger ? '#ef4444' : '#a0a0a0'),
+                  border: `1px solid ${active ? 'transparent' : (item.danger ? '#ef444422' : '#2a2a2a')}`,
+                }}
+              >
+                <Icon size={12} />
+                {item.label}
+              </button>
+            )
+          })}
         </div>
 
-        {/* Profile */}
-        {activeSection === 'profile' && (
-          <div className="rounded-2xl p-6" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
-            <h2 className="text-white font-bold mb-4">Profile</h2>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium" style={{ color: '#a0a0a0' }}>Email address</label>
-              <div
-                className="px-4 py-3 rounded-xl text-sm text-white"
-                style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}
-              >
-                {userEmail}
-              </div>
-              <p className="text-xs mt-1" style={{ color: '#a0a0a0' }}>
-                Your email is read-only here. Use the Change Email section to update it.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Change Email */}
-        {activeSection === 'email' && (
-          <div className="rounded-2xl p-6" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
-            <h2 className="text-white font-bold mb-4">Change Email</h2>
-            <form onSubmit={handleEmailChange} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium" style={{ color: '#a0a0a0' }}>Current email</label>
-                <div
-                  className="px-4 py-3 rounded-xl text-sm"
-                  style={{ backgroundColor: '#0f0f0f', color: '#a0a0a0', border: '1px solid #2a2a2a' }}
+        {/* Desktop: sidebar + content */}
+        <div className="hidden sm:flex gap-6">
+          {/* Sidebar */}
+          <nav className="w-44 shrink-0 flex flex-col gap-1">
+            {NAV.map(item => {
+              const Icon = item.icon
+              const active = activeSection === item.key
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => setActiveSection(item.key)}
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-left"
+                  style={{
+                    backgroundColor: active
+                      ? (item.danger ? '#ef44441a' : '#f973161a')
+                      : 'transparent',
+                    color: active
+                      ? (item.danger ? '#ef4444' : '#f97316')
+                      : (item.danger ? '#ef4444' : '#a0a0a0'),
+                    border: active
+                      ? `1px solid ${item.danger ? '#ef444444' : '#f9731644'}`
+                      : '1px solid transparent',
+                  }}
                 >
-                  {userEmail}
-                </div>
-              </div>
+                  <Icon size={14} />
+                  {item.label}
+                </button>
+              )
+            })}
+          </nav>
+
+          {/* Divider */}
+          <div className="w-px" style={{ backgroundColor: '#2a2a2a' }} />
+
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            {renderContent()}
+          </div>
+        </div>
+
+        {/* Mobile content */}
+        <div className="sm:hidden">
+          {renderContent()}
+        </div>
+      </div>
+    </div>
+  )
+
+  function renderContent() {
+    if (activeSection === 'profile') {
+      return (
+        <div className="rounded-2xl p-6" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
+          <h2 className="text-white font-bold mb-5">Profile</h2>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium" style={{ color: '#a0a0a0' }}>Email address</label>
+            <div
+              className="px-4 py-3 rounded-xl text-sm text-white"
+              style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}
+            >
+              {userEmail}
+            </div>
+            <p className="text-xs mt-1" style={{ color: '#a0a0a0' }}>
+              To change your email, go to the Security section.
+            </p>
+          </div>
+        </div>
+      )
+    }
+
+    if (activeSection === 'security') {
+      return (
+        <div className="flex flex-col gap-5">
+          {/* Change Email */}
+          <div className="rounded-2xl p-6" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
+            <h2 className="text-white font-bold mb-1">Change Email</h2>
+            <p className="text-xs mb-5" style={{ color: '#a0a0a0' }}>
+              Current: <span className="text-white">{userEmail}</span>
+            </p>
+            <form onSubmit={handleEmailChange} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-medium" style={{ color: '#a0a0a0' }}>New email address</label>
                 <input
@@ -238,12 +293,10 @@ export default function SettingsPage() {
               </button>
             </form>
           </div>
-        )}
 
-        {/* Change Password */}
-        {activeSection === 'password' && (
+          {/* Change Password */}
           <div className="rounded-2xl p-6" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
-            <h2 className="text-white font-bold mb-4">Change Password</h2>
+            <h2 className="text-white font-bold mb-5">Change Password</h2>
             <form onSubmit={handlePasswordChange} className="flex flex-col gap-4">
               {[
                 { label: 'Current password', value: currentPassword, setter: setCurrentPassword, placeholder: '' },
@@ -276,45 +329,54 @@ export default function SettingsPage() {
               </button>
             </form>
           </div>
-        )}
+        </div>
+      )
+    }
 
-        {/* Delete Account */}
-        {activeSection === 'delete' && (
-          <div className="rounded-2xl p-6" style={{ backgroundColor: '#1a1a1a', border: '1px solid #ef444433' }}>
-            <h2 className="font-bold mb-2" style={{ color: '#ef4444' }}>Delete Account</h2>
-            <p className="text-sm mb-4" style={{ color: '#a0a0a0' }}>
-              This action is <strong className="text-white">permanent and irreversible</strong>. All saved addresses
-              and account data will be deleted immediately.
-            </p>
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium" style={{ color: '#a0a0a0' }}>
-                  Type <strong className="text-white">DELETE</strong> to confirm
-                </label>
-                <input
-                  type="text"
-                  value={deleteConfirm}
-                  onChange={e => setDeleteConfirm(e.target.value)}
-                  placeholder="DELETE"
-                  className="px-4 py-3 rounded-xl text-sm text-white placeholder-[#a0a0a0] outline-none focus:ring-2 focus:ring-[#ef4444]"
-                  style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}
-                />
-              </div>
-              {deleteMsg && (
-                <p className="text-xs" style={{ color: deleteMsg.ok ? '#22c55e' : '#ef4444' }}>{deleteMsg.text}</p>
-              )}
-              <button
-                onClick={handleDeleteAccount}
-                disabled={deleteLoading || deleteConfirm !== 'DELETE'}
-                className="self-start px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: '#ef4444' }}
-              >
-                {deleteLoading ? 'Deleting...' : 'Delete My Account'}
-              </button>
-            </div>
+    // Danger Zone
+    return (
+      <div
+        className="rounded-2xl p-6"
+        style={{ backgroundColor: '#1a1a1a', border: '1px solid #ef444433' }}
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <Trash2 size={14} style={{ color: '#ef4444' }} />
+          <h2 className="font-bold" style={{ color: '#ef4444' }}>Danger Zone</h2>
+        </div>
+        <p className="text-sm mb-1" style={{ color: '#a0a0a0' }}>
+          <strong className="text-white">Delete Account</strong>
+        </p>
+        <p className="text-sm mb-5" style={{ color: '#a0a0a0' }}>
+          This action is <strong className="text-white">permanent and irreversible</strong>. All saved
+          addresses and account data will be deleted immediately.
+        </p>
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium" style={{ color: '#a0a0a0' }}>
+              Type <strong className="text-white">DELETE</strong> to confirm
+            </label>
+            <input
+              type="text"
+              value={deleteConfirm}
+              onChange={e => setDeleteConfirm(e.target.value)}
+              placeholder="DELETE"
+              className="px-4 py-3 rounded-xl text-sm text-white placeholder-[#a0a0a0] outline-none focus:ring-2 focus:ring-[#ef4444]"
+              style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}
+            />
           </div>
-        )}
+          {deleteMsg && (
+            <p className="text-xs" style={{ color: deleteMsg.ok ? '#22c55e' : '#ef4444' }}>{deleteMsg.text}</p>
+          )}
+          <button
+            onClick={handleDeleteAccount}
+            disabled={deleteLoading || deleteConfirm !== 'DELETE'}
+            className="self-start px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: '#ef4444' }}
+          >
+            {deleteLoading ? 'Deleting...' : 'Delete My Account'}
+          </button>
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
 }

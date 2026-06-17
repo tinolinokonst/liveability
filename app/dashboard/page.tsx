@@ -69,7 +69,7 @@ export default function Dashboard() {
       >
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <Link href="/" className="font-black text-white text-lg tracking-tight">
-            liveability
+            Liveability
           </Link>
           <div className="flex items-center gap-4">
             <Link

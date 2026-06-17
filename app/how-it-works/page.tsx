@@ -371,7 +371,7 @@ export default function HowItWorks() {
       {/* Footer */}
       <footer className="max-w-5xl mx-auto px-6 py-8" style={{ borderTop: '1px solid #1a1a1a' }}>
         <div className="flex items-center justify-between text-xs" style={{ color: '#a0a0a0' }}>
-          <span>liveability · Columbus, Ohio</span>
+          <span>Liveability · Columbus, Ohio</span>
           <span>Data: EPA AirNow · OpenStreetMap · City of Columbus GIS</span>
         </div>
       </footer>

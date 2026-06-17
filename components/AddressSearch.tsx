@@ -196,6 +196,10 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId }: Addre
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder="Enter a Columbus, OH address..."
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
           className="flex-1 rounded-xl px-4 py-3 text-sm text-white placeholder-[#a0a0a0] outline-none focus:ring-2 focus:ring-[#f97316] transition-all"
           style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
         />

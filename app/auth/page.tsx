@@ -61,7 +61,7 @@ function AuthForm() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="text-white font-black text-2xl tracking-tight">
-            liveability
+            Liveability
           </Link>
           <p style={{ color: '#a0a0a0' }} className="text-sm mt-2">
             Neighborhood intelligence beyond the listing

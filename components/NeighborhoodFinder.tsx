@@ -163,10 +163,14 @@ interface NeighborhoodFinderProps {
   userId?: string | null
 }
 
+const MIN_RENT = 800
+const MAX_RENT = 2500
+
 export default function NeighborhoodFinder({ userId }: NeighborhoodFinderProps) {
   const [weights, setWeights] = useState<WeightConfig>(DEFAULT_WEIGHTS)
   const [activePreset, setActivePreset] = useState('Balanced')
   const [expandedNews, setExpandedNews] = useState<string | null>(null)
+  const [maxBudget, setMaxBudget] = useState(MAX_RENT)
 
   const [selectedName, setSelectedName] = useState<string | null>(null)
   const [metrics, setMetrics] = useState<AddressMetrics | null>(null)
@@ -175,9 +179,13 @@ export default function NeighborhoodFinder({ userId }: NeighborhoodFinderProps) 
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
-  const ranked = [...COLUMBUS_NEIGHBORHOODS]
+  const allRanked = [...COLUMBUS_NEIGHBORHOODS]
     .map(n => ({ ...n, score: scoreNeighborhood(n, weights) }))
     .sort((a, b) => b.score - a.score)
+
+  const budgetActive = maxBudget < MAX_RENT
+  const ranked = budgetActive ? allRanked.filter(n => n.rent <= maxBudget) : allRanked
+  const overBudget = budgetActive ? allRanked.filter(n => n.rent > maxBudget) : []
 
   function applyPreset(preset: typeof PRESETS[number]) {
     setWeights(preset.weights)
@@ -319,11 +327,65 @@ export default function NeighborhoodFinder({ userId }: NeighborhoodFinderProps) 
         ))}
       </div>
 
+      {/* Budget filter */}
+      <div
+        className="rounded-xl p-4"
+        style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <span className="text-xs font-medium uppercase tracking-wider" style={{ color: '#a0a0a0' }}>
+              Monthly budget
+            </span>
+            <span className="text-xs ml-2" style={{ color: '#a0a0a0' }}>
+              (Neighborhoods only · est. rent)
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold" style={{ color: maxBudget < MAX_RENT ? '#f97316' : '#a0a0a0' }}>
+              {maxBudget < MAX_RENT ? `≤ $${maxBudget.toLocaleString()}/mo` : 'Any budget'}
+            </span>
+            {maxBudget < MAX_RENT && (
+              <button
+                onClick={() => setMaxBudget(MAX_RENT)}
+                className="text-xs px-2 py-0.5 rounded-md"
+                style={{ backgroundColor: '#2a2a2a', color: '#a0a0a0' }}
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
+        <input
+          type="range"
+          min={MIN_RENT}
+          max={MAX_RENT}
+          step={50}
+          value={maxBudget}
+          onChange={e => setMaxBudget(Number(e.target.value))}
+          className="w-full"
+        />
+        <div className="flex justify-between mt-1">
+          <span className="text-xs" style={{ color: '#a0a0a0' }}>${MIN_RENT.toLocaleString()}/mo</span>
+          <span className="text-xs" style={{ color: '#a0a0a0' }}>No limit</span>
+        </div>
+      </div>
+
       {/* Rankings */}
       <div className="flex flex-col gap-3">
         <p style={{ color: '#a0a0a0' }} className="text-xs font-medium uppercase tracking-wider">
-          Columbus neighborhoods ranked
+          {budgetActive
+            ? `${ranked.length} neighborhood${ranked.length === 1 ? '' : 's'} within budget`
+            : 'Columbus neighborhoods ranked'}
         </p>
+        {ranked.length === 0 && (
+          <div
+            className="rounded-xl px-4 py-6 text-center text-sm"
+            style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a', color: '#a0a0a0' }}
+          >
+            No neighborhoods found within this budget. Try raising the limit.
+          </div>
+        )}
         {ranked.map((n, i) => {
           const rent = rentLabel(n.rent)
           const bar = qualityColor(n.score)
@@ -401,6 +463,35 @@ export default function NeighborhoodFinder({ userId }: NeighborhoodFinderProps) 
           )
         })}
       </div>
+
+      {overBudget.length > 0 && (
+        <div className="flex flex-col gap-2 mt-1">
+          <p style={{ color: '#a0a0a0' }} className="text-xs font-medium uppercase tracking-wider">
+            Over budget ({overBudget.length})
+          </p>
+          {overBudget.map(n => {
+            const rent = rentLabel(n.rent)
+            return (
+              <div
+                key={n.name}
+                className="rounded-xl px-4 py-3 flex items-center gap-3 opacity-40"
+                style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
+              >
+                <span className="font-semibold text-sm text-white">{n.name}</span>
+                <span
+                  className="text-xs px-2 py-0.5 rounded-full font-medium"
+                  style={{ color: rent.color, backgroundColor: `${rent.color}1a` }}
+                >
+                  ${n.rent.toLocaleString()}/mo
+                </span>
+                <span className="text-xs ml-auto" style={{ color: '#a0a0a0' }}>
+                  score {n.score}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       <p style={{ color: '#a0a0a0' }} className="text-xs text-center">
         Scores based on real characteristics of each Columbus neighborhood. Adjust weights to match your priorities.
