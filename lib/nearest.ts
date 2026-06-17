@@ -3,6 +3,7 @@ import { NearestEssentials } from './types'
 const EMPTY: NearestEssentials = {
   trainStation: null, busStop: null, grocery: null, hospital: null,
   pharmacy: null, school: null, library: null, park: null, bank: null,
+  dining: null, worship: null, parking: null,
   searchRadiusKm: 15,
 }
 

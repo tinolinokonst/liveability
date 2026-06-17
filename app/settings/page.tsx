@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { User, Shield, Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 
-type NavSection = 'profile' | 'security' | 'danger'
+type NavSection = 'profile' | 'security' | 'delete'
 
 interface NavItem {
   key: NavSection
@@ -16,9 +16,9 @@ interface NavItem {
 }
 
 const NAV: NavItem[] = [
-  { key: 'profile',  label: 'Profile',     icon: User },
-  { key: 'security', label: 'Security',    icon: Shield },
-  { key: 'danger',   label: 'Danger Zone', icon: Trash2, danger: true },
+  { key: 'profile',  label: 'Profile',        icon: User },
+  { key: 'security', label: 'Security',       icon: Shield },
+  { key: 'delete',   label: 'Delete Account', icon: Trash2, danger: true },
 ]
 
 export default function SettingsPage() {
@@ -333,7 +333,7 @@ export default function SettingsPage() {
       )
     }
 
-    // Danger Zone
+    // Delete Account
     return (
       <div
         className="rounded-2xl p-6"
@@ -341,10 +341,10 @@ export default function SettingsPage() {
       >
         <div className="flex items-center gap-2 mb-2">
           <Trash2 size={14} style={{ color: '#ef4444' }} />
-          <h2 className="font-bold" style={{ color: '#ef4444' }}>Danger Zone</h2>
+          <h2 className="font-bold" style={{ color: '#ef4444' }}>Delete Account</h2>
         </div>
         <p className="text-sm mb-1" style={{ color: '#a0a0a0' }}>
-          <strong className="text-white">Delete Account</strong>
+          <strong className="text-white">Permanently remove your account</strong>
         </p>
         <p className="text-sm mb-5" style={{ color: '#a0a0a0' }}>
           This action is <strong className="text-white">permanent and irreversible</strong>. All saved

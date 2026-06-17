@@ -66,6 +66,7 @@ async function queryOverpass(url: string, query: string) {
 const EMPTY_RESULT: Omit<NearestEssentials, 'searchRadiusKm'> = {
   trainStation: null, busStop: null, grocery: null, hospital: null,
   pharmacy: null, school: null, library: null, park: null, bank: null,
+  dining: null, worship: null, parking: null,
 }
 
 export async function GET(request: NextRequest) {
@@ -97,6 +98,12 @@ export async function GET(request: NextRequest) {
   way["leisure"="park"](around:${SEARCH_RADIUS},${lat},${lng});
   relation["leisure"="park"](around:${SEARCH_RADIUS},${lat},${lng});
   node["amenity"~"^(bank|atm)$"](around:${SEARCH_RADIUS},${lat},${lng});
+  node["amenity"~"^(restaurant|cafe|fast_food)$"](around:${SEARCH_RADIUS},${lat},${lng});
+  way["amenity"~"^(restaurant|cafe|fast_food)$"](around:${SEARCH_RADIUS},${lat},${lng});
+  node["amenity"="place_of_worship"](around:${SEARCH_RADIUS},${lat},${lng});
+  way["amenity"="place_of_worship"](around:${SEARCH_RADIUS},${lat},${lng});
+  node["amenity"="parking"](around:${SEARCH_RADIUS},${lat},${lng});
+  way["amenity"="parking"](around:${SEARCH_RADIUS},${lat},${lng});
 );
 out tags center;`
 
@@ -116,6 +123,9 @@ out tags center;`
       library:      findNearest(els.filter(e => e.tags?.amenity === 'library'), latN, lngN),
       park:         findNearest(els.filter(e => e.tags?.leisure === 'park'), latN, lngN),
       bank:         findNearest(els.filter(e => ['bank', 'atm'].includes(e.tags?.amenity ?? '')), latN, lngN),
+      dining:       findNearest(els.filter(e => ['restaurant', 'cafe', 'fast_food'].includes(e.tags?.amenity ?? '')), latN, lngN),
+      worship:      findNearest(els.filter(e => e.tags?.amenity === 'place_of_worship'), latN, lngN),
+      parking:      findNearest(els.filter(e => e.tags?.amenity === 'parking'), latN, lngN),
       searchRadiusKm: SEARCH_RADIUS / 1000,
     } satisfies NearestEssentials)
   }

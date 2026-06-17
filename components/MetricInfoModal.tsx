@@ -48,6 +48,9 @@ function nearestFromEssentials(
     case 'library':  return ess.library
     case 'green':    return ess.park
     case 'bank':     return ess.bank
+    case 'dining':   return ess.dining
+    case 'worship':  return ess.worship
+    case 'parking':  return ess.parking
     default:         return null
   }
 }

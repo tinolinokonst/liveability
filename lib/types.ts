@@ -148,6 +148,9 @@ export interface NearestEssentials {
   library: NearestEssentialItem | null
   park: NearestEssentialItem | null
   bank: NearestEssentialItem | null
+  dining: NearestEssentialItem | null
+  worship: NearestEssentialItem | null
+  parking: NearestEssentialItem | null
   searchRadiusKm: number
 }
 
