@@ -3,8 +3,9 @@ import { fetchAmenityScores } from './overpass'
 import { fetchCrimeScore } from './crime'
 import { fetchSunlight } from './sunlight'
 import { fetchNoiseEstimate } from './noise'
-import { fetchDemographics } from './demographics'
-import { AddressMetrics, AmenityScores, CrimeResult, GeoLocation, SunlightResult, NoiseResult, DemographicsResult } from './types'
+import { fetchCensus } from './census'
+import { fetchFBICrime } from './fbi-crime'
+import { AddressMetrics, AmenityScores, CrimeResult, DemographicsResult, FBICrimeResult, GeoLocation, NoiseResult, SunlightResult } from './types'
 
 export function buildMetrics(
   address: string,
@@ -14,7 +15,8 @@ export function buildMetrics(
   crimeData: CrimeResult,
   sunlightData: SunlightResult,
   noiseData: NoiseResult,
-  demographicsData: DemographicsResult,
+  censusData: DemographicsResult,
+  fbiCrimeData: FBICrimeResult,
   id?: string
 ): AddressMetrics {
   const overallScore = Math.round(
@@ -80,7 +82,8 @@ export function buildMetrics(
     stateCrimeContext: crimeData.stateContext,
     sunlight: sunlightData,
     noise: noiseData,
-    demographics: demographicsData,
+    censusData,
+    fbiCrime: fbiCrimeData,
   }
 }
 
@@ -90,14 +93,15 @@ export async function fetchFullMetrics(
   radius: number = 800,
   id?: string
 ): Promise<AddressMetrics> {
-  const [aqi, amenity, crime, sunlight, noise, demographics] = await Promise.all([
+  const [aqi, amenity, crime, sunlight, noise, census, fbiCrime] = await Promise.all([
     fetchAQI(location.lat, location.lng),
     fetchAmenityScores(location.lat, location.lng, radius),
     fetchCrimeScore(location.lat, location.lng),
     fetchSunlight(location.lat, location.lng),
     fetchNoiseEstimate(location.lat, location.lng),
-    fetchDemographics(location.lat, location.lng),
+    fetchCensus(location.lat, location.lng),
+    fetchFBICrime(),
   ])
 
-  return buildMetrics(address, location, aqi, amenity, crime, sunlight, noise, demographics, id)
+  return buildMetrics(address, location, aqi, amenity, crime, sunlight, noise, census, fbiCrime, id)
 }

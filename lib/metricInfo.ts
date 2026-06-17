@@ -17,6 +17,7 @@ export type MetricKey =
   | 'sunlight'
   | 'noise'
   | 'demographics'
+  | 'census'
 
 // EPA AirNow category colors
 export function aqiColor(category: string): string {
@@ -65,7 +66,7 @@ export const METRIC_INFO: Record<MetricKey, MetricInfo> = {
   transit: {
     label: 'Transit Access',
     description:
-      "Counts bus stops, bus stations, and train/tram stops within 800 meters. The score is scaled so that 10 or more transit access points nearby earns a perfect score, reflecting how easy it is to get around without a car.",
+      "Counts bus stops, bus stations, train/tram stops, and public transport stop positions within 800 meters, including route numbers where tagged in OpenStreetMap. The score is scaled so that 10 or more transit access points nearby earns a perfect score, reflecting how easy it is to get around without a car.",
     source: 'OpenStreetMap (Overpass)',
     sourceUrl: 'https://www.openstreetmap.org',
     placesKey: 'transit',
@@ -159,6 +160,13 @@ export const METRIC_INFO: Record<MetricKey, MetricInfo> = {
     label: 'Neighborhood Demographics',
     description:
       "Demographic data from the US Census Bureau's American Community Survey, reflecting the Census tract this address falls within. This is informational context only and is not factored into the overall livability score.",
+    source: 'US Census Bureau (ACS 5-Year Estimates)',
+    sourceUrl: 'https://www.census.gov/programs-surveys/acs',
+  },
+  census: {
+    label: 'Community Snapshot',
+    description:
+      "Key demographic indicators for the Census tract this address falls within, sourced from the US Census Bureau's American Community Survey 5-year estimates. Includes median household income, total population, and median age. This is informational context only — it is not scored or factored into the overall liveability score.",
     source: 'US Census Bureau (ACS 5-Year Estimates)',
     sourceUrl: 'https://www.census.gov/programs-surveys/acs',
   },

@@ -62,6 +62,7 @@ export async function GET(request: NextRequest) {
   node["highway"="bus_stop"](around:${transitRadius},${lat},${lng});
   node["amenity"="bus_station"](around:${transitRadius},${lat},${lng});
   node["railway"~"^(station|halt|tram_stop)$"](around:${transitRadius},${lat},${lng});
+  node["public_transport"="stop_position"](around:${transitRadius},${lat},${lng});
   way["leisure"="park"](around:${radius},${lat},${lng});
   relation["leisure"="park"](around:${radius},${lat},${lng});
   node["amenity"~"^(school|college)$"](around:${radius},${lat},${lng});

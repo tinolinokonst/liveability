@@ -81,6 +81,17 @@ function elementCategory(e: OverpassElement, kind: AmenityKind): string | undefi
   const tags = e.tags || {}
 
   switch (kind) {
+    case 'transit': {
+      const tags = e.tags || {}
+      const type =
+        tags.railway === 'station' ? 'Train station' :
+        tags.railway === 'halt' ? 'Train halt' :
+        tags.railway === 'tram_stop' ? 'Tram stop' :
+        tags.amenity === 'bus_station' ? 'Bus station' :
+        'Bus stop'
+      const routeRef = tags.route_ref
+      return routeRef ? `${type} · Routes ${routeRef}` : type
+    }
     case 'grocery': {
       const shopLabels: Record<string, string> = {
         supermarket: 'Supermarket',
@@ -183,6 +194,7 @@ export async function fetchAmenityScores(lat: number, lng: number, radius: numbe
   const transitElements = elements.filter(e =>
     e.tags?.highway === 'bus_stop' ||
     e.tags?.amenity === 'bus_station' ||
+    e.tags?.public_transport === 'stop_position' ||
     ['station', 'halt', 'tram_stop'].includes(e.tags?.railway || '')
   )
 
@@ -269,7 +281,7 @@ export async function fetchAmenityScores(lat: number, lng: number, radius: numbe
     nearestParking: nearest(parkingElements, lat, lng, 'Parking (no name in OSM)', 'parking'),
     places: {
       grocery: nearestList(groceryElements, lat, lng, 'Grocery store (no name in OSM)', 'grocery'),
-      transit: nearestList(transitElements, lat, lng, 'Transit stop (no name in OSM)', 'transit'),
+      transit: nearestList(transitElements, lat, lng, 'Transit stop (no name in OSM)', 'transit', 20),
       park: nearestList(parkElements, lat, lng, 'Park (no name in OSM)', 'park'),
       school: nearestList(schoolElements, lat, lng, 'School (no name in OSM)', 'school'),
       healthcare: nearestList(healthcareElements, lat, lng, 'Healthcare facility (no name in OSM)', 'healthcare'),

@@ -13,6 +13,7 @@ const AQI_CONTEXT_RADIUS_METERS = 5000
 
 const AMENITY_NOUN: Partial<Record<MetricKey, string>> = {
   school: 'schools',
+  transit: 'transit stops',
 }
 
 const AQI_LEGEND = [

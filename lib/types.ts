@@ -116,7 +116,17 @@ export interface NoiseResult {
 export interface DemographicsResult {
   medianHouseholdIncome: number | null
   totalPopulation: number | null
+  medianAge?: number | null
   tract?: string
+  available: boolean
+  message?: string
+}
+
+export interface FBICrimeResult {
+  agencyName: string | null
+  violentCrimeRate: number | null
+  propertyCrimeRate: number | null
+  year: number | null
   available: boolean
   message?: string
 }
@@ -173,6 +183,8 @@ export interface AddressMetrics {
   sunlight?: SunlightResult
   noise?: NoiseResult
   demographics?: DemographicsResult
+  censusData?: DemographicsResult
+  fbiCrime?: FBICrimeResult
 }
 
 export interface SavedAddress {

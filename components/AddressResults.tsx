@@ -1,4 +1,6 @@
-import { Sun, Volume2, Users } from 'lucide-react'
+"use client"
+
+import { Wind, Shield, Navigation, ShoppingBag, Sun, Volume2, Users, Leaf, LucideIcon } from 'lucide-react'
 import { AddressMetrics, AmenityPlaces, NearestAmenity } from '@/lib/types'
 import MetricCard from './MetricCard'
 import InfoCard from './InfoCard'
@@ -23,6 +25,8 @@ const EMPTY_PLACES: AmenityPlaces = {
   worship: [],
   parking: [],
 }
+
+// ─── helpers ────────────────────────────────────────────────────────────────
 
 function fmtCount(count: number | undefined, suffix: string): string {
   return count === undefined ? NA : `${count} ${suffix}`
@@ -53,12 +57,12 @@ function joinAnd(items: string[]): string {
 }
 
 const AQI_INFO: Record<string, { quality: string; risk: string }> = {
-  'Good': { quality: 'satisfactory', risk: 'little or no risk' },
-  'Moderate': { quality: 'acceptable', risk: 'a moderate health concern for sensitive groups' },
+  Good: { quality: 'satisfactory', risk: 'little or no risk' },
+  Moderate: { quality: 'acceptable', risk: 'a moderate health concern for sensitive groups' },
   'Unhealthy for Sensitive Groups': { quality: 'a concern for sensitive groups', risk: 'increased risk of effects for sensitive groups' },
-  'Unhealthy': { quality: 'unhealthy', risk: 'increased risk of effects for everyone' },
+  Unhealthy: { quality: 'unhealthy', risk: 'increased risk of effects for everyone' },
   'Very Unhealthy': { quality: 'very unhealthy', risk: 'a health alert, with everyone likely affected' },
-  'Hazardous': { quality: 'hazardous', risk: 'serious risk of health effects for the entire population' },
+  Hazardous: { quality: 'hazardous', risk: 'serious risk of health effects for the entire population' },
 }
 
 function placesParagraph(places: NearestAmenity[] | undefined, label: string, radiusMeters: number): React.ReactNode {
@@ -86,13 +90,10 @@ function amenityDetail(
   places: NearestAmenity[] | undefined,
   placesLabel: string
 ): React.ReactNode {
-  if (count === undefined) {
-    return <p>{NA}</p>
-  }
+  if (count === undefined) return <p>{NA}</p>
 
   const radiusStr = radiusLabel(radiusMeters)
   const countNoun = count === 1 ? countSingular : countPlural
-
   const summary = !nearest ? (
     <p>There are no {countPlural} within {radiusStr}.</p>
   ) : (
@@ -110,15 +111,15 @@ function amenityDetail(
   )
 }
 
+// ─── modal detail builders ───────────────────────────────────────────────────
+
 function buildDetail(metricKey: string, metrics: AddressMetrics): React.ReactNode {
   const places = metrics.places ?? EMPTY_PLACES
   const radius = metrics.radius ?? 800
 
   switch (metricKey) {
     case 'aqi': {
-      if (metrics.aqi === undefined || metrics.aqiCategory === undefined) {
-        return <p>{NA}</p>
-      }
+      if (metrics.aqi === undefined || metrics.aqiCategory === undefined) return <p>{NA}</p>
       const info = AQI_INFO[metrics.aqiCategory] ?? { quality: 'uncertain', risk: 'an uncertain level of risk' }
       return (
         <p>
@@ -128,9 +129,7 @@ function buildDetail(metricKey: string, metrics: AddressMetrics): React.ReactNod
       )
     }
     case 'walkability': {
-      if (metrics.walkabilityScore === undefined || metrics.groceryCount === undefined || metrics.transitCount === undefined || metrics.parkCount === undefined) {
-        return <p>{NA}</p>
-      }
+      if (metrics.walkabilityScore === undefined || metrics.groceryCount === undefined || metrics.transitCount === undefined || metrics.parkCount === undefined) return <p>{NA}</p>
       const count = metrics.groceryCount + metrics.transitCount + metrics.parkCount
       const types: string[] = []
       if (metrics.groceryCount > 0) types.push('grocery stores')
@@ -150,8 +149,35 @@ function buildDetail(metricKey: string, metrics: AddressMetrics): React.ReactNod
     }
     case 'grocery':
       return amenityDetail(places?.grocery?.[0] ?? null, metrics.groceryCount, 'grocery store', 'grocery option', 'grocery options', radius, places?.grocery, 'Grocery stores')
-    case 'transit':
-      return amenityDetail(places?.transit?.[0] ?? null, metrics.transitCount, 'transit stop', 'transit stop', 'transit stops', 800, places?.transit, 'Transit stops')
+    case 'transit': {
+      const count = metrics.transitCount
+      const list = places?.transit ?? []
+      if (count === undefined) return <p>{NA}</p>
+      const radiusStr = radiusLabel(800)
+      const nearest = list[0]
+      const summary = !nearest ? (
+        <p>There are no transit stops within {radiusStr}.</p>
+      ) : (
+        <p>
+          The nearest stop is <strong>{nearest.name}</strong>
+          {nearest.category ? ` (${nearest.category})` : ''}, <strong>{nearest.distanceKm}km away</strong>.{' '}
+          There {isAre(count)} <strong>{count} transit stop{count === 1 ? '' : 's'}</strong> within {radiusStr}.
+        </p>
+      )
+      const stopList = list.slice(0, 8)
+      return (
+        <>
+          {summary}
+          {stopList.length > 0 && (
+            <p>
+              Nearby stops: {stopList.map((s, i) => (
+                <span key={i}>{s.name}{s.category ? ` — ${s.category}` : ''} ({s.distanceKm}km){i < stopList.length - 1 ? '; ' : ''}</span>
+              ))}.
+            </p>
+          )}
+        </>
+      )
+    }
     case 'green':
       return amenityDetail(places?.park?.[0] ?? null, metrics.parkCount, 'park', 'green space', 'green spaces', radius, places?.park, 'Green spaces')
     case 'healthcare':
@@ -169,11 +195,10 @@ function buildDetail(metricKey: string, metrics: AddressMetrics): React.ReactNod
     case 'parking':
       return amenityDetail(places?.parking?.[0] ?? null, metrics.parkingCount, 'parking option', 'parking option', 'parking options', 400, places?.parking, 'Parking options')
     case 'safety': {
-      if (metrics.crimeIncidentCount === undefined || metrics.safetyScore === undefined) {
-        return <p>{NA}</p>
-      }
+      if (metrics.crimeIncidentCount === undefined || metrics.safetyScore === undefined) return <p>{NA}</p>
       const count = metrics.crimeIncidentCount
-      const stateContext = metrics.stateCrimeContext
+      const stateCtx = metrics.stateCrimeContext
+      const fbi = metrics.fbiCrime
       return (
         <>
           <p>
@@ -181,12 +206,19 @@ function buildDetail(metricKey: string, metrics: AddressMetrics): React.ReactNod
             <strong>{count} incident{count === 1 ? '' : 's'}</strong> in the past 12 months within 1km.
             {metrics.safetyNote ? ` ${metrics.safetyNote}` : ''}
           </p>
-          {stateContext?.available && stateContext.rate !== null && (
+          {stateCtx?.available && stateCtx.rate !== null && (
             <p>
-              <strong>State-level context:</strong> {stateContext.state} reported a violent crime rate of{' '}
-              <strong>{stateContext.rate} per 100,000 residents</strong>
-              {stateContext.year ? ` in ${stateContext.year}` : ''}, according to the FBI Crime Data Explorer.
-              This is statewide context and is separate from the local incident count above.
+              <strong>State-level context:</strong> {stateCtx.state} reported a violent crime rate of{' '}
+              <strong>{stateCtx.rate} per 100,000 residents</strong>
+              {stateCtx.year ? ` in ${stateCtx.year}` : ''}, per the FBI Crime Data Explorer.
+              This is statewide context, separate from the local incident count above.
+            </p>
+          )}
+          {fbi?.available && fbi.violentCrimeRate !== null && (
+            <p>
+              <strong>Citywide context (FBI):</strong> Columbus Division of Police reported a violent crime rate of{' '}
+              <strong>{fbi.violentCrimeRate} per 100,000 residents</strong>
+              {fbi.year ? ` in ${fbi.year}` : ''}, per the FBI Crime Data Explorer. This is a city-level figure, not address-specific.
             </p>
           )}
         </>
@@ -234,10 +266,154 @@ function buildDetail(metricKey: string, metrics: AddressMetrics): React.ReactNod
         </p>
       )
     }
+    case 'census': {
+      // Prefer censusData (richer, has medianAge) over legacy demographics field
+      const data = metrics.censusData ?? metrics.demographics
+      if (!data?.available) {
+        return <p>{data?.message ?? 'Demographic data unavailable for this location'}</p>
+      }
+      const { medianHouseholdIncome, totalPopulation, medianAge, tract } = data
+      return (
+        <>
+          <p>
+            Data from the US Census Bureau&apos;s American Community Survey for the Census tract this address falls
+            within{tract ? ` (tract ${tract})` : ''}.
+          </p>
+          <ul style={{ paddingLeft: '1rem', listStyleType: 'disc' }} className="flex flex-col gap-1">
+            {medianHouseholdIncome !== null && (
+              <li>Median household income: <strong>${medianHouseholdIncome.toLocaleString()}</strong></li>
+            )}
+            {totalPopulation !== null && (
+              <li>Census tract population: <strong>{totalPopulation.toLocaleString()}</strong></li>
+            )}
+            {medianAge != null && (
+              <li>Median age: <strong>{medianAge} years</strong></li>
+            )}
+          </ul>
+          <p>This is informational context only — it is not scored or factored into the overall liveability score.</p>
+        </>
+      )
+    }
     default:
       return undefined
   }
 }
+
+// ─── composite score ─────────────────────────────────────────────────────────
+
+function computeCompositeScore(metrics: AddressMetrics): number {
+  const WEIGHTS: Record<string, number> = {
+    aqi: 0.18, walkability: 0.18, grocery: 0.08, transit: 0.08, green: 0.08,
+    school: 0.05, healthcare: 0.08, dining: 0.04, safety: 0.10,
+    sunlight: 0.05, noise: 0.04,
+  }
+
+  const available: Array<[number, number]> = [] // [score, weight]
+  const add = (score: number | undefined | null, key: string) => {
+    if (score != null) available.push([score, WEIGHTS[key]])
+  }
+
+  add(metrics.aqiScore, 'aqi')
+  add(metrics.walkabilityScore, 'walkability')
+  add(metrics.groceryScore, 'grocery')
+  add(metrics.transitScore, 'transit')
+  add(metrics.greenScore, 'green')
+  add(metrics.schoolScore, 'school')
+  add(metrics.healthcareScore, 'healthcare')
+  add(metrics.diningScore, 'dining')
+  add(metrics.safetyScore, 'safety')
+  if (metrics.sunlight?.available) add(metrics.sunlight.score, 'sunlight')
+  if (metrics.noise?.available) add(metrics.noise.score, 'noise')
+
+  if (available.length === 0) return metrics.overallScore ?? 0
+  const totalW = available.reduce((s, [, w]) => s + w, 0)
+  return Math.round(available.reduce((s, [v, w]) => s + v * w, 0) / totalW)
+}
+
+function scoreLabel(score: number): string {
+  if (score >= 80) return 'Excellent'
+  if (score >= 65) return 'Good'
+  if (score >= 50) return 'Fair'
+  return 'Poor'
+}
+
+function scoreColor(score: number): string {
+  if (score >= 80) return '#22c55e'
+  if (score >= 65) return '#f59e0b'
+  if (score >= 50) return '#f97316'
+  return '#ef4444'
+}
+
+function compositeSubtitle(metrics: AddressMetrics): string {
+  const labeled: Array<{ label: string; score: number }> = []
+  const add = (score: number | undefined | null, label: string) => {
+    if (score != null) labeled.push({ label, score })
+  }
+
+  add(metrics.aqiScore, 'air quality')
+  add(metrics.walkabilityScore, 'walkability')
+  add(metrics.safetyScore, 'safety')
+  add(metrics.transitScore, 'transit access')
+  add(metrics.groceryScore, 'grocery access')
+  add(metrics.healthcareScore, 'healthcare')
+  add(metrics.greenScore, 'green space')
+  if (metrics.sunlight?.available) add(metrics.sunlight.score, 'sunlight')
+  if (metrics.noise?.available) add(metrics.noise.score, 'noise levels')
+
+  if (labeled.length === 0) return 'Based on local data sources'
+
+  labeled.sort((a, b) => b.score - a.score)
+  const best = labeled[0]
+  const worst = labeled[labeled.length - 1]
+
+  const highLabel = (s: number) => s >= 80 ? 'Excellent' : s >= 65 ? 'Strong' : 'Good'
+  const lowLabel = (s: number) => s < 30 ? 'Low' : s < 45 ? 'Weak' : 'Moderate'
+
+  const parts: string[] = [`${highLabel(best.score)} ${best.label}`]
+  if (worst.label !== best.label && worst.score < 60) {
+    parts.push(`${lowLabel(worst.score)} ${worst.label}`)
+  }
+  return parts.join(' · ')
+}
+
+// ─── sub-components ──────────────────────────────────────────────────────────
+
+function CompositeScoreBanner({ metrics }: { metrics: AddressMetrics }) {
+  const score = computeCompositeScore(metrics)
+  const color = scoreColor(score)
+  const label = scoreLabel(score)
+  const subtitle = compositeSubtitle(metrics)
+
+  return (
+    <div
+      className="rounded-2xl p-5 flex items-center gap-5"
+      style={{ backgroundColor: '#1a1a1a', border: `1px solid ${color}40` }}
+    >
+      <div className="flex flex-col items-center justify-center shrink-0 w-20">
+        <div className="text-5xl font-black leading-none" style={{ color }}>{score}</div>
+        <div className="text-xs font-bold uppercase tracking-wide mt-1.5" style={{ color }}>{label}</div>
+      </div>
+      <div className="w-px self-stretch" style={{ backgroundColor: '#2a2a2a' }} />
+      <div className="flex flex-col gap-1 min-w-0">
+        <div className="text-white font-bold text-base leading-tight">Liveability Score</div>
+        <div className="text-sm leading-snug" style={{ color: '#a0a0a0' }}>{subtitle}</div>
+      </div>
+    </div>
+  )
+}
+
+function SectionHeader({ icon: Icon, label }: { icon: LucideIcon; label: string }) {
+  return (
+    <div className="flex items-center gap-2 pt-2">
+      <Icon size={14} style={{ color: '#f97316' }} />
+      <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#a0a0a0' }}>
+        {label}
+      </span>
+    </div>
+  )
+}
+
+// ─── main component ──────────────────────────────────────────────────────────
 
 export default function AddressResults({ metrics, updated }: AddressResultsProps) {
   const radius = metrics.radius ?? 800
@@ -245,260 +421,285 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
   const location = metrics.location ?? { lat: 0, lng: 0, formattedAddress: metrics.address ?? '' }
   const center = { lat: location.lat, lng: location.lng }
 
+  // Community Snapshot data: prefer new censusData (has medianAge), fall back to legacy demographics
+  const communityData = metrics.censusData ?? metrics.demographics
+  const communityValue = communityData?.available && communityData.medianHouseholdIncome !== null
+    ? `$${communityData.medianHouseholdIncome.toLocaleString()} median income`
+    : 'Demographic data unavailable'
+  const communityDesc = communityData?.available
+    ? [
+        communityData.totalPopulation !== null ? `Pop: ${communityData.totalPopulation.toLocaleString()}` : null,
+        (communityData as { medianAge?: number | null }).medianAge != null ? `Median age: ${(communityData as { medianAge?: number | null }).medianAge}` : null,
+      ].filter(Boolean).join(' · ') || undefined
+    : undefined
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <MetricCard
-          label="Air Quality (AQI)"
-          value={metrics.aqi === undefined ? NA : `${metrics.aqi}`}
-          score={metrics.aqiScore ?? 0}
-          description={metrics.aqiCategory ?? NA}
-          source="Open-Meteo Air Quality API"
-          updated={updated}
-          metricKey="aqi"
-          center={center}
-          category={metrics.aqiCategory}
-          detail={buildDetail('aqi', metrics)}
-        />
-        <MetricCard
-          label="Walkability"
-          value={fmtScore(metrics.walkabilityScore)}
-          score={metrics.walkabilityScore ?? 0}
-          description="Based on nearby amenities"
-          source="OpenStreetMap (Overpass)"
-          updated={updated}
-          metricKey="walkability"
-          center={center}
-          places={combinedWalkabilityPlaces(places).slice(0, 8)}
-          searchRadius={radius}
-          detail={buildDetail('walkability', metrics)}
-        />
-        <MetricCard
-          label="Grocery Access"
-          value={fmtCount(metrics.groceryCount, 'stores')}
-          score={metrics.groceryScore ?? 0}
-          description={`Within ${radius}m`}
-          extra={nearestLabel(metrics.nearestGrocery) && (
-            <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestGrocery)}</p>
-          )}
-          source="OpenStreetMap (Overpass)"
-          updated={updated}
-          metricKey="grocery"
-          radius={radius}
-          places={places?.grocery}
-          center={center}
-          searchRadius={radius}
-          detail={buildDetail('grocery', metrics)}
-        />
-        <MetricCard
-          label="Transit Access"
-          value={fmtCount(metrics.transitCount, 'stops')}
-          score={metrics.transitScore ?? 0}
-          description="Bus stops & stations within 800m"
-          source="OpenStreetMap (Overpass)"
-          updated={updated}
-          metricKey="transit"
-          radius={radius}
-          places={places?.transit}
-          center={center}
-          searchRadius={radius}
-          detail={buildDetail('transit', metrics)}
-        />
-        <MetricCard
-          label="Green Space"
-          value={fmtCount(metrics.parkCount, 'parks')}
-          score={metrics.greenScore ?? 0}
-          description={`Parks within ${radius}m`}
-          extra={nearestLabel(metrics.nearestPark) && (
-            <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestPark)}</p>
-          )}
-          source="OpenStreetMap (Overpass)"
-          updated={updated}
-          metricKey="green"
-          radius={radius}
-          places={places?.park}
-          center={center}
-          searchRadius={radius}
-          detail={buildDetail('green', metrics)}
-        />
-        <MetricCard
-          label="Safety / Crime"
-          value={fmtCount(metrics.crimeIncidentCount, 'incidents')}
-          score={metrics.safetyScore ?? 0}
-          description={metrics.safetyNote || ((metrics.crimeTopTypes ?? []).length ? `Top: ${(metrics.crimeTopTypes ?? []).join(', ')}` : 'Within 1km, last 12 months')}
-          source="City of Columbus GIS"
-          updated={updated}
-          metricKey="safety"
-          center={center}
-          crimeIncidents={metrics.crimeIncidents}
-          detail={buildDetail('safety', metrics)}
-        />
-        <MetricCard
-          label="Healthcare Access"
-          value={fmtCount(metrics.healthcareCount, 'facilities')}
-          score={metrics.healthcareScore ?? 0}
-          description={`Hospitals, clinics & pharmacies within ${radius}m`}
-          extra={nearestLabel(metrics.nearestHealthcare) && (
-            <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestHealthcare)}</p>
-          )}
-          source="OpenStreetMap (Overpass)"
-          updated={updated}
-          metricKey="healthcare"
-          radius={radius}
-          places={places?.healthcare}
-          center={center}
-          searchRadius={radius}
-          detail={buildDetail('healthcare', metrics)}
-        />
-        <MetricCard
-          label="Schools Nearby"
-          value={fmtCount(metrics.schoolCount, 'schools')}
-          score={metrics.schoolScore ?? 0}
-          description={`Within ${radius}m`}
-          extra={nearestLabel(metrics.nearestSchool) && (
-            <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestSchool)}</p>
-          )}
-          source="OpenStreetMap (Overpass)"
-          updated={updated}
-          metricKey="school"
-          radius={radius}
-          places={places?.school}
-          center={center}
-          searchRadius={radius}
-          detail={buildDetail('school', metrics)}
-        />
-        <MetricCard
-          label="Dining & Cafes"
-          value={fmtCount(metrics.diningCount, 'spots')}
-          score={metrics.diningScore ?? 0}
-          description={`Restaurants & cafes within ${radius}m`}
-          extra={nearestLabel(metrics.nearestDining) && (
-            <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestDining)}</p>
-          )}
-          source="OpenStreetMap (Overpass)"
-          updated={updated}
-          metricKey="dining"
-          radius={radius}
-          places={places?.dining}
-          center={center}
-          searchRadius={radius}
-          detail={buildDetail('dining', metrics)}
-        />
-        <MetricCard
-          label="Libraries"
-          value={fmtCount(metrics.libraryCount, 'libraries')}
-          score={metrics.libraryScore ?? 0}
-          description="Within 1.6km"
-          extra={nearestLabel(metrics.nearestLibrary) && (
-            <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestLibrary)}</p>
-          )}
-          source="OpenStreetMap (Overpass)"
-          updated={updated}
-          metricKey="library"
-          radius={1600}
-          places={places?.library}
-          center={center}
-          searchRadius={radius}
-          detail={buildDetail('library', metrics)}
-        />
-        <MetricCard
-          label="Banks / ATMs"
-          value={fmtCount(metrics.bankCount, 'found')}
-          score={metrics.bankScore ?? 0}
-          description="Within 800m"
-          extra={nearestLabel(metrics.nearestBank) && (
-            <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestBank)}</p>
-          )}
-          source="OpenStreetMap (Overpass)"
-          updated={updated}
-          metricKey="bank"
-          radius={800}
-          places={places?.bank}
-          center={center}
-          searchRadius={radius}
-          detail={buildDetail('bank', metrics)}
-        />
-        <MetricCard
-          label="Places of Worship"
-          value={fmtCount(metrics.worshipCount, 'found')}
-          score={metrics.worshipScore ?? 0}
-          description="Within 1.6km"
-          extra={nearestLabel(metrics.nearestWorship) && (
-            <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestWorship)}</p>
-          )}
-          source="OpenStreetMap (Overpass)"
-          updated={updated}
-          metricKey="worship"
-          radius={1600}
-          places={places?.worship}
-          center={center}
-          searchRadius={radius}
-          detail={buildDetail('worship', metrics)}
-        />
-        <MetricCard
-          label="Parking"
-          value={fmtCount(metrics.parkingCount, 'found')}
-          score={metrics.parkingScore ?? 0}
-          description="Within 400m"
-          extra={nearestLabel(metrics.nearestParking) && (
-            <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestParking)}</p>
-          )}
-          source="OpenStreetMap (Overpass)"
-          updated={updated}
-          metricKey="parking"
-          radius={400}
-          places={places?.parking}
-          center={center}
-          searchRadius={radius}
-          detail={buildDetail('parking', metrics)}
-        />
-        <MetricCard
-          label="Sunlight"
-          value={metrics.sunlight?.available && metrics.sunlight.hoursPerYear !== null ? `${metrics.sunlight.hoursPerYear} hrs/yr` : NA}
-          score={metrics.sunlight?.score ?? 0}
-          description="Estimated annual rooftop sunshine"
-          source="Google Solar API"
-          updated={updated}
-          metricKey="sunlight"
-          icon={Sun}
-          detail={buildDetail('sunlight', metrics)}
-        />
-        <MetricCard
-          label="Noise Estimate"
-          value={metrics.noise?.available && metrics.noise.level !== null ? metrics.noise.level : NA}
-          score={metrics.noise?.score ?? 0}
-          description="ESTIMATE based on nearby roads, not a direct measurement"
-          source="OpenStreetMap (Overpass)"
-          updated={updated}
-          metricKey="noise"
-          icon={Volume2}
-          detail={buildDetail('noise', metrics)}
-        />
-        <InfoCard
-          label="Neighborhood Demographics"
-          value={
-            metrics.demographics?.available && metrics.demographics.medianHouseholdIncome !== null
-              ? `$${metrics.demographics.medianHouseholdIncome.toLocaleString()} median income`
-              : 'Demographic data unavailable for this location'
-          }
-          description={
-            metrics.demographics?.available && metrics.demographics.totalPopulation !== null
-              ? `Population: ${metrics.demographics.totalPopulation.toLocaleString()}`
-              : undefined
-          }
-          source="US Census Bureau (ACS)"
-          updated={updated}
-          metricKey="demographics"
-          icon={Users}
-          detail={buildDetail('demographics', metrics)}
-        />
-        <div
-          className="rounded-xl border p-4 flex flex-col items-center justify-center"
-          style={{ backgroundColor: '#1a1a1a', borderColor: '#2a2a2a' }}
-        >
-          <p style={{ color: '#a0a0a0' }} className="text-xs mb-1 uppercase tracking-wider font-medium">Overall Score</p>
-          <p className="text-4xl font-bold" style={{ color: '#f97316' }}>{metrics.overallScore ?? '—'}</p>
-          <p style={{ color: '#a0a0a0' }} className="text-xs mt-1">out of 100</p>
+    <div className="flex flex-col gap-5">
+      {/* Composite score banner */}
+      <CompositeScoreBanner metrics={metrics} />
+
+      {/* Environment */}
+      <div className="flex flex-col gap-3">
+        <SectionHeader icon={Wind} label="Environment" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <MetricCard
+            label="Air Quality (AQI)"
+            value={metrics.aqi === undefined ? NA : `${metrics.aqi}`}
+            score={metrics.aqiScore ?? 0}
+            description={metrics.aqiCategory ?? NA}
+            source="Open-Meteo Air Quality API"
+            updated={updated}
+            metricKey="aqi"
+            center={center}
+            category={metrics.aqiCategory}
+            detail={buildDetail('aqi', metrics)}
+          />
+          <MetricCard
+            label="Green Space"
+            value={fmtCount(metrics.parkCount, 'parks')}
+            score={metrics.greenScore ?? 0}
+            description={`Parks within ${radius}m`}
+            extra={nearestLabel(metrics.nearestPark) && (
+              <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestPark)}</p>
+            )}
+            source="OpenStreetMap (Overpass)"
+            updated={updated}
+            metricKey="green"
+            icon={Leaf}
+            radius={radius}
+            places={places?.park}
+            center={center}
+            searchRadius={radius}
+            detail={buildDetail('green', metrics)}
+          />
+          <MetricCard
+            label="Sunlight"
+            value={metrics.sunlight?.available && metrics.sunlight.hoursPerYear !== null ? `${metrics.sunlight.hoursPerYear} hrs/yr` : NA}
+            score={metrics.sunlight?.score ?? 0}
+            description="Estimated annual rooftop sunshine"
+            source="Google Solar API"
+            updated={updated}
+            metricKey="sunlight"
+            icon={Sun}
+            detail={buildDetail('sunlight', metrics)}
+          />
+          <MetricCard
+            label="Noise Estimate"
+            value={metrics.noise?.available && metrics.noise.level !== null ? metrics.noise.level : NA}
+            score={metrics.noise?.score ?? 0}
+            description="ESTIMATE based on nearby roads"
+            source="OpenStreetMap (Overpass)"
+            updated={updated}
+            metricKey="noise"
+            icon={Volume2}
+            detail={buildDetail('noise', metrics)}
+          />
+        </div>
+      </div>
+
+      {/* Getting Around */}
+      <div className="flex flex-col gap-3">
+        <SectionHeader icon={Navigation} label="Getting Around" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <MetricCard
+            label="Transit Access"
+            value={fmtCount(metrics.transitCount, 'stops')}
+            score={metrics.transitScore ?? 0}
+            description="Bus stops & stations within 800m"
+            source="OpenStreetMap (Overpass)"
+            updated={updated}
+            metricKey="transit"
+            radius={radius}
+            places={places?.transit}
+            center={center}
+            searchRadius={800}
+            detail={buildDetail('transit', metrics)}
+          />
+          <MetricCard
+            label="Walkability"
+            value={fmtScore(metrics.walkabilityScore)}
+            score={metrics.walkabilityScore ?? 0}
+            description="Based on nearby amenities"
+            source="OpenStreetMap (Overpass)"
+            updated={updated}
+            metricKey="walkability"
+            center={center}
+            places={combinedWalkabilityPlaces(places).slice(0, 8)}
+            searchRadius={radius}
+            detail={buildDetail('walkability', metrics)}
+          />
+          <MetricCard
+            label="Parking"
+            value={fmtCount(metrics.parkingCount, 'found')}
+            score={metrics.parkingScore ?? 0}
+            description="Within 400m"
+            extra={nearestLabel(metrics.nearestParking) && (
+              <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestParking)}</p>
+            )}
+            source="OpenStreetMap (Overpass)"
+            updated={updated}
+            metricKey="parking"
+            radius={400}
+            places={places?.parking}
+            center={center}
+            searchRadius={radius}
+            detail={buildDetail('parking', metrics)}
+          />
+        </div>
+      </div>
+
+      {/* Daily Life */}
+      <div className="flex flex-col gap-3">
+        <SectionHeader icon={ShoppingBag} label="Daily Life" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <MetricCard
+            label="Grocery Access"
+            value={fmtCount(metrics.groceryCount, 'stores')}
+            score={metrics.groceryScore ?? 0}
+            description={`Within ${radius}m`}
+            extra={nearestLabel(metrics.nearestGrocery) && (
+              <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestGrocery)}</p>
+            )}
+            source="OpenStreetMap (Overpass)"
+            updated={updated}
+            metricKey="grocery"
+            radius={radius}
+            places={places?.grocery}
+            center={center}
+            searchRadius={radius}
+            detail={buildDetail('grocery', metrics)}
+          />
+          <MetricCard
+            label="Dining & Cafes"
+            value={fmtCount(metrics.diningCount, 'spots')}
+            score={metrics.diningScore ?? 0}
+            description={`Restaurants & cafes within ${radius}m`}
+            extra={nearestLabel(metrics.nearestDining) && (
+              <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestDining)}</p>
+            )}
+            source="OpenStreetMap (Overpass)"
+            updated={updated}
+            metricKey="dining"
+            radius={radius}
+            places={places?.dining}
+            center={center}
+            searchRadius={radius}
+            detail={buildDetail('dining', metrics)}
+          />
+          <MetricCard
+            label="Schools Nearby"
+            value={fmtCount(metrics.schoolCount, 'schools')}
+            score={metrics.schoolScore ?? 0}
+            description={`Within ${radius}m`}
+            extra={nearestLabel(metrics.nearestSchool) && (
+              <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestSchool)}</p>
+            )}
+            source="OpenStreetMap (Overpass)"
+            updated={updated}
+            metricKey="school"
+            radius={radius}
+            places={places?.school}
+            center={center}
+            searchRadius={radius}
+            detail={buildDetail('school', metrics)}
+          />
+          <MetricCard
+            label="Healthcare Access"
+            value={fmtCount(metrics.healthcareCount, 'facilities')}
+            score={metrics.healthcareScore ?? 0}
+            description={`Hospitals, clinics & pharmacies within ${radius}m`}
+            extra={nearestLabel(metrics.nearestHealthcare) && (
+              <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestHealthcare)}</p>
+            )}
+            source="OpenStreetMap (Overpass)"
+            updated={updated}
+            metricKey="healthcare"
+            radius={radius}
+            places={places?.healthcare}
+            center={center}
+            searchRadius={radius}
+            detail={buildDetail('healthcare', metrics)}
+          />
+          <MetricCard
+            label="Libraries"
+            value={fmtCount(metrics.libraryCount, 'libraries')}
+            score={metrics.libraryScore ?? 0}
+            description="Within 1.6km"
+            extra={nearestLabel(metrics.nearestLibrary) && (
+              <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestLibrary)}</p>
+            )}
+            source="OpenStreetMap (Overpass)"
+            updated={updated}
+            metricKey="library"
+            radius={1600}
+            places={places?.library}
+            center={center}
+            searchRadius={radius}
+            detail={buildDetail('library', metrics)}
+          />
+          <MetricCard
+            label="Banks / ATMs"
+            value={fmtCount(metrics.bankCount, 'found')}
+            score={metrics.bankScore ?? 0}
+            description="Within 800m"
+            extra={nearestLabel(metrics.nearestBank) && (
+              <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestBank)}</p>
+            )}
+            source="OpenStreetMap (Overpass)"
+            updated={updated}
+            metricKey="bank"
+            radius={800}
+            places={places?.bank}
+            center={center}
+            searchRadius={radius}
+            detail={buildDetail('bank', metrics)}
+          />
+        </div>
+      </div>
+
+      {/* Safety & Community */}
+      <div className="flex flex-col gap-3">
+        <SectionHeader icon={Shield} label="Safety & Community" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <MetricCard
+            label="Safety / Crime"
+            value={fmtCount(metrics.crimeIncidentCount, 'incidents')}
+            score={metrics.safetyScore ?? 0}
+            description={metrics.safetyNote || ((metrics.crimeTopTypes ?? []).length ? `Top: ${(metrics.crimeTopTypes ?? []).join(', ')}` : 'Within 1km, last 12 months')}
+            source="City of Columbus GIS"
+            updated={updated}
+            metricKey="safety"
+            center={center}
+            crimeIncidents={metrics.crimeIncidents}
+            detail={buildDetail('safety', metrics)}
+          />
+          <InfoCard
+            label="Community Snapshot"
+            value={communityValue}
+            description={communityDesc}
+            source="US Census Bureau (ACS)"
+            updated={updated}
+            metricKey="census"
+            icon={Users}
+            detail={buildDetail('census', metrics)}
+          />
+          <MetricCard
+            label="Places of Worship"
+            value={fmtCount(metrics.worshipCount, 'found')}
+            score={metrics.worshipScore ?? 0}
+            description="Within 1.6km"
+            extra={nearestLabel(metrics.nearestWorship) && (
+              <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestWorship)}</p>
+            )}
+            source="OpenStreetMap (Overpass)"
+            updated={updated}
+            metricKey="worship"
+            radius={1600}
+            places={places?.worship}
+            center={center}
+            searchRadius={radius}
+            detail={buildDetail('worship', metrics)}
+          />
         </div>
       </div>
 
