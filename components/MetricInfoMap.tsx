@@ -18,6 +18,13 @@ export interface ContextCircle {
   color?: string
 }
 
+interface NearestOutside {
+  lat: number
+  lng: number
+  name: string | null
+  distanceKm: number
+}
+
 interface MetricInfoMapProps {
   center: { lat: number; lng: number }
   centerLabel: ReactNode
@@ -28,6 +35,7 @@ interface MetricInfoMapProps {
   circleLabel?: ReactNode
   searchRadiusMeters?: number
   contextCircle?: ContextCircle
+  nearestOutside?: NearestOutside
   legend?: LegendItem[]
   height?: number
 }
@@ -83,6 +91,7 @@ export default function MetricInfoMap({
   circleLabel,
   searchRadiusMeters,
   contextCircle,
+  nearestOutside,
   legend,
   height = 380,
 }: MetricInfoMapProps) {
@@ -93,6 +102,7 @@ export default function MetricInfoMap({
     [center.lat, center.lng],
     ...points.map(p => [p.lat as number, p.lng as number] as [number, number]),
     ...clusters.map(c => [c.lat, c.lng] as [number, number]),
+    ...(nearestOutside ? [[nearestOutside.lat, nearestOutside.lng] as [number, number]] : []),
   ]
 
   return (
@@ -139,6 +149,24 @@ export default function MetricInfoMap({
             </Popup>
           </Marker>
         ))}
+
+        {nearestOutside && (
+          <Marker
+            position={[nearestOutside.lat, nearestOutside.lng]}
+            icon={dotIcon('#ef4444', 16)}
+          >
+            <Popup>
+              <div className="flex flex-col gap-0.5">
+                <span className="font-semibold text-white text-xs">
+                  {nearestOutside.name ?? 'Nearest'}
+                </span>
+                <span className="text-xs" style={{ color: '#a0a0a0' }}>
+                  {nearestOutside.distanceKm}km away (outside radius)
+                </span>
+              </div>
+            </Popup>
+          </Marker>
+        )}
 
         {clusters.map((c, i) => (
           <Marker key={`incident-${i}`} position={[c.lat, c.lng]} icon={clusterCountIcon('#ef4444', c.count)}>

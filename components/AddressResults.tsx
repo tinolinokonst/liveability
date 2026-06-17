@@ -114,7 +114,7 @@ function amenityDetail(
 
 // ─── modal detail builders ───────────────────────────────────────────────────
 
-function buildDetail(metricKey: string, metrics: AddressMetrics): React.ReactNode {
+export function buildDetail(metricKey: string, metrics: AddressMetrics): React.ReactNode {
   const places = metrics.places ?? EMPTY_PLACES
   const radius = metrics.radius ?? 800
 
@@ -481,6 +481,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             center={center}
             searchRadius={radius}
             detail={buildDetail('green', metrics)}
+            nearestEssentials={metrics.nearestEssentials}
           />
           <MetricCard
             label="Sunlight"
@@ -524,6 +525,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             center={center}
             searchRadius={800}
             detail={buildDetail('transit', metrics)}
+            nearestEssentials={metrics.nearestEssentials}
           />
           <MetricCard
             label="Walkability"
@@ -537,6 +539,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             places={combinedWalkabilityPlaces(places).slice(0, 8)}
             searchRadius={radius}
             detail={buildDetail('walkability', metrics)}
+            nearestEssentials={metrics.nearestEssentials}
           />
           <MetricCard
             label="Parking"
@@ -554,6 +557,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             center={center}
             searchRadius={radius}
             detail={buildDetail('parking', metrics)}
+            nearestEssentials={metrics.nearestEssentials}
           />
         </div>
       </div>
@@ -578,6 +582,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             center={center}
             searchRadius={radius}
             detail={buildDetail('grocery', metrics)}
+            nearestEssentials={metrics.nearestEssentials}
           />
           <MetricCard
             label="Dining & Cafes"
@@ -595,6 +600,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             center={center}
             searchRadius={radius}
             detail={buildDetail('dining', metrics)}
+            nearestEssentials={metrics.nearestEssentials}
           />
           <MetricCard
             label="Schools Nearby"
@@ -612,6 +618,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             center={center}
             searchRadius={radius}
             detail={buildDetail('school', metrics)}
+            nearestEssentials={metrics.nearestEssentials}
           />
           <MetricCard
             label="Healthcare Access"
@@ -629,6 +636,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             center={center}
             searchRadius={radius}
             detail={buildDetail('healthcare', metrics)}
+            nearestEssentials={metrics.nearestEssentials}
           />
           <MetricCard
             label="Libraries"
@@ -646,6 +654,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             center={center}
             searchRadius={radius}
             detail={buildDetail('library', metrics)}
+            nearestEssentials={metrics.nearestEssentials}
           />
           <MetricCard
             label="Banks / ATMs"
@@ -663,6 +672,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             center={center}
             searchRadius={radius}
             detail={buildDetail('bank', metrics)}
+            nearestEssentials={metrics.nearestEssentials}
           />
         </div>
       </div>
@@ -709,6 +719,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             center={center}
             searchRadius={radius}
             detail={buildDetail('worship', metrics)}
+            nearestEssentials={metrics.nearestEssentials}
           />
         </div>
       </div>

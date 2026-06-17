@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Info, LucideIcon } from 'lucide-react'
 import { MetricKey } from '@/lib/metricInfo'
-import { CrimeIncidentLocation, NearestAmenity } from '@/lib/types'
+import { CrimeIncidentLocation, NearestAmenity, NearestEssentials } from '@/lib/types'
 import MetricInfoModal from './MetricInfoModal'
 
 interface MetricCardProps {
@@ -22,6 +22,7 @@ interface MetricCardProps {
   crimeIncidents?: CrimeIncidentLocation[]
   searchRadius?: number
   detail?: React.ReactNode
+  nearestEssentials?: NearestEssentials
   icon?: LucideIcon
 }
 
@@ -37,7 +38,7 @@ function qualityLabel(score: number): string {
   return 'Poor'
 }
 
-export default function MetricCard({ label, value, score, description, source, updated, extra, metricKey, radius, places, center, category, crimeIncidents, searchRadius, detail, icon: Icon }: MetricCardProps) {
+export default function MetricCard({ label, value, score, description, source, updated, extra, metricKey, radius, places, center, category, crimeIncidents, searchRadius, detail, nearestEssentials, icon: Icon }: MetricCardProps) {
   const [showInfo, setShowInfo] = useState(false)
   const color = qualityColor(score)
   const quality = qualityLabel(score)
@@ -104,6 +105,7 @@ export default function MetricCard({ label, value, score, description, source, u
           crimeIncidents={crimeIncidents}
           searchRadius={searchRadius}
           detail={detail}
+          nearestEssentials={nearestEssentials}
           onClose={() => setShowInfo(false)}
         />
       )}
