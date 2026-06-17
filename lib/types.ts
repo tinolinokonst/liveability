@@ -131,6 +131,26 @@ export interface FBICrimeResult {
   message?: string
 }
 
+export interface NearestEssentialItem {
+  name: string | null
+  distanceKm: number
+  lat: number
+  lng: number
+}
+
+export interface NearestEssentials {
+  trainStation: NearestEssentialItem | null
+  busStop: NearestEssentialItem | null
+  grocery: NearestEssentialItem | null
+  hospital: NearestEssentialItem | null
+  pharmacy: NearestEssentialItem | null
+  school: NearestEssentialItem | null
+  library: NearestEssentialItem | null
+  park: NearestEssentialItem | null
+  bank: NearestEssentialItem | null
+  searchRadiusKm: number
+}
+
 export interface AddressMetrics {
   id: string
   address: string
@@ -185,6 +205,7 @@ export interface AddressMetrics {
   demographics?: DemographicsResult
   censusData?: DemographicsResult
   fbiCrime?: FBICrimeResult
+  nearestEssentials?: NearestEssentials
 }
 
 export interface SavedAddress {

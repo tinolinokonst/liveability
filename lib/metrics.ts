@@ -5,7 +5,8 @@ import { fetchSunlight } from './sunlight'
 import { fetchNoiseEstimate } from './noise'
 import { fetchCensus } from './census'
 import { fetchFBICrime } from './fbi-crime'
-import { AddressMetrics, AmenityScores, CrimeResult, DemographicsResult, FBICrimeResult, GeoLocation, NoiseResult, SunlightResult } from './types'
+import { fetchNearestEssentials } from './nearest'
+import { AddressMetrics, AmenityScores, CrimeResult, DemographicsResult, FBICrimeResult, GeoLocation, NearestEssentials, NoiseResult, SunlightResult } from './types'
 
 export function buildMetrics(
   address: string,
@@ -17,6 +18,7 @@ export function buildMetrics(
   noiseData: NoiseResult,
   censusData: DemographicsResult,
   fbiCrimeData: FBICrimeResult,
+  nearestEssentials: NearestEssentials,
   id?: string
 ): AddressMetrics {
   const overallScore = Math.round(
@@ -84,6 +86,7 @@ export function buildMetrics(
     noise: noiseData,
     censusData,
     fbiCrime: fbiCrimeData,
+    nearestEssentials,
   }
 }
 
@@ -93,7 +96,7 @@ export async function fetchFullMetrics(
   radius: number = 800,
   id?: string
 ): Promise<AddressMetrics> {
-  const [aqi, amenity, crime, sunlight, noise, census, fbiCrime] = await Promise.all([
+  const [aqi, amenity, crime, sunlight, noise, census, fbiCrime, nearest] = await Promise.all([
     fetchAQI(location.lat, location.lng),
     fetchAmenityScores(location.lat, location.lng, radius),
     fetchCrimeScore(location.lat, location.lng),
@@ -101,7 +104,8 @@ export async function fetchFullMetrics(
     fetchNoiseEstimate(location.lat, location.lng),
     fetchCensus(location.lat, location.lng),
     fetchFBICrime(),
+    fetchNearestEssentials(location.lat, location.lng),
   ])
 
-  return buildMetrics(address, location, aqi, amenity, crime, sunlight, noise, census, fbiCrime, id)
+  return buildMetrics(address, location, aqi, amenity, crime, sunlight, noise, census, fbiCrime, nearest, id)
 }

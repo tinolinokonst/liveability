@@ -11,6 +11,7 @@ import { fetchSunlight } from '@/lib/sunlight'
 import { fetchNoiseEstimate } from '@/lib/noise'
 import { fetchCensus } from '@/lib/census'
 import { fetchFBICrime } from '@/lib/fbi-crime'
+import { fetchNearestEssentials } from '@/lib/nearest'
 import { loadGoogleMapsScript } from '@/lib/googleMaps'
 import { saveAddress } from '@/lib/savedAddresses'
 import { AddressMetrics, AmenityScores, CrimeResult } from '@/lib/types'
@@ -100,7 +101,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId }: Addre
         return
       }
 
-      const [aqi, amenity, crime, sunlight, noise, census, fbiCrime] = await Promise.all([
+      const [aqi, amenity, crime, sunlight, noise, census, fbiCrime, nearest] = await Promise.all([
         fetchAQI(location.lat, location.lng),
         fetchAmenityScores(location.lat, location.lng, radius),
         fetchCrimeScore(location.lat, location.lng),
@@ -108,13 +109,14 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId }: Addre
         fetchNoiseEstimate(location.lat, location.lng),
         fetchCensus(location.lat, location.lng),
         fetchFBICrime(),
+        fetchNearestEssentials(location.lat, location.lng),
       ])
 
       setAqiData(aqi)
       setAmenityData(amenity)
       setCrimeData(crime)
       setFetchedAt(new Date())
-      setResult(buildMetrics(address.trim(), location, aqi, amenity, crime, sunlight, noise, census, fbiCrime))
+      setResult(buildMetrics(address.trim(), location, aqi, amenity, crime, sunlight, noise, census, fbiCrime, nearest))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
     } finally {
@@ -149,6 +151,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId }: Addre
           prev.noise ?? { score: null, level: null, nearestRoad: null, available: false },
           prev.censusData ?? prev.demographics ?? { medianHouseholdIncome: null, totalPopulation: null, available: false },
           prev.fbiCrime ?? { agencyName: null, violentCrimeRate: null, propertyCrimeRate: null, year: null, available: false },
+          prev.nearestEssentials ?? { trainStation: null, busStop: null, grocery: null, hospital: null, pharmacy: null, school: null, library: null, park: null, bank: null, searchRadiusKm: 15 },
           prev.id
         ))
       })

@@ -1,0 +1,125 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { NearestEssentialItem, NearestEssentials } from '@/lib/types'
+
+const OVERPASS_URLS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+]
+
+const SEARCH_RADIUS = 15000
+const TIMEOUT_MS = 15000
+
+interface Element {
+  tags?: Record<string, string>
+  lat?: number
+  lon?: number
+  center?: { lat: number; lon: number }
+}
+
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371
+  const dLat = ((lat2 - lat1) * Math.PI) / 180
+  const dLon = ((lon2 - lon1) * Math.PI) / 180
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+function findNearest(elements: Element[], lat: number, lng: number): NearestEssentialItem | null {
+  let best: NearestEssentialItem | null = null
+  for (const e of elements) {
+    const elat = e.lat ?? e.center?.lat
+    const elon = e.lon ?? e.center?.lon
+    if (elat === undefined || elon === undefined) continue
+    const d = haversineKm(lat, lng, elat, elon)
+    if (!best || d < best.distanceKm) {
+      best = { name: e.tags?.name ?? null, distanceKm: Math.round(d * 10) / 10, lat: elat, lng: elon }
+    }
+  }
+  return best
+}
+
+async function queryOverpass(url: string, query: string) {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS)
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      body: query,
+      headers: { 'Content-Type': 'text/plain' },
+      signal: controller.signal,
+    })
+    if (!res.ok) {
+      console.log(`Nearest Overpass fetch failed for ${url}: ${res.status}`)
+      return null
+    }
+    return await res.json()
+  } catch (err) {
+    console.log(`Nearest Overpass error for ${url}:`, err)
+    return null
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+const EMPTY_RESULT: Omit<NearestEssentials, 'searchRadiusKm'> = {
+  trainStation: null, busStop: null, grocery: null, hospital: null,
+  pharmacy: null, school: null, library: null, park: null, bank: null,
+}
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = request.nextUrl
+  const lat = searchParams.get('lat')
+  const lng = searchParams.get('lng')
+
+  if (!lat || !lng) {
+    return NextResponse.json({ error: 'lat and lng are required' }, { status: 400 })
+  }
+
+  const latN = Number(lat)
+  const lngN = Number(lng)
+
+  const query = `[out:json][timeout:30];
+(
+  node["railway"="station"](around:${SEARCH_RADIUS},${lat},${lng});
+  way["railway"="station"](around:${SEARCH_RADIUS},${lat},${lng});
+  node["highway"="bus_stop"](around:${SEARCH_RADIUS},${lat},${lng});
+  node["shop"~"^(supermarket|grocery|convenience)$"](around:${SEARCH_RADIUS},${lat},${lng});
+  way["shop"~"^(supermarket|grocery|convenience)$"](around:${SEARCH_RADIUS},${lat},${lng});
+  node["amenity"="hospital"](around:${SEARCH_RADIUS},${lat},${lng});
+  way["amenity"="hospital"](around:${SEARCH_RADIUS},${lat},${lng});
+  node["amenity"="pharmacy"](around:${SEARCH_RADIUS},${lat},${lng});
+  node["amenity"="school"](around:${SEARCH_RADIUS},${lat},${lng});
+  way["amenity"="school"](around:${SEARCH_RADIUS},${lat},${lng});
+  node["amenity"="library"](around:${SEARCH_RADIUS},${lat},${lng});
+  way["amenity"="library"](around:${SEARCH_RADIUS},${lat},${lng});
+  way["leisure"="park"](around:${SEARCH_RADIUS},${lat},${lng});
+  relation["leisure"="park"](around:${SEARCH_RADIUS},${lat},${lng});
+  node["amenity"~"^(bank|atm)$"](around:${SEARCH_RADIUS},${lat},${lng});
+);
+out tags center;`
+
+  for (const url of OVERPASS_URLS) {
+    const data = await queryOverpass(url, query)
+    if (!data) continue
+
+    const els: Element[] = data.elements ?? []
+
+    return NextResponse.json({
+      trainStation: findNearest(els.filter(e => e.tags?.railway === 'station'), latN, lngN),
+      busStop:      findNearest(els.filter(e => e.tags?.highway === 'bus_stop'), latN, lngN),
+      grocery:      findNearest(els.filter(e => ['supermarket', 'grocery', 'convenience'].includes(e.tags?.shop ?? '')), latN, lngN),
+      hospital:     findNearest(els.filter(e => e.tags?.amenity === 'hospital'), latN, lngN),
+      pharmacy:     findNearest(els.filter(e => e.tags?.amenity === 'pharmacy'), latN, lngN),
+      school:       findNearest(els.filter(e => e.tags?.amenity === 'school'), latN, lngN),
+      library:      findNearest(els.filter(e => e.tags?.amenity === 'library'), latN, lngN),
+      park:         findNearest(els.filter(e => e.tags?.leisure === 'park'), latN, lngN),
+      bank:         findNearest(els.filter(e => ['bank', 'atm'].includes(e.tags?.amenity ?? '')), latN, lngN),
+      searchRadiusKm: SEARCH_RADIUS / 1000,
+    } satisfies NearestEssentials)
+  }
+
+  console.log('All Overpass endpoints failed for nearest essentials')
+  return NextResponse.json({ ...EMPTY_RESULT, searchRadiusKm: SEARCH_RADIUS / 1000 })
+}

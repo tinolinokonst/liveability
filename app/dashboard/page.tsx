@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { Settings } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import AddressSearch from '@/components/AddressSearch'
 import AddressCompare from '@/components/AddressCompare'
@@ -83,6 +84,14 @@ export default function Dashboard() {
                 {userEmail}
               </span>
             )}
+            <Link
+              href="/settings"
+              className="p-1.5 rounded-lg transition-colors"
+              style={{ color: '#a0a0a0' }}
+              title="Account Settings"
+            >
+              <Settings size={16} />
+            </Link>
             <button
               onClick={handleLogout}
               className="text-xs px-3 py-1.5 rounded-lg font-medium transition-colors"
