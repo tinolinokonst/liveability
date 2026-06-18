@@ -2,15 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { Sparkles } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import AddressSearch from '@/components/AddressSearch'
 import AddressCompare from '@/components/AddressCompare'
 import NeighborhoodFinder from '@/components/NeighborhoodFinder'
 import SavedAddresses from '@/components/SavedAddresses'
+import AiMatch from '@/components/AiMatch'
 import AppHeader from '@/components/AppHeader'
 import { AddressMetrics } from '@/lib/types'
 
-type Tab = 'search' | 'neighborhoods' | 'saved'
+type Tab = 'search' | 'neighborhoods' | 'saved' | 'ai-match'
 
 export default function Dashboard() {
   const router = useRouter()
@@ -69,26 +71,35 @@ export default function Dashboard() {
 
         {/* Tabs */}
         <div
-          className="flex p-1 rounded-xl mb-8 w-fit"
+          className="flex flex-wrap gap-1 p-1 rounded-xl mb-8 w-fit"
           style={{ backgroundColor: '#1a1a1a' }}
         >
           {([
-            { key: 'search' as Tab, label: 'Address Search' },
-            { key: 'neighborhoods' as Tab, label: 'Neighborhoods' },
-            { key: 'saved' as Tab, label: 'Saved Addresses' },
-          ] as const).map(t => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className="px-5 py-2.5 rounded-lg text-sm font-semibold transition-all"
-              style={{
-                backgroundColor: tab === t.key ? '#f97316' : 'transparent',
-                color: tab === t.key ? 'white' : '#a0a0a0',
-              }}
-            >
-              {t.label}
-            </button>
-          ))}
+            { key: 'search' as Tab,        label: 'Address Search',  icon: null },
+            { key: 'neighborhoods' as Tab, label: 'Neighborhoods',   icon: null },
+            { key: 'saved' as Tab,         label: 'Saved Addresses', icon: null },
+            { key: 'ai-match' as Tab,      label: 'AI Match',        icon: Sparkles },
+          ] as const).map(t => {
+            const active = tab === t.key
+            const isAi = t.key === 'ai-match'
+            return (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                className="flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all"
+                style={{
+                  backgroundColor: active
+                    ? (isAi ? '#f97316' : '#f97316')
+                    : (isAi ? '#f973160f' : 'transparent'),
+                  color: active ? 'white' : (isAi ? '#f97316' : '#a0a0a0'),
+                  border: isAi && !active ? '1px solid #f9731633' : '1px solid transparent',
+                }}
+              >
+                {t.icon && <t.icon size={13} />}
+                {t.label}
+              </button>
+            )
+          })}
         </div>
 
         {tab === 'search' && (
@@ -160,6 +171,15 @@ export default function Dashboard() {
               Addresses you&apos;ve saved, with their last-fetched metrics
             </p>
             <SavedAddresses onAdd={addToCompare} compareCount={compared.length} />
+          </div>
+        )}
+
+        {tab === 'ai-match' && (
+          <div
+            className="rounded-2xl p-6"
+            style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
+          >
+            <AiMatch />
           </div>
         )}
       </div>
