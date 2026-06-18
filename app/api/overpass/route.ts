@@ -16,8 +16,11 @@ async function queryOverpass(url: string, query: string) {
   try {
     const res = await fetch(url, {
       method: 'POST',
-      body: query,
-      headers: { 'Content-Type': 'text/plain' },
+      body: new URLSearchParams({ data: query }).toString(),
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': 'liveability-columbus/1.0',
+      },
       signal: controller.signal,
     })
 
