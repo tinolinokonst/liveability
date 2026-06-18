@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { User, Shield, Trash2 } from 'lucide-react'
+import { User, Shield, Trash2, LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import AppHeader from '@/components/AppHeader'
 
-type NavSection = 'profile' | 'security' | 'delete'
+type NavSection = 'profile' | 'security' | 'signout' | 'delete'
 
 interface NavItem {
   key: NavSection
@@ -18,6 +18,7 @@ interface NavItem {
 const NAV: NavItem[] = [
   { key: 'profile',  label: 'Profile',        icon: User },
   { key: 'security', label: 'Security',       icon: Shield },
+  { key: 'signout',  label: 'Sign Out',       icon: LogOut },
   { key: 'delete',   label: 'Delete Account', icon: Trash2, danger: true },
 ]
 
@@ -57,6 +58,12 @@ export default function SettingsPage() {
       }
     })
   }, [router])
+
+  async function handleLogout() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.replace('/')
+  }
 
   async function handleEmailChange(e: React.FormEvent) {
     e.preventDefault()
@@ -312,6 +319,28 @@ export default function SettingsPage() {
               </button>
             </form>
           </div>
+        </div>
+      )
+    }
+
+    if (activeSection === 'signout') {
+      return (
+        <div className="rounded-2xl p-6" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
+          <div className="flex items-center gap-2 mb-2">
+            <LogOut size={14} style={{ color: '#f97316' }} />
+            <h2 className="font-bold text-white">Sign Out</h2>
+          </div>
+          <p className="text-sm mb-6" style={{ color: '#a0a0a0' }}>
+            You&apos;re signed in as <span className="text-white">{userEmail}</span>.
+            Signing out will end your session on this device.
+          </p>
+          <button
+            onClick={handleLogout}
+            className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-90"
+            style={{ backgroundColor: '#f97316', color: 'white' }}
+          >
+            Sign out
+          </button>
         </div>
       )
     }

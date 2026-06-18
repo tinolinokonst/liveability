@@ -1,22 +1,47 @@
 "use client"
 
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Wind, Footprints, Trees, ShoppingCart, Bus, Building2 } from 'lucide-react'
+import {
+  Wind, Footprints, Trees, ShoppingCart, Bus,
+  Sun, Volume2, Shield, Utensils, GraduationCap,
+  Heart, BookOpen, Landmark, Building2, Car, Users,
+} from 'lucide-react'
+import { createClient } from '@/lib/supabase'
 import SiteHeader from '@/components/SiteHeader'
 import BackgroundDecor from '@/components/BackgroundDecor'
 import Reveal from '@/components/Reveal'
 import MotionLink from '@/components/MotionLink'
 
 const FEATURES = [
-  { icon: Wind, label: 'Air Quality', desc: 'Real-time AQI from Open-Meteo' },
-  { icon: Footprints, label: 'Walkability', desc: 'Amenities within 800m radius' },
-  { icon: Trees, label: 'Green Space', desc: 'Parks and nature access' },
-  { icon: ShoppingCart, label: 'Grocery Access', desc: 'Supermarkets and stores nearby' },
-  { icon: Bus, label: 'Transit Access', desc: 'Bus stops and transit stations' },
-  { icon: Building2, label: 'Neighborhood Scores', desc: '10 Columbus neighborhoods ranked' },
+  { icon: Wind,          label: 'Air Quality',          desc: 'Real-time AQI from EPA AirNow' },
+  { icon: Sun,           label: 'Sunlight',              desc: 'Daily sun hours and UV index estimates' },
+  { icon: Volume2,       label: 'Noise Estimate',        desc: 'Ambient noise level for the area' },
+  { icon: Shield,        label: 'Safety & Crime',        desc: 'Incident data from City of Columbus GIS' },
+  { icon: Footprints,    label: 'Walkability',           desc: 'Amenities within your chosen radius' },
+  { icon: Bus,           label: 'Transit Access',        desc: 'Bus stops and transit stations nearby' },
+  { icon: ShoppingCart,  label: 'Grocery Access',        desc: 'Supermarkets and food stores nearby' },
+  { icon: Utensils,      label: 'Dining & Cafes',        desc: 'Restaurants and cafes within reach' },
+  { icon: GraduationCap, label: 'Schools',               desc: 'K–12 schools and universities nearby' },
+  { icon: Heart,         label: 'Healthcare',            desc: 'Hospitals, clinics, and pharmacies nearby' },
+  { icon: BookOpen,      label: 'Library Access',        desc: 'Public libraries in the area' },
+  { icon: Landmark,      label: 'Banks & ATMs',          desc: 'Banking and ATMs in the neighborhood' },
+  { icon: Building2,     label: 'Places of Worship',     desc: 'Religious buildings near the address' },
+  { icon: Trees,         label: 'Green Space & Parks',   desc: 'Parks, gardens, and recreation areas' },
+  { icon: Car,           label: 'Parking',               desc: 'Parking availability in the immediate area' },
+  { icon: Users,         label: 'Community Snapshot',    desc: 'Census demographics for the area' },
 ]
 
 export default function Home() {
+  const [loggedIn, setLoggedIn] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getSession().then(({ data }) => {
+      setLoggedIn(!!data.session)
+    })
+  }, [])
+
   return (
     <main style={{ backgroundColor: '#0f0f0f', minHeight: '100vh' }} className="relative">
       <BackgroundDecor />
@@ -63,8 +88,8 @@ export default function Home() {
             className="text-lg sm:text-xl mb-12 leading-relaxed max-w-xl"
             style={{ color: '#a0a0a0' }}
           >
-            Rent is one number. Your quality of life is five.
-            Air, walkability, green space, grocery access, transit —
+            Rent is one number. Your quality of life is many.
+            Air quality, walkability, safety, transit, green space — and many more —
             we surface what listing sites hide.
           </motion.p>
 
@@ -74,20 +99,32 @@ export default function Home() {
             transition={{ duration: 0.7, ease: 'easeOut', delay: 0.3 }}
             className="flex flex-col sm:flex-row gap-3"
           >
-            <MotionLink
-              href="/auth?mode=signup"
-              className="px-8 py-4 rounded-xl font-bold text-white text-base text-center"
-              style={{ backgroundColor: '#f97316' }}
-            >
-              Start exploring for free
-            </MotionLink>
-            <MotionLink
-              href="/auth"
-              className="px-8 py-4 rounded-xl font-semibold text-sm text-center"
-              style={{ backgroundColor: '#1a1a1a', color: '#a0a0a0', border: '1px solid #2a2a2a' }}
-            >
-              Already have an account
-            </MotionLink>
+            {loggedIn ? (
+              <MotionLink
+                href="/dashboard"
+                className="px-8 py-4 rounded-xl font-bold text-white text-base text-center"
+                style={{ backgroundColor: '#f97316' }}
+              >
+                Go to Dashboard
+              </MotionLink>
+            ) : (
+              <>
+                <MotionLink
+                  href="/auth?mode=signup"
+                  className="px-8 py-4 rounded-xl font-bold text-white text-base text-center"
+                  style={{ backgroundColor: '#f97316' }}
+                >
+                  Start exploring for free
+                </MotionLink>
+                <MotionLink
+                  href="/auth"
+                  className="px-8 py-4 rounded-xl font-semibold text-sm text-center"
+                  style={{ backgroundColor: '#1a1a1a', color: '#a0a0a0', border: '1px solid #2a2a2a' }}
+                >
+                  Already have an account
+                </MotionLink>
+              </>
+            )}
           </motion.div>
         </div>
       </section>
@@ -132,13 +169,23 @@ export default function Home() {
             <p style={{ color: '#a0a0a0' }} className="mb-10 text-lg">
               Search any Columbus address or browse neighborhood rankings — free.
             </p>
-            <MotionLink
-              href="/auth?mode=signup"
-              className="inline-block px-10 py-4 rounded-xl font-bold text-white"
-              style={{ backgroundColor: '#f97316' }}
-            >
-              Get started free
-            </MotionLink>
+            {loggedIn ? (
+              <MotionLink
+                href="/dashboard"
+                className="inline-block px-10 py-4 rounded-xl font-bold text-white"
+                style={{ backgroundColor: '#f97316' }}
+              >
+                Go to Dashboard
+              </MotionLink>
+            ) : (
+              <MotionLink
+                href="/auth?mode=signup"
+                className="inline-block px-10 py-4 rounded-xl font-bold text-white"
+                style={{ backgroundColor: '#f97316' }}
+              >
+                Get started free
+              </MotionLink>
+            )}
           </div>
         </Reveal>
       </section>

@@ -2,12 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 
 export default function SiteHeader() {
-  const router = useRouter()
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [scrolled, setScrolled] = useState(false)
@@ -33,12 +31,6 @@ export default function SiteHeader() {
     window.addEventListener('scroll', onScroll)
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
-
-  async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.replace('/')
-  }
 
   return (
     <motion.header
@@ -66,22 +58,13 @@ export default function SiteHeader() {
           </Link>
 
           {loading ? null : userEmail ? (
-            <>
-              <Link
-                href="/dashboard"
-                className="text-sm px-4 py-2 rounded-lg font-semibold text-white transition-all hover:opacity-90"
-                style={{ backgroundColor: '#f97316' }}
-              >
-                Dashboard
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="text-xs px-3 py-1.5 rounded-lg font-medium transition-colors"
-                style={{ backgroundColor: '#1a1a1a', color: '#a0a0a0', border: '1px solid #2a2a2a' }}
-              >
-                Log out
-              </button>
-            </>
+            <Link
+              href="/dashboard"
+              className="text-sm px-4 py-2 rounded-lg font-semibold text-white transition-all hover:opacity-90"
+              style={{ backgroundColor: '#f97316' }}
+            >
+              Dashboard
+            </Link>
           ) : (
             <>
               <Link

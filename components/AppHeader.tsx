@@ -1,23 +1,13 @@
 "use client"
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { Settings } from 'lucide-react'
-import { createClient } from '@/lib/supabase'
 
 interface AppHeaderProps {
   currentPage: 'dashboard' | 'settings'
 }
 
 export default function AppHeader({ currentPage }: AppHeaderProps) {
-  const router = useRouter()
-
-  async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.replace('/auth')
-  }
-
   return (
     <header
       className="sticky top-0 z-10 px-6 py-4"
@@ -54,13 +44,6 @@ export default function AppHeader({ currentPage }: AppHeaderProps) {
               <Settings size={16} />
             </Link>
           )}
-          <button
-            onClick={handleLogout}
-            className="text-xs px-3 py-1.5 rounded-lg font-medium transition-colors"
-            style={{ backgroundColor: '#1a1a1a', color: '#a0a0a0', border: '1px solid #2a2a2a' }}
-          >
-            Log out
-          </button>
         </div>
       </div>
     </header>
