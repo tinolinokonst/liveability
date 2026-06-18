@@ -5,7 +5,7 @@ import { Star, X } from 'lucide-react'
 import { AddressMetrics, NearestAmenity } from '@/lib/types'
 import { MetricKey } from '@/lib/metricInfo'
 import MetricInfoModal from './MetricInfoModal'
-import { buildDetail } from './AddressResults'
+import { buildDetail, buildComparison } from './AddressResults'
 
 const ACCENT_COLORS = ['#f97316', '#3b82f6', '#a855f7']
 
@@ -212,6 +212,7 @@ export default function AddressCompare({ addresses, onRemove }: AddressComparePr
           crimeIncidents={openModal.addr.crimeIncidents}
           searchRadius={openModal.addr.radius ?? 800}
           detail={buildDetail(openModal.metricKey, openModal.addr)}
+          comparison={buildComparison(openModal.metricKey, openModal.addr)}
           nearestEssentials={openModal.addr.nearestEssentials}
           onClose={() => setOpenModal(null)}
         />

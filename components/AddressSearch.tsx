@@ -101,8 +101,9 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId }: Addre
         return
       }
 
-      const [aqi, amenity, crime, sunlight, noise, census, fbiCrime, nearest] = await Promise.all([
+      const [aqi, columbusAqiResult, amenity, crime, sunlight, noise, census, fbiCrime, nearest] = await Promise.all([
         fetchAQI(location.lat, location.lng),
+        fetchAQI(COLUMBUS_CENTER.lat, COLUMBUS_CENTER.lng).catch(() => null),
         fetchAmenityScores(location.lat, location.lng, radius),
         fetchCrimeScore(location.lat, location.lng),
         fetchSunlight(location.lat, location.lng),
@@ -116,7 +117,8 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId }: Addre
       setAmenityData(amenity)
       setCrimeData(crime)
       setFetchedAt(new Date())
-      setResult(buildMetrics(address.trim(), location, aqi, amenity, crime, sunlight, noise, census, fbiCrime, nearest))
+      const baseResult = buildMetrics(address.trim(), location, aqi, amenity, crime, sunlight, noise, census, fbiCrime, nearest)
+      setResult(columbusAqiResult != null ? { ...baseResult, columbusAqi: columbusAqiResult.aqi } : baseResult)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
     } finally {
@@ -141,19 +143,23 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId }: Addre
         if (cancelled) return
         setAmenityData(amenity)
         setFetchedAt(new Date())
-        setResult(prev => prev && buildMetrics(
-          prev.address,
-          prev.location,
-          aqiData,
-          amenity,
-          crimeData,
-          prev.sunlight ?? { score: null, hoursPerYear: null, available: false },
-          prev.noise ?? { score: null, level: null, nearestRoad: null, available: false },
-          prev.censusData ?? prev.demographics ?? { medianHouseholdIncome: null, totalPopulation: null, available: false },
-          prev.fbiCrime ?? { agencyName: null, violentCrimeRate: null, propertyCrimeRate: null, year: null, available: false },
-          prev.nearestEssentials ?? { trainStation: null, busStop: null, grocery: null, hospital: null, pharmacy: null, school: null, library: null, park: null, bank: null, dining: null, worship: null, parking: null, searchRadiusKm: 15 },
-          prev.id
-        ))
+        setResult(prev => {
+          if (!prev) return null
+          const updated = buildMetrics(
+            prev.address,
+            prev.location,
+            aqiData,
+            amenity,
+            crimeData,
+            prev.sunlight ?? { score: null, hoursPerYear: null, available: false },
+            prev.noise ?? { score: null, level: null, nearestRoad: null, available: false },
+            prev.censusData ?? prev.demographics ?? { medianHouseholdIncome: null, totalPopulation: null, available: false },
+            prev.fbiCrime ?? { agencyName: null, violentCrimeRate: null, propertyCrimeRate: null, year: null, available: false },
+            prev.nearestEssentials ?? { trainStation: null, busStop: null, grocery: null, hospital: null, pharmacy: null, school: null, library: null, park: null, bank: null, dining: null, worship: null, parking: null, searchRadiusKm: 15 },
+            prev.id
+          )
+          return { ...updated, columbusAqi: prev.columbusAqi }
+        })
       })
       .finally(() => {
         if (!cancelled) setRadiusLoading(false)

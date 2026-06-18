@@ -22,6 +22,7 @@ interface MetricCardProps {
   crimeIncidents?: CrimeIncidentLocation[]
   searchRadius?: number
   detail?: React.ReactNode
+  comparison?: React.ReactNode
   nearestEssentials?: NearestEssentials
   icon?: LucideIcon
 }
@@ -38,7 +39,7 @@ function qualityLabel(score: number): string {
   return 'Poor'
 }
 
-export default function MetricCard({ label, value, score, description, source, updated, extra, metricKey, radius, places, center, category, crimeIncidents, searchRadius, detail, nearestEssentials, icon: Icon }: MetricCardProps) {
+export default function MetricCard({ label, value, score, description, source, updated, extra, metricKey, radius, places, center, category, crimeIncidents, searchRadius, detail, comparison, nearestEssentials, icon: Icon }: MetricCardProps) {
   const [showInfo, setShowInfo] = useState(false)
   const color = qualityColor(score)
   const quality = qualityLabel(score)
@@ -105,6 +106,7 @@ export default function MetricCard({ label, value, score, description, source, u
           crimeIncidents={crimeIncidents}
           searchRadius={searchRadius}
           detail={detail}
+          comparison={comparison}
           nearestEssentials={nearestEssentials}
           onClose={() => setShowInfo(false)}
         />

@@ -75,11 +75,12 @@ interface MetricInfoModalProps {
   crimeIncidents?: CrimeIncidentLocation[]
   searchRadius?: number
   detail?: React.ReactNode
+  comparison?: React.ReactNode
   nearestEssentials?: NearestEssentials
   onClose: () => void
 }
 
-export default function MetricInfoModal({ metricKey, value, score, radius, places, center, category, crimeIncidents, searchRadius, detail, nearestEssentials, onClose }: MetricInfoModalProps) {
+export default function MetricInfoModal({ metricKey, value, score, radius, places, center, category, crimeIncidents, searchRadius, detail, comparison, nearestEssentials, onClose }: MetricInfoModalProps) {
   const info = METRIC_INFO[metricKey]
 
   // Nearest-outside logic: find closest amenity if none found within the search radius
@@ -135,6 +136,8 @@ export default function MetricInfoModal({ metricKey, value, score, radius, place
         <div style={{ color: '#a0a0a0' }} className="text-sm leading-relaxed flex flex-col gap-2">
           {detail ?? info.description}
         </div>
+
+        {comparison}
 
         {center && metricKey === 'aqi' && (
           <MetricInfoMap

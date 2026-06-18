@@ -2,6 +2,7 @@
 
 import { Wind, Shield, Navigation, ShoppingBag, Sun, Volume2, Users, Leaf, LucideIcon } from 'lucide-react'
 import { AddressMetrics, AmenityPlaces, NearestAmenity } from '@/lib/types'
+import { getColumbusAverages } from '@/lib/neighborhoods'
 import MetricCard from './MetricCard'
 import InfoCard from './InfoCard'
 import LocalNews from './LocalNews'
@@ -110,6 +111,77 @@ function amenityDetail(
       {placesParagraph(places, placesLabel, radiusMeters)}
     </>
   )
+}
+
+// ─── comparison context ──────────────────────────────────────────────────────
+
+function ComparisonBlock({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="rounded-xl px-3 py-2.5 text-xs leading-relaxed"
+      style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}
+    >
+      <p className="font-semibold uppercase tracking-wider text-[10px] mb-0.5" style={{ color: '#f97316' }}>
+        How this compares
+      </p>
+      <p style={{ color: '#a0a0a0' }}>{children}</p>
+    </div>
+  )
+}
+
+const COLUMBUS_AVGS = getColumbusAverages()
+
+function compareDir(score: number, avg: number): 'above' | 'below' | 'similar' {
+  if (Math.abs(score - avg) < 5) return 'similar'
+  return score > avg ? 'above' : 'below'
+}
+
+function colAqiCat(aqi: number): string {
+  if (aqi > 200) return 'Very Unhealthy'
+  if (aqi > 150) return 'Unhealthy'
+  if (aqi > 100) return 'Unhealthy for Sensitive Groups'
+  if (aqi > 50) return 'Moderate'
+  return 'Good'
+}
+
+function avgComparison(label: string, score: number | undefined, avg: number): React.ReactNode {
+  if (score == null) return null
+  const dir = compareDir(score, avg)
+  const diff = Math.abs(score - avg)
+  const rel = dir === 'similar'
+    ? `comparable to the Columbus neighborhood average of ${avg}/100`
+    : `${dir} the Columbus average of ${avg}/100 by ${diff} points`
+  return <ComparisonBlock>{label} is <strong>{rel}</strong>.</ComparisonBlock>
+}
+
+export function buildComparison(metricKey: string, metrics: AddressMetrics): React.ReactNode {
+  switch (metricKey) {
+    case 'aqi': {
+      const colAqi = metrics.columbusAqi
+      if (colAqi == null || metrics.aqi == null) return null
+      const diff = metrics.aqi - colAqi
+      const absDiff = Math.abs(diff)
+      const colCat = colAqiCat(colAqi)
+      let rel: string
+      if (absDiff < 5) {
+        rel = `similar to Columbus's citywide reading of AQI ${colAqi} (${colCat}) today`
+      } else if (diff < 0) {
+        rel = `${absDiff} pts lower than Columbus's citywide AQI of ${colAqi} (${colCat}) today — better air`
+      } else {
+        rel = `${absDiff} pts higher than Columbus's citywide AQI of ${colAqi} (${colCat}) today — worse air`
+      }
+      return <ComparisonBlock>This AQI of <strong>{metrics.aqi}</strong> is <strong>{rel}</strong>.</ComparisonBlock>
+    }
+    case 'walkability':  return avgComparison('Walkability', metrics.walkabilityScore, COLUMBUS_AVGS.walkability)
+    case 'grocery':      return avgComparison('Grocery access', metrics.groceryScore, COLUMBUS_AVGS.grocery)
+    case 'transit':      return avgComparison('Transit access', metrics.transitScore, COLUMBUS_AVGS.transit)
+    case 'green':        return avgComparison('Green space', metrics.greenScore, COLUMBUS_AVGS.green)
+    case 'safety':       return avgComparison('Safety score', metrics.safetyScore, COLUMBUS_AVGS.safety)
+    case 'healthcare':   return avgComparison('Healthcare access', metrics.healthcareScore, COLUMBUS_AVGS.healthcare)
+    case 'school':       return avgComparison('Schools score', metrics.schoolScore, COLUMBUS_AVGS.school)
+    case 'dining':       return avgComparison('Dining score', metrics.diningScore, COLUMBUS_AVGS.dining)
+    default:             return null
+  }
 }
 
 // ─── modal detail builders ───────────────────────────────────────────────────
@@ -463,6 +535,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             center={center}
             category={metrics.aqiCategory}
             detail={buildDetail('aqi', metrics)}
+            comparison={buildComparison('aqi', metrics)}
           />
           <MetricCard
             label="Green Space"
@@ -481,6 +554,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             center={center}
             searchRadius={radius}
             detail={buildDetail('green', metrics)}
+            comparison={buildComparison('green', metrics)}
             nearestEssentials={metrics.nearestEssentials}
           />
           <MetricCard
@@ -525,6 +599,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             center={center}
             searchRadius={800}
             detail={buildDetail('transit', metrics)}
+            comparison={buildComparison('transit', metrics)}
             nearestEssentials={metrics.nearestEssentials}
           />
           <MetricCard
@@ -539,6 +614,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             places={combinedWalkabilityPlaces(places).slice(0, 8)}
             searchRadius={radius}
             detail={buildDetail('walkability', metrics)}
+            comparison={buildComparison('walkability', metrics)}
             nearestEssentials={metrics.nearestEssentials}
           />
           <MetricCard
@@ -582,6 +658,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             center={center}
             searchRadius={radius}
             detail={buildDetail('grocery', metrics)}
+            comparison={buildComparison('grocery', metrics)}
             nearestEssentials={metrics.nearestEssentials}
           />
           <MetricCard
@@ -600,6 +677,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             center={center}
             searchRadius={radius}
             detail={buildDetail('dining', metrics)}
+            comparison={buildComparison('dining', metrics)}
             nearestEssentials={metrics.nearestEssentials}
           />
           <MetricCard
@@ -618,6 +696,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             center={center}
             searchRadius={radius}
             detail={buildDetail('school', metrics)}
+            comparison={buildComparison('school', metrics)}
             nearestEssentials={metrics.nearestEssentials}
           />
           <MetricCard
@@ -636,6 +715,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             center={center}
             searchRadius={radius}
             detail={buildDetail('healthcare', metrics)}
+            comparison={buildComparison('healthcare', metrics)}
             nearestEssentials={metrics.nearestEssentials}
           />
           <MetricCard
@@ -692,6 +772,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             center={center}
             crimeIncidents={metrics.crimeIncidents}
             detail={buildDetail('safety', metrics)}
+            comparison={buildComparison('safety', metrics)}
           />
           <InfoCard
             label="Community Snapshot"

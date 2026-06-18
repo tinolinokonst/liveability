@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { User, Shield, Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
+import AppHeader from '@/components/AppHeader'
 
 type NavSection = 'profile' | 'security' | 'delete'
 
@@ -143,24 +143,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0f0f0f' }}>
-      {/* Header */}
-      <header
-        className="sticky top-0 z-10 px-6 py-4"
-        style={{ backgroundColor: '#0f0f0f', borderBottom: '1px solid #1a1a1a' }}
-      >
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link href="/" className="font-black text-white text-lg tracking-tight">
-            Liveability
-          </Link>
-          <Link
-            href="/dashboard"
-            className="text-xs font-medium transition-colors"
-            style={{ color: '#a0a0a0' }}
-          >
-            Dashboard
-          </Link>
-        </div>
-      </header>
+      <AppHeader currentPage="settings" />
 
       <div className="max-w-4xl mx-auto px-6 py-10">
         <h1 className="text-2xl font-black text-white mb-1">Account Settings</h1>

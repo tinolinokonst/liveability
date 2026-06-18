@@ -2,20 +2,18 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Settings } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import AddressSearch from '@/components/AddressSearch'
 import AddressCompare from '@/components/AddressCompare'
 import NeighborhoodFinder from '@/components/NeighborhoodFinder'
 import SavedAddresses from '@/components/SavedAddresses'
+import AppHeader from '@/components/AppHeader'
 import { AddressMetrics } from '@/lib/types'
-import Link from 'next/link'
 
 type Tab = 'search' | 'neighborhoods' | 'saved'
 
 export default function Dashboard() {
   const router = useRouter()
-  const [userEmail, setUserEmail] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
   const [tab, setTab] = useState<Tab>('search')
   const [compared, setCompared] = useState<AddressMetrics[]>([])
@@ -27,18 +25,11 @@ export default function Dashboard() {
       if (!data.session) {
         router.replace('/auth')
       } else {
-        setUserEmail(data.session.user.email ?? null)
         setUserId(data.session.user.id)
         setLoading(false)
       }
     })
   }, [router])
-
-  async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.replace('/auth')
-  }
 
   function addToCompare(metrics: AddressMetrics) {
     setCompared(prev => {
@@ -62,46 +53,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0f0f0f' }}>
-      {/* Header */}
-      <header
-        className="sticky top-0 z-10 px-6 py-4"
-        style={{ backgroundColor: '#0f0f0f', borderBottom: '1px solid #1a1a1a' }}
-      >
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link href="/" className="font-black text-white text-lg tracking-tight">
-            Liveability
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/how-it-works"
-              className="text-xs font-medium transition-colors hidden sm:block"
-              style={{ color: '#a0a0a0' }}
-            >
-              How It Works
-            </Link>
-            {userEmail && (
-              <span className="text-xs hidden sm:block" style={{ color: '#a0a0a0' }}>
-                {userEmail}
-              </span>
-            )}
-            <Link
-              href="/settings"
-              className="p-1.5 rounded-lg transition-colors"
-              style={{ color: '#a0a0a0' }}
-              title="Account Settings"
-            >
-              <Settings size={16} />
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="text-xs px-3 py-1.5 rounded-lg font-medium transition-colors"
-              style={{ backgroundColor: '#1a1a1a', color: '#a0a0a0', border: '1px solid #2a2a2a' }}
-            >
-              Log out
-            </button>
-          </div>
-        </div>
-      </header>
+      <AppHeader currentPage="dashboard" />
 
       <div className="max-w-4xl mx-auto px-6 py-8">
         {/* Page title */}

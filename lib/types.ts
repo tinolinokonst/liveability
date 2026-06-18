@@ -209,6 +209,7 @@ export interface AddressMetrics {
   censusData?: DemographicsResult
   fbiCrime?: FBICrimeResult
   nearestEssentials?: NearestEssentials
+  columbusAqi?: number
 }
 
 export interface SavedAddress {
