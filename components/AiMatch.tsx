@@ -1,8 +1,11 @@
 "use client"
 
-import { useState, useRef, useEffect } from 'react'
-import { Sparkles, Send, RotateCcw, Database, Home, ExternalLink } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Sparkles, Send, RotateCcw, Database, Home, ExternalLink, ArrowRight } from 'lucide-react'
 import { COLUMBUS_NEIGHBORHOODS } from '@/lib/neighborhoods'
+import { AiMatchListingsState, AiRentListing } from '@/lib/types'
+
+export type { AiMatchListingsState, AiRentListing }
 
 const EXAMPLE_PROMPTS = [
   "I work from home and want a quiet neighborhood with good coffee shops and parks within walking distance. Budget around $1,400/month.",
@@ -21,13 +24,11 @@ function renderMarkdown(text: string): string {
     .replace(/\n/g, '<br/>')
 }
 
-// Parse neighborhood names from AI response headings (### 1. Name, ### 2. Name, ...)
 function parseNeighborhoodNames(text: string): string[] {
   const matches = [...text.matchAll(/^###\s+\d+\.\s+(.+)$/gm)]
   return matches.map(m => m[1].trim()).filter(Boolean)
 }
 
-// Find a neighborhood's coordinates by name (case-insensitive substring match)
 function findNeighborhoodCoords(name: string): { lat: number; lng: number } | null {
   const lower = name.toLowerCase()
   const match = COLUMBUS_NEIGHBORHOODS.find(n =>
@@ -38,33 +39,42 @@ function findNeighborhoodCoords(name: string): { lat: number; lng: number } | nu
   return match ? { lat: match.lat, lng: match.lng } : null
 }
 
-interface RentListing {
-  id: string
-  formattedAddress: string
-  price: number
-  bedrooms?: number
-  bathrooms?: number
-  squareFootage?: number
-  propertyType?: string
-  daysOnMarket?: number
-  listingAgent?: { website?: string }
-  listingOffice?: { website?: string }
+function neighborhoodExists(name: string): boolean {
+  return findNeighborhoodCoords(name) !== null
 }
 
-interface ListingsFetchState {
-  neighborhood: string
-  status: 'loading' | 'ok' | 'empty' | 'error'
-  listings: RentListing[]
+interface AiMatchProps {
+  description: string
+  response: string
+  listingsState: AiMatchListingsState | null
+  onDescriptionChange: (v: string) => void
+  onResponseChange: (v: string) => void
+  onListingsChange: (v: AiMatchListingsState | null) => void
+  onViewNeighborhood: (name: string) => void
+  onViewAddress: (address: string) => void
 }
 
-export default function AiMatch() {
-  const [description, setDescription] = useState('')
-  const [response, setResponse] = useState('')
+export default function AiMatch({
+  description,
+  response,
+  listingsState,
+  onDescriptionChange,
+  onResponseChange,
+  onListingsChange,
+  onViewNeighborhood,
+  onViewAddress,
+}: AiMatchProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [listingsState, setListingsState] = useState<ListingsFetchState | null>(null)
   const responseRef = useRef<HTMLDivElement>(null)
+  const listingsFetchedRef = useRef(false)
 
+  // Reset the listings-fetched guard whenever response is cleared
+  useEffect(() => {
+    if (!response) listingsFetchedRef.current = false
+  }, [response])
+
+  // Scroll response into view as it streams in
   useEffect(() => {
     if (responseRef.current && response) {
       responseRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
@@ -73,12 +83,11 @@ export default function AiMatch() {
 
   // After streaming completes, fetch listings for the top matched neighborhood
   useEffect(() => {
-    if (loading || !response) return
+    if (loading || !response || listingsState !== null || listingsFetchedRef.current) return
 
     const names = parseNeighborhoodNames(response)
     if (names.length === 0) return
 
-    // Try each parsed name until one matches a known neighborhood
     let coords: { lat: number; lng: number } | null = null
     let matchedName = ''
     for (const name of names) {
@@ -87,30 +96,33 @@ export default function AiMatch() {
     }
     if (!coords) return
 
-    setListingsState({ neighborhood: matchedName, status: 'loading', listings: [] })
+    listingsFetchedRef.current = true
+    onListingsChange({ neighborhood: matchedName, status: 'loading', listings: [] })
 
     fetch(`/api/rentcast?mode=listings&lat=${coords.lat}&lng=${coords.lng}&radius=2`)
       .then(r => r.json())
-      .then((data: RentListing[] | { error?: string }) => {
+      .then((data: AiRentListing[] | { error?: string }) => {
         if (!Array.isArray(data) || data.length === 0) {
-          setListingsState(s => s ? { ...s, status: 'empty' } : s)
+          onListingsChange({ neighborhood: matchedName, status: 'empty', listings: [] })
           return
         }
-        setListingsState(s => s ? { ...s, status: 'ok', listings: data.slice(0, 5) } : s)
+        onListingsChange({ neighborhood: matchedName, status: 'ok', listings: data.slice(0, 5) })
       })
       .catch(() => {
-        setListingsState(s => s ? { ...s, status: 'error' } : s)
+        onListingsChange({ neighborhood: matchedName, status: 'error', listings: [] })
       })
-  }, [loading, response])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, response, listingsState])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!description.trim() || loading) return
 
     setLoading(true)
-    setResponse('')
+    onResponseChange('')
     setError(null)
-    setListingsState(null)
+    onListingsChange(null)
+    listingsFetchedRef.current = false
 
     try {
       const res = await fetch('/api/ai-match', {
@@ -129,11 +141,13 @@ export default function AiMatch() {
 
       const decoder = new TextDecoder()
       let done = false
+      let accumulated = ''
       while (!done) {
         const { value, done: streamDone } = await reader.read()
         done = streamDone
         if (value) {
-          setResponse(prev => prev + decoder.decode(value, { stream: !done }))
+          accumulated += decoder.decode(value, { stream: !done })
+          onResponseChange(accumulated)
         }
       }
     } catch (err) {
@@ -144,11 +158,15 @@ export default function AiMatch() {
   }
 
   function reset() {
-    setDescription('')
-    setResponse('')
+    onDescriptionChange('')
+    onResponseChange('')
     setError(null)
-    setListingsState(null)
+    onListingsChange(null)
+    listingsFetchedRef.current = false
   }
+
+  const parsedNeighborhoods = response ? parseNeighborhoodNames(response) : []
+  const knownNeighborhoods = parsedNeighborhoods.filter(neighborhoodExists)
 
   return (
     <div className="flex flex-col gap-6">
@@ -166,7 +184,7 @@ export default function AiMatch() {
         </p>
       </div>
 
-      {/* Example prompts */}
+      {/* Example prompts — only shown before results */}
       {!response && !loading && (
         <>
           <div>
@@ -177,7 +195,7 @@ export default function AiMatch() {
               {EXAMPLE_PROMPTS.map((p, i) => (
                 <button
                   key={i}
-                  onClick={() => setDescription(p)}
+                  onClick={() => onDescriptionChange(p)}
                   className="text-left px-4 py-3 rounded-xl text-xs leading-relaxed transition-all"
                   style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a', color: '#a0a0a0' }}
                   onMouseEnter={e => (e.currentTarget.style.borderColor = '#f9731666')}
@@ -217,7 +235,37 @@ export default function AiMatch() {
 
           {!loading && (
             <>
-              <div className="mt-6 pt-4" style={{ borderTop: '1px solid #2a2a2a' }}>
+              {/* Neighborhood navigation buttons */}
+              {knownNeighborhoods.length > 0 && (
+                <div className="mt-5 pt-4" style={{ borderTop: '1px solid #2a2a2a' }}>
+                  <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: '#a0a0a0' }}>
+                    View full details
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {knownNeighborhoods.map(name => (
+                      <button
+                        key={name}
+                        onClick={() => onViewNeighborhood(name)}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+                        style={{ backgroundColor: '#1a1a1a', color: '#f97316', border: '1px solid #f9731633' }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.backgroundColor = '#f973161a'
+                          e.currentTarget.style.borderColor = '#f9731666'
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.backgroundColor = '#1a1a1a'
+                          e.currentTarget.style.borderColor = '#f9731633'
+                        }}
+                      >
+                        {name} <ArrowRight size={11} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Data attribution */}
+              <div className="mt-5 pt-4" style={{ borderTop: '1px solid #2a2a2a' }}>
                 <div className="flex items-start gap-2">
                   <Database size={12} className="mt-0.5 shrink-0" style={{ color: '#3a3a3a' }} />
                   <p className="text-xs leading-relaxed" style={{ color: '#3a3a3a' }}>
@@ -227,6 +275,7 @@ export default function AiMatch() {
                   </p>
                 </div>
               </div>
+
               <button
                 onClick={reset}
                 className="mt-4 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-colors"
@@ -274,7 +323,8 @@ export default function AiMatch() {
                   >
                     <p className="text-xs leading-snug text-white font-medium">{listing.formattedAddress}</p>
                     <p className="text-xl font-bold" style={{ color: '#f97316' }}>
-                      ${listing.price.toLocaleString()}<span className="text-sm font-normal" style={{ color: '#a0a0a0' }}>/mo</span>
+                      ${listing.price.toLocaleString()}
+                      <span className="text-sm font-normal" style={{ color: '#a0a0a0' }}>/mo</span>
                     </p>
                     <p className="text-xs" style={{ color: '#a0a0a0' }}>
                       {[
@@ -285,17 +335,26 @@ export default function AiMatch() {
                         listing.daysOnMarket != null ? `${listing.daysOnMarket}d on market` : null,
                       ].filter(Boolean).join(' · ')}
                     </p>
-                    {agentSite && (
-                      <a
-                        href={agentSite}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-xs transition-colors"
+                    <div className="flex items-center gap-3 mt-1 flex-wrap">
+                      <button
+                        onClick={() => onViewAddress(listing.formattedAddress)}
+                        className="flex items-center gap-1 text-xs font-semibold transition-colors"
                         style={{ color: '#f97316' }}
                       >
-                        View listing <ExternalLink size={10} />
-                      </a>
-                    )}
+                        Search this address <ArrowRight size={10} />
+                      </button>
+                      {agentSite && (
+                        <a
+                          href={agentSite}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-xs transition-colors"
+                          style={{ color: '#a0a0a0' }}
+                        >
+                          Agent site <ExternalLink size={10} />
+                        </a>
+                      )}
+                    </div>
                   </div>
                 )
               })}
@@ -322,7 +381,7 @@ export default function AiMatch() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <textarea
           value={description}
-          onChange={e => setDescription(e.target.value)}
+          onChange={e => onDescriptionChange(e.target.value)}
           placeholder="e.g. I want excellent green space, good air quality, and to be near a hospital"
           rows={4}
           disabled={loading}

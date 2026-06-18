@@ -10,7 +10,7 @@ import NeighborhoodFinder from '@/components/NeighborhoodFinder'
 import SavedAddresses from '@/components/SavedAddresses'
 import AiMatch from '@/components/AiMatch'
 import AppHeader from '@/components/AppHeader'
-import { AddressMetrics } from '@/lib/types'
+import { AddressMetrics, AiMatchListingsState } from '@/lib/types'
 
 type Tab = 'search' | 'neighborhoods' | 'saved' | 'ai-match'
 
@@ -20,6 +20,15 @@ export default function Dashboard() {
   const [tab, setTab] = useState<Tab>('search')
   const [compared, setCompared] = useState<AddressMetrics[]>([])
   const [loading, setLoading] = useState(true)
+
+  // AI Match state — lifted so results persist across tab switches
+  const [aiDescription, setAiDescription] = useState('')
+  const [aiResponse, setAiResponse] = useState('')
+  const [aiListingsState, setAiListingsState] = useState<AiMatchListingsState | null>(null)
+
+  // Navigation targets set when drilling into detail from AI Match
+  const [targetNeighborhood, setTargetNeighborhood] = useState<string | null>(null)
+  const [targetAddress, setTargetAddress] = useState<string | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -43,6 +52,25 @@ export default function Dashboard() {
 
   function removeFromCompare(id: string) {
     setCompared(prev => prev.filter(a => a.id !== id))
+  }
+
+  // Manual tab bar click — clears AI match navigation targets
+  function handleTabClick(newTab: Tab) {
+    setTargetNeighborhood(null)
+    setTargetAddress(null)
+    setTab(newTab)
+  }
+
+  // AI Match → neighborhood detail
+  function handleViewNeighborhood(name: string) {
+    setTargetNeighborhood(name)
+    setTab('neighborhoods')
+  }
+
+  // AI Match → address search detail
+  function handleViewAddress(address: string) {
+    setTargetAddress(address)
+    setTab('search')
   }
 
   if (loading) {
@@ -85,7 +113,7 @@ export default function Dashboard() {
             return (
               <button
                 key={t.key}
-                onClick={() => setTab(t.key)}
+                onClick={() => handleTabClick(t.key)}
                 className="flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all"
                 style={{
                   backgroundColor: active
@@ -113,7 +141,13 @@ export default function Dashboard() {
               <p style={{ color: '#a0a0a0' }} className="text-xs mb-6">
                 Enter any Columbus, OH address to get real air quality and amenity scores
               </p>
-              <AddressSearch onAdd={addToCompare} compareCount={compared.length} userId={userId} />
+              <AddressSearch
+                onAdd={addToCompare}
+                compareCount={compared.length}
+                userId={userId}
+                initialAddress={targetAddress}
+                onBack={targetAddress ? () => setTab('ai-match') : undefined}
+              />
             </div>
 
             {/* Comparison panel */}
@@ -157,7 +191,11 @@ export default function Dashboard() {
             <p style={{ color: '#a0a0a0' }} className="text-xs mb-6">
               Adjust the sliders to rank neighborhoods based on what matters to you. Currently covering Columbus, Ohio.
             </p>
-            <NeighborhoodFinder userId={userId} />
+            <NeighborhoodFinder
+              userId={userId}
+              initialNeighborhoodName={targetNeighborhood}
+              onBack={targetNeighborhood ? () => setTab('ai-match') : undefined}
+            />
           </div>
         )}
 
@@ -179,7 +217,16 @@ export default function Dashboard() {
             className="rounded-2xl p-6"
             style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
           >
-            <AiMatch />
+            <AiMatch
+              description={aiDescription}
+              response={aiResponse}
+              listingsState={aiListingsState}
+              onDescriptionChange={setAiDescription}
+              onResponseChange={setAiResponse}
+              onListingsChange={setAiListingsState}
+              onViewNeighborhood={handleViewNeighborhood}
+              onViewAddress={handleViewAddress}
+            />
           </div>
         )}
       </div>

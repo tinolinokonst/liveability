@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ArrowLeft, Check } from 'lucide-react'
 import { Neighborhood, WeightConfig, Profile, PROFILE_WEIGHTS, AddressMetrics } from '@/lib/types'
 import { fetchFullMetrics } from '@/lib/metrics'
@@ -89,12 +89,14 @@ function rentLabel(rent: number) {
 
 interface NeighborhoodFinderProps {
   userId?: string | null
+  initialNeighborhoodName?: string | null
+  onBack?: () => void
 }
 
 const MIN_RENT = 800
 const MAX_RENT = 2500
 
-export default function NeighborhoodFinder({ userId }: NeighborhoodFinderProps) {
+export default function NeighborhoodFinder({ userId, initialNeighborhoodName, onBack }: NeighborhoodFinderProps) {
   const [weights, setWeights] = useState<WeightConfig>(DEFAULT_WEIGHTS)
   const [activePreset, setActivePreset] = useState('Balanced')
   const [expandedNews, setExpandedNews] = useState<string | null>(null)
@@ -108,6 +110,18 @@ export default function NeighborhoodFinder({ userId }: NeighborhoodFinderProps) 
   const [metricsError, setMetricsError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+
+  // Auto-select a neighborhood when navigated from AI Match
+  useEffect(() => {
+    if (!initialNeighborhoodName) return
+    const target = COLUMBUS_NEIGHBORHOODS.find(n =>
+      n.name.toLowerCase() === initialNeighborhoodName.toLowerCase() ||
+      n.name.toLowerCase().includes(initialNeighborhoodName.toLowerCase()) ||
+      initialNeighborhoodName.toLowerCase().includes(n.name.toLowerCase())
+    )
+    if (target) handleSelectNeighborhood(target)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialNeighborhoodName])
 
   const searchMatches = searchQuery.trim().length > 0
     ? COLUMBUS_NEIGHBORHOODS.filter(n =>
@@ -168,13 +182,27 @@ export default function NeighborhoodFinder({ userId }: NeighborhoodFinderProps) 
   if (selectedName) {
     return (
       <div className="flex flex-col gap-4">
-        <button
-          onClick={() => setSelectedName(null)}
-          className="text-xs mb-1 transition-colors flex items-center gap-1 self-start"
-          style={{ color: '#a0a0a0' }}
-        >
-          <ArrowLeft size={14} /> Back to neighborhood rankings
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setSelectedName(null)}
+            className="text-xs transition-colors flex items-center gap-1 self-start"
+            style={{ color: '#a0a0a0' }}
+          >
+            <ArrowLeft size={14} /> Back to neighborhood rankings
+          </button>
+          {onBack && (
+            <>
+              <span style={{ color: '#2a2a2a' }}>·</span>
+              <button
+                onClick={onBack}
+                className="text-xs transition-colors flex items-center gap-1 self-start"
+                style={{ color: '#f97316' }}
+              >
+                <ArrowLeft size={14} /> Back to AI Match results
+              </button>
+            </>
+          )}
+        </div>
 
         {metricsError && (
           <div className="rounded-xl px-4 py-3 text-sm text-[#ef4444]" style={{ backgroundColor: '#ef44441a', border: '1px solid #ef444433' }}>

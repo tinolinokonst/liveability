@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from 'react'
-import { Check } from 'lucide-react'
+import { ArrowLeft, Check } from 'lucide-react'
 import { geocodeAddress } from '@/lib/geocoding'
 import { fetchAmenityScores } from '@/lib/overpass'
 import { buildMetrics } from '@/lib/metrics'
@@ -21,6 +21,8 @@ interface AddressSearchProps {
   onAdd?: (metrics: AddressMetrics) => void
   compareCount?: number
   userId?: string | null
+  initialAddress?: string | null
+  onBack?: () => void
 }
 
 const RADIUS_OPTIONS: Array<{ label: string; meters: number }> = [
@@ -33,7 +35,7 @@ const RADIUS_OPTIONS: Array<{ label: string; meters: number }> = [
 const COLUMBUS_CENTER = { lat: 39.9612, lng: -82.9988 }
 const COLUMBUS_BIAS_RADIUS_M = 40000
 
-export default function AddressSearch({ onAdd, compareCount = 0, userId }: AddressSearchProps) {
+export default function AddressSearch({ onAdd, compareCount = 0, userId, initialAddress, onBack }: AddressSearchProps) {
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(false)
   const [radiusLoading, setRadiusLoading] = useState(false)
@@ -85,6 +87,14 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId }: Addre
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Auto-search when navigated from AI Match with a pre-filled address
+  useEffect(() => {
+    if (!initialAddress) return
+    setQuery(initialAddress)
+    runSearch(initialAddress)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialAddress])
 
   async function runSearch(address: string) {
     if (!address.trim()) return
@@ -195,6 +205,15 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId }: Addre
 
   return (
     <div className="flex flex-col gap-6">
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="text-xs flex items-center gap-1 self-start transition-colors"
+          style={{ color: '#f97316' }}
+        >
+          <ArrowLeft size={14} /> Back to AI Match results
+        </button>
+      )}
       <form onSubmit={handleSearch} className="flex gap-3">
         <input
           ref={inputRef}

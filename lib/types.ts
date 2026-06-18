@@ -251,6 +251,25 @@ export interface WeightConfig {
 
 export type Profile = 'Family' | 'Young Professional' | 'Retiree' | 'Nature Lover'
 
+export interface AiRentListing {
+  id: string
+  formattedAddress: string
+  price: number
+  bedrooms?: number
+  bathrooms?: number
+  squareFootage?: number
+  propertyType?: string
+  daysOnMarket?: number
+  listingAgent?: { website?: string }
+  listingOffice?: { website?: string }
+}
+
+export interface AiMatchListingsState {
+  neighborhood: string
+  status: 'loading' | 'ok' | 'empty' | 'error'
+  listings: AiRentListing[]
+}
+
 export const PROFILE_WEIGHTS: Record<Profile, Record<keyof Omit<Neighborhood, 'name' | 'lat' | 'lng' | 'rent' | 'notes'>, number>> = {
   'Family':            { walkability: 10, air: 10, green: 15, grocery: 10, transit: 5,  safety: 25, education: 25, healthcare: 5,  dining: 0,  quiet: 5  },
   'Young Professional': { walkability: 20, air: 5,  green: 5,  grocery: 10, transit: 25, safety: 10, education: 0,  healthcare: 5,  dining: 20, quiet: 0  },
