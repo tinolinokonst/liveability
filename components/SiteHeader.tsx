@@ -69,13 +69,6 @@ export default function SiteHeader() {
             <>
               <Link
                 href="/dashboard"
-                className="text-sm px-4 py-2 rounded-lg font-medium transition-colors hover:text-white hidden sm:block"
-                style={{ color: '#a0a0a0' }}
-              >
-                {userEmail}
-              </Link>
-              <Link
-                href="/dashboard"
                 className="text-sm px-4 py-2 rounded-lg font-semibold text-white transition-all hover:opacity-90"
                 style={{ backgroundColor: '#f97316' }}
               >

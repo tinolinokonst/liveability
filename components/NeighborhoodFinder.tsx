@@ -99,6 +99,8 @@ export default function NeighborhoodFinder({ userId }: NeighborhoodFinderProps) 
   const [activePreset, setActivePreset] = useState('Balanced')
   const [expandedNews, setExpandedNews] = useState<string | null>(null)
   const [maxBudget, setMaxBudget] = useState(MAX_RENT)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showDropdown, setShowDropdown] = useState(false)
 
   const [selectedName, setSelectedName] = useState<string | null>(null)
   const [metrics, setMetrics] = useState<AddressMetrics | null>(null)
@@ -106,6 +108,12 @@ export default function NeighborhoodFinder({ userId }: NeighborhoodFinderProps) 
   const [metricsError, setMetricsError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+
+  const searchMatches = searchQuery.trim().length > 0
+    ? COLUMBUS_NEIGHBORHOODS.filter(n =>
+        n.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : []
 
   const allRanked = [...COLUMBUS_NEIGHBORHOODS]
     .map(n => ({ ...n, score: scoreNeighborhood(n, weights) }))
@@ -212,6 +220,51 @@ export default function NeighborhoodFinder({ userId }: NeighborhoodFinderProps) 
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Search */}
+      <div className="relative">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={e => { setSearchQuery(e.target.value); setShowDropdown(true) }}
+          onFocus={() => { if (searchQuery) setShowDropdown(true) }}
+          onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+          placeholder="Jump to a neighborhood..."
+          className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-[#a0a0a0] outline-none focus:ring-2 focus:ring-[#f97316]"
+          style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
+        />
+        {showDropdown && searchMatches.length > 0 && (
+          <div
+            className="absolute left-0 right-0 top-full mt-1 rounded-xl overflow-hidden z-10"
+            style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}
+          >
+            {searchMatches.map(n => (
+              <button
+                key={n.name}
+                onMouseDown={() => {
+                  setSearchQuery('')
+                  setShowDropdown(false)
+                  handleSelectNeighborhood(n)
+                }}
+                className="w-full text-left px-4 py-3 text-sm transition-colors"
+                style={{ color: '#e0e0e0', borderBottom: '1px solid #2a2a2a' }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#2a2a2a')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
+              >
+                {n.name}
+              </button>
+            ))}
+          </div>
+        )}
+        {showDropdown && searchQuery.trim().length > 0 && searchMatches.length === 0 && (
+          <div
+            className="absolute left-0 right-0 top-full mt-1 rounded-xl px-4 py-3 text-sm z-10"
+            style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a', color: '#a0a0a0' }}
+          >
+            No neighborhoods match &ldquo;{searchQuery}&rdquo;
+          </div>
+        )}
+      </div>
+
       {/* Presets */}
       <div>
         <p style={{ color: '#a0a0a0' }} className="text-xs font-medium mb-3 uppercase tracking-wider">Quick presets</p>
