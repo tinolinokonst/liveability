@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useRef, useEffect } from 'react'
-import { Sparkles, Send, RotateCcw, Database } from 'lucide-react'
+import { Sparkles, Send, RotateCcw, Database, Home, ExternalLink } from 'lucide-react'
+import { COLUMBUS_NEIGHBORHOODS } from '@/lib/neighborhoods'
 
 const EXAMPLE_PROMPTS = [
   "I work from home and want a quiet neighborhood with good coffee shops and parks within walking distance. Budget around $1,400/month.",
@@ -20,11 +21,48 @@ function renderMarkdown(text: string): string {
     .replace(/\n/g, '<br/>')
 }
 
+// Parse neighborhood names from AI response headings (### 1. Name, ### 2. Name, ...)
+function parseNeighborhoodNames(text: string): string[] {
+  const matches = [...text.matchAll(/^###\s+\d+\.\s+(.+)$/gm)]
+  return matches.map(m => m[1].trim()).filter(Boolean)
+}
+
+// Find a neighborhood's coordinates by name (case-insensitive substring match)
+function findNeighborhoodCoords(name: string): { lat: number; lng: number } | null {
+  const lower = name.toLowerCase()
+  const match = COLUMBUS_NEIGHBORHOODS.find(n =>
+    n.name.toLowerCase() === lower ||
+    n.name.toLowerCase().includes(lower) ||
+    lower.includes(n.name.toLowerCase())
+  )
+  return match ? { lat: match.lat, lng: match.lng } : null
+}
+
+interface RentListing {
+  id: string
+  formattedAddress: string
+  price: number
+  bedrooms?: number
+  bathrooms?: number
+  squareFootage?: number
+  propertyType?: string
+  daysOnMarket?: number
+  listingAgent?: { website?: string }
+  listingOffice?: { website?: string }
+}
+
+interface ListingsFetchState {
+  neighborhood: string
+  status: 'loading' | 'ok' | 'empty' | 'error'
+  listings: RentListing[]
+}
+
 export default function AiMatch() {
   const [description, setDescription] = useState('')
   const [response, setResponse] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [listingsState, setListingsState] = useState<ListingsFetchState | null>(null)
   const responseRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -33,6 +71,38 @@ export default function AiMatch() {
     }
   }, [response])
 
+  // After streaming completes, fetch listings for the top matched neighborhood
+  useEffect(() => {
+    if (loading || !response) return
+
+    const names = parseNeighborhoodNames(response)
+    if (names.length === 0) return
+
+    // Try each parsed name until one matches a known neighborhood
+    let coords: { lat: number; lng: number } | null = null
+    let matchedName = ''
+    for (const name of names) {
+      const c = findNeighborhoodCoords(name)
+      if (c) { coords = c; matchedName = name; break }
+    }
+    if (!coords) return
+
+    setListingsState({ neighborhood: matchedName, status: 'loading', listings: [] })
+
+    fetch(`/api/rentcast?mode=listings&lat=${coords.lat}&lng=${coords.lng}&radius=2`)
+      .then(r => r.json())
+      .then((data: RentListing[] | { error?: string }) => {
+        if (!Array.isArray(data) || data.length === 0) {
+          setListingsState(s => s ? { ...s, status: 'empty' } : s)
+          return
+        }
+        setListingsState(s => s ? { ...s, status: 'ok', listings: data.slice(0, 5) } : s)
+      })
+      .catch(() => {
+        setListingsState(s => s ? { ...s, status: 'error' } : s)
+      })
+  }, [loading, response])
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!description.trim() || loading) return
@@ -40,6 +110,7 @@ export default function AiMatch() {
     setLoading(true)
     setResponse('')
     setError(null)
+    setListingsState(null)
 
     try {
       const res = await fetch('/api/ai-match', {
@@ -50,7 +121,7 @@ export default function AiMatch() {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.error ?? 'Something went wrong')
+        throw new Error((err as { error?: string }).error ?? 'Something went wrong')
       }
 
       const reader = res.body?.getReader()
@@ -76,12 +147,13 @@ export default function AiMatch() {
     setDescription('')
     setResponse('')
     setError(null)
+    setListingsState(null)
   }
 
   return (
     <div className="flex flex-col gap-6">
 
-      {/* Header — always visible */}
+      {/* Header */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
           <Sparkles size={16} style={{ color: '#f97316' }} />
@@ -94,7 +166,7 @@ export default function AiMatch() {
         </p>
       </div>
 
-      {/* Example prompts — shown only before a result */}
+      {/* Example prompts */}
       {!response && !loading && (
         <>
           <div>
@@ -107,11 +179,7 @@ export default function AiMatch() {
                   key={i}
                   onClick={() => setDescription(p)}
                   className="text-left px-4 py-3 rounded-xl text-xs leading-relaxed transition-all"
-                  style={{
-                    backgroundColor: '#0f0f0f',
-                    border: '1px solid #2a2a2a',
-                    color: '#a0a0a0',
-                  }}
+                  style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a', color: '#a0a0a0' }}
                   onMouseEnter={e => (e.currentTarget.style.borderColor = '#f9731666')}
                   onMouseLeave={e => (e.currentTarget.style.borderColor = '#2a2a2a')}
                 >
@@ -147,7 +215,6 @@ export default function AiMatch() {
             dangerouslySetInnerHTML={{ __html: renderMarkdown(response) }}
           />
 
-          {/* Data attribution — shown once streaming is done */}
           {!loading && (
             <>
               <div className="mt-6 pt-4" style={{ borderTop: '1px solid #2a2a2a' }}>
@@ -173,6 +240,76 @@ export default function AiMatch() {
         </div>
       )}
 
+      {/* Property listings from Rentcast */}
+      {!loading && listingsState && listingsState.status !== 'error' && (
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <Home size={14} style={{ color: '#f97316' }} />
+            <span className="text-sm font-semibold text-white">
+              Active listings near {listingsState.neighborhood}
+            </span>
+            <span className="text-xs" style={{ color: '#3a3a3a' }}>via Rentcast</span>
+          </div>
+
+          {listingsState.status === 'loading' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[0, 1, 2].map(i => (
+                <div key={i} className="rounded-xl p-4 animate-pulse" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
+                  <div className="h-4 w-24 rounded mb-3" style={{ backgroundColor: '#2a2a2a' }} />
+                  <div className="h-6 w-16 rounded" style={{ backgroundColor: '#2a2a2a' }} />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {listingsState.status === 'ok' && listingsState.listings.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {listingsState.listings.map(listing => {
+                const agentSite = listing.listingAgent?.website ?? listing.listingOffice?.website ?? null
+                return (
+                  <div
+                    key={listing.id}
+                    className="rounded-xl p-4 flex flex-col gap-2"
+                    style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
+                  >
+                    <p className="text-xs leading-snug text-white font-medium">{listing.formattedAddress}</p>
+                    <p className="text-xl font-bold" style={{ color: '#f97316' }}>
+                      ${listing.price.toLocaleString()}<span className="text-sm font-normal" style={{ color: '#a0a0a0' }}>/mo</span>
+                    </p>
+                    <p className="text-xs" style={{ color: '#a0a0a0' }}>
+                      {[
+                        listing.propertyType,
+                        listing.bedrooms != null ? `${listing.bedrooms} bd` : null,
+                        listing.bathrooms != null ? `${listing.bathrooms} ba` : null,
+                        listing.squareFootage ? `${listing.squareFootage.toLocaleString()} sqft` : null,
+                        listing.daysOnMarket != null ? `${listing.daysOnMarket}d on market` : null,
+                      ].filter(Boolean).join(' · ')}
+                    </p>
+                    {agentSite && (
+                      <a
+                        href={agentSite}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-xs transition-colors"
+                        style={{ color: '#f97316' }}
+                      >
+                        View listing <ExternalLink size={10} />
+                      </a>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {listingsState.status === 'empty' && (
+            <p className="text-xs" style={{ color: '#3a3a3a' }}>
+              No active listings found near {listingsState.neighborhood} right now — Rentcast coverage varies by area.
+            </p>
+          )}
+        </div>
+      )}
+
       {error && (
         <div
           className="rounded-xl px-4 py-3 text-sm"
@@ -190,11 +327,7 @@ export default function AiMatch() {
           rows={4}
           disabled={loading}
           className="w-full px-4 py-3 rounded-xl text-sm text-white outline-none focus:ring-2 focus:ring-[#f97316] resize-none disabled:opacity-50"
-          style={{
-            backgroundColor: '#0f0f0f',
-            border: '1px solid #2a2a2a',
-            color: 'white',
-          }}
+          style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}
         />
         <div className="flex items-center justify-between">
           <span className="text-xs" style={{ color: '#3a3a3a' }}>

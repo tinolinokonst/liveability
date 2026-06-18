@@ -1,6 +1,7 @@
 "use client"
 
-import { Wind, Shield, Navigation, ShoppingBag, Sun, Volume2, Users, Leaf, LucideIcon } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Wind, Shield, Navigation, ShoppingBag, Sun, Volume2, Users, Leaf, DollarSign, LucideIcon } from 'lucide-react'
 import { AddressMetrics, AmenityPlaces, NearestAmenity } from '@/lib/types'
 import { getColumbusAverages } from '@/lib/neighborhoods'
 import MetricCard from './MetricCard'
@@ -449,6 +450,79 @@ function compositeSubtitle(metrics: AddressMetrics): string {
   return parts.join(' · ')
 }
 
+// ─── Rentcast cost of living ─────────────────────────────────────────────────
+
+interface RentEstimate {
+  rent: number
+  rentRangeLow: number
+  rentRangeHigh: number
+  subjectProperty?: { propertyType?: string; bedrooms?: number; bathrooms?: number }
+}
+
+function RentcastCostCard({ address }: { address: string }) {
+  const [data, setData] = useState<RentEstimate | null>(null)
+  const [status, setStatus] = useState<'loading' | 'ok' | 'error'>('loading')
+
+  useEffect(() => {
+    if (!address) { setStatus('error'); return }
+    fetch(`/api/rentcast?mode=estimate&address=${encodeURIComponent(address)}`)
+      .then(r => r.json())
+      .then((json: RentEstimate & { error?: string }) => {
+        if (json.error || !json.rent) { setStatus('error'); return }
+        setData(json)
+        setStatus('ok')
+      })
+      .catch(() => setStatus('error'))
+  }, [address])
+
+  const prop = data?.subjectProperty
+
+  return (
+    <div
+      className="rounded-xl border p-4 flex flex-col gap-3"
+      style={{ backgroundColor: '#1a1a1a', borderColor: '#2a2a2a' }}
+    >
+      <div className="flex items-center justify-between">
+        <span style={{ color: '#a0a0a0' }} className="text-xs font-medium uppercase tracking-wider flex items-center gap-1.5">
+          <DollarSign size={14} />
+          Cost of Living
+        </span>
+        <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ color: '#a0a0a0', backgroundColor: '#2a2a2a' }}>
+          Rent estimate
+        </span>
+      </div>
+
+      {status === 'loading' && (
+        <div className="flex flex-col gap-2 animate-pulse">
+          <div className="h-8 w-28 rounded-lg" style={{ backgroundColor: '#2a2a2a' }} />
+          <div className="h-3 w-40 rounded" style={{ backgroundColor: '#2a2a2a' }} />
+        </div>
+      )}
+
+      {status === 'ok' && data && (
+        <>
+          <div className="text-2xl font-bold text-white">
+            ${data.rent.toLocaleString()}<span className="text-base font-normal" style={{ color: '#a0a0a0' }}>/mo</span>
+          </div>
+          <p style={{ color: '#a0a0a0' }} className="text-xs leading-relaxed">
+            Range: ${data.rentRangeLow.toLocaleString()} – ${data.rentRangeHigh.toLocaleString()}/mo
+            {prop?.propertyType && ` · ${prop.propertyType}`}
+            {prop?.bedrooms != null && ` · ${prop.bedrooms}bd`}
+            {prop?.bathrooms != null && `/${prop.bathrooms}ba`}
+          </p>
+          <p style={{ color: '#a0a0a0' }} className="text-xs flex items-center gap-1 -mb-1">
+            Source: <a href="https://rentcast.io" target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors">Rentcast AVM</a>
+          </p>
+        </>
+      )}
+
+      {status === 'error' && (
+        <p style={{ color: '#a0a0a0' }} className="text-xs">Cost of living data temporarily unavailable</p>
+      )}
+    </div>
+  )
+}
+
 // ─── sub-components ──────────────────────────────────────────────────────────
 
 function CompositeScoreBanner({ metrics }: { metrics: AddressMetrics }) {
@@ -510,6 +584,9 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
     <div className="flex flex-col gap-5">
       {/* Composite score banner */}
       <CompositeScoreBanner metrics={metrics} />
+
+      {/* Cost of Living */}
+      <RentcastCostCard address={metrics.address ?? location.formattedAddress} />
 
       {/* Nearest Essentials */}
       {metrics.nearestEssentials && (
