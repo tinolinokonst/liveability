@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, MapPin, Building2 } from 'lucide-react'
 import {
   fetchSavedAddresses,
   updateSavedAddressMetrics,
@@ -9,7 +9,10 @@ import {
 } from '@/lib/savedAddresses'
 import { fetchFullMetrics } from '@/lib/metrics'
 import { AddressMetrics, SavedAddress } from '@/lib/types'
+import { COLUMBUS_NEIGHBORHOODS } from '@/lib/neighborhoods'
 import AddressResults from './AddressResults'
+
+const NEIGHBORHOOD_NAMES = new Set(COLUMBUS_NEIGHBORHOODS.map(n => n.name))
 
 interface SavedAddressesProps {
   onAdd?: (metrics: AddressMetrics) => void
@@ -175,8 +178,11 @@ export default function SavedAddresses({ onAdd, compareCount = 0 }: SavedAddress
         </p>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {addresses.map(saved => (
+      {addresses.length > 0 && (() => {
+        const streetAddresses = addresses.filter(a => !NEIGHBORHOOD_NAMES.has(a.address))
+        const savedNeighborhoods = addresses.filter(a => NEIGHBORHOOD_NAMES.has(a.address))
+
+        const renderCard = (saved: SavedAddress, isNeighborhood: boolean) => (
           <div
             key={saved.id}
             onClick={() => setSelectedId(saved.id)}
@@ -184,7 +190,13 @@ export default function SavedAddresses({ onAdd, compareCount = 0 }: SavedAddress
             style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
           >
             <div className="flex items-start justify-between gap-3">
-              <p className="text-white font-semibold text-sm">{saved.address}</p>
+              <div className="flex items-start gap-2 min-w-0">
+                {isNeighborhood
+                  ? <Building2 size={14} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
+                  : <MapPin size={14} className="shrink-0 mt-0.5" style={{ color: '#a0a0a0' }} />
+                }
+                <p className="text-white font-semibold text-sm leading-tight">{saved.address}</p>
+              </div>
               <div className="text-right shrink-0">
                 <p style={{ color: '#a0a0a0' }} className="text-xs">Overall</p>
                 <p className="text-xl font-bold" style={{ color: '#f97316' }}>{saved.metrics.overallScore ?? '—'}</p>
@@ -247,8 +259,40 @@ export default function SavedAddresses({ onAdd, compareCount = 0 }: SavedAddress
               </button>
             </div>
           </div>
-        ))}
-      </div>
+        )
+
+        return (
+          <>
+            {streetAddresses.length > 0 && (
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <MapPin size={13} style={{ color: '#a0a0a0' }} />
+                  <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#a0a0a0' }}>
+                    Saved Addresses
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {streetAddresses.map(saved => renderCard(saved, false))}
+                </div>
+              </div>
+            )}
+
+            {savedNeighborhoods.length > 0 && (
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <Building2 size={13} style={{ color: '#f97316' }} />
+                  <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#a0a0a0' }}>
+                    Saved Neighborhoods
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {savedNeighborhoods.map(saved => renderCard(saved, true))}
+                </div>
+              </div>
+            )}
+          </>
+        )
+      })()}
     </div>
   )
 }

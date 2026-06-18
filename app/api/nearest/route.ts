@@ -6,7 +6,7 @@ const OVERPASS_URLS = [
   'https://overpass.kumi.systems/api/interpreter',
 ]
 
-const SEARCH_RADIUS = 15000
+const SEARCH_RADIUS = 5000
 const TIMEOUT_MS = 15000
 
 interface Element {
@@ -114,9 +114,9 @@ out tags center;`
 
   for (const url of OVERPASS_URLS) {
     const data = await queryOverpass(url, query)
-    if (!data) continue
+    if (!data || !Array.isArray(data.elements)) continue
 
-    const els: Element[] = data.elements ?? []
+    const els: Element[] = data.elements
 
     return NextResponse.json({
       trainStation: findNearest(els.filter(e => e.tags?.railway === 'station'), latN, lngN),
