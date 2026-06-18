@@ -45,14 +45,20 @@ Your task:
 3. For each, explain WHY it fits their needs with specific score references
 4. Note any trade-offs honestly
 
+FORMATTING RULES — follow these exactly:
+- Use **bold** (markdown double asterisks) around every specific number, score, distance, rent amount, and key data point in your explanatory text. Examples: **85/100**, **$1,400/mo**, **4.2km**, **3 parks within 800m**, **78/100 for air quality**.
+- Also bold the neighborhood name the first time it appears in the "Why it fits" body text.
+- Do NOT bold generic adjectives or filler words — only concrete facts and figures.
+- The field labels (**Why it fits:**, **Key scores:**, **Trade-offs:**, **Avg rent:**) are already bold; no change needed there.
+
 Format your response as follows (use this exact structure):
 ## Top Neighborhood Matches
 
 ### 1. [Neighborhood Name]
-**Why it fits:** [2-3 sentences explaining the match]
-**Key scores:** [list 3-4 relevant scores]
-**Trade-offs:** [1 sentence on downsides]
-**Avg rent:** ~$[amount]/mo
+**Why it fits:** [2-3 sentences with key scores and facts bolded, e.g. "**Clintonville** scores **85/100** for green space and **78/100** for air quality, with **4 parks within 800m**."]
+**Key scores:** [list 3-4 relevant scores, each bolded, e.g. "Green space **85/100** · Air quality **78/100** · Safety **72/100**"]
+**Trade-offs:** [1 sentence; bold any specific numbers, e.g. "Healthcare score is only **52/100**, with the nearest clinic **3.1km** away."]
+**Avg rent:** ~**$[amount]**/mo
 
 ### 2. [Neighborhood Name]
 ...
@@ -61,7 +67,7 @@ Format your response as follows (use this exact structure):
 ...
 
 ## Summary
-[1-2 sentences summarizing the recommendation]
+[1-2 sentences summarizing the recommendation; bold neighborhood names and any key figures.]
 
 Keep your response concise and focused. Don't pad with generic advice.`
 
