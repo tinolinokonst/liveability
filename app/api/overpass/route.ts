@@ -89,13 +89,19 @@ export async function GET(request: NextRequest) {
   node["amenity"="parking"](around:${parkingRadius},${lat},${lng});
   way["amenity"="parking"](around:${parkingRadius},${lat},${lng});
 );
-out body center;
+out body;
 >;
 out skel qt;`
 
   for (const url of OVERPASS_URLS) {
     const data = await queryOverpass(url, query)
-    if (data) return NextResponse.json({ ...data, radius })
+    if (data) {
+      const els = data.elements as Array<{ type?: string }> | undefined
+      const wayCount = els?.filter(e => e.type === 'way').length ?? 0
+      const nodeCount = els?.filter(e => e.type === 'node').length ?? 0
+      console.log(`[Overpass] ${els?.length ?? 0} elements: ${nodeCount} nodes, ${wayCount} ways (lat:${lat}, lng:${lng})`)
+      return NextResponse.json({ ...data, radius })
+    }
   }
 
   console.log('All Overpass endpoints failed, returning fallback response')

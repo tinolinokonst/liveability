@@ -136,13 +136,37 @@ function elementCategory(e: OverpassElement, kind: AmenityKind): string | undefi
   }
 }
 
-function nearest(elements: OverpassElement[], lat: number, lng: number, fallbackName: string, kind?: AmenityKind): NearestAmenity | null {
+function getElementLatLon(
+  e: OverpassElement,
+  nodeMap: Map<number, [number, number]>
+): [number, number] | null {
+  if (e.lat !== undefined && e.lon !== undefined) return [e.lat, e.lon]
+  if (e.center) return [e.center.lat, e.center.lon]
+  if (e.nodes?.length) {
+    let latSum = 0, lonSum = 0, count = 0
+    for (const nid of e.nodes) {
+      const pt = nodeMap.get(nid)
+      if (pt) { latSum += pt[0]; lonSum += pt[1]; count++ }
+    }
+    if (count > 0) return [latSum / count, lonSum / count]
+  }
+  return null
+}
+
+function nearest(
+  elements: OverpassElement[],
+  lat: number,
+  lng: number,
+  fallbackName: string,
+  kind?: AmenityKind,
+  nodeMap: Map<number, [number, number]> = new Map()
+): NearestAmenity | null {
   let best: NearestAmenity | null = null
 
   for (const e of elements) {
-    const elat = e.lat ?? e.center?.lat
-    const elon = e.lon ?? e.center?.lon
-    if (elat === undefined || elon === undefined) continue
+    const pos = getElementLatLon(e, nodeMap)
+    if (!pos) continue
+    const [elat, elon] = pos
 
     const distanceKm = haversineKm(lat, lng, elat, elon)
     if (!best || distanceKm < best.distanceKm) {
@@ -172,9 +196,9 @@ function nearestList(
   const places: NearestAmenity[] = []
 
   for (const e of elements) {
-    const elat = e.lat ?? e.center?.lat
-    const elon = e.lon ?? e.center?.lon
-    if (elat === undefined || elon === undefined) continue
+    const pos = getElementLatLon(e, nodeMap ?? new Map())
+    if (!pos) continue
+    const [elat, elon] = pos
 
     const distanceKm = haversineKm(lat, lng, elat, elon)
 
@@ -311,15 +335,15 @@ export async function fetchAmenityScores(lat: number, lng: number, radius: numbe
     parkingScore,
     walkabilityScore,
     radius: usedRadius,
-    nearestGrocery: nearest(groceryElements, lat, lng, 'Grocery store (no name in OSM)', 'grocery'),
-    nearestPark: nearest(parkElements, lat, lng, 'Park (no name in OSM)', 'park'),
-    nearestSchool: nearest(schoolElements, lat, lng, 'School (no name in OSM)', 'school'),
-    nearestHealthcare: nearest(healthcareElements, lat, lng, 'Healthcare facility (no name in OSM)', 'healthcare'),
-    nearestDining: nearest(diningElements, lat, lng, 'Restaurant/cafe (no name in OSM)', 'dining'),
-    nearestLibrary: nearest(libraryElements, lat, lng, 'Library (no name in OSM)', 'library'),
-    nearestBank: nearest(bankElements, lat, lng, 'Bank/ATM (no name in OSM)', 'bank'),
-    nearestWorship: nearest(worshipElements, lat, lng, 'Place of worship (no name in OSM)', 'worship'),
-    nearestParking: nearest(parkingElements, lat, lng, 'Parking (no name in OSM)', 'parking'),
+    nearestGrocery: nearest(groceryElements, lat, lng, 'Grocery store (no name in OSM)', 'grocery', nodeMap),
+    nearestPark: nearest(parkElements, lat, lng, 'Park (no name in OSM)', 'park', nodeMap),
+    nearestSchool: nearest(schoolElements, lat, lng, 'School (no name in OSM)', 'school', nodeMap),
+    nearestHealthcare: nearest(healthcareElements, lat, lng, 'Healthcare facility (no name in OSM)', 'healthcare', nodeMap),
+    nearestDining: nearest(diningElements, lat, lng, 'Restaurant/cafe (no name in OSM)', 'dining', nodeMap),
+    nearestLibrary: nearest(libraryElements, lat, lng, 'Library (no name in OSM)', 'library', nodeMap),
+    nearestBank: nearest(bankElements, lat, lng, 'Bank/ATM (no name in OSM)', 'bank', nodeMap),
+    nearestWorship: nearest(worshipElements, lat, lng, 'Place of worship (no name in OSM)', 'worship', nodeMap),
+    nearestParking: nearest(parkingElements, lat, lng, 'Parking (no name in OSM)', 'parking', nodeMap),
     places: {
       grocery:    nearestList(groceryElements,    lat, lng, 'Grocery store (no name in OSM)',         'grocery',    8,  nodeMap, '#f97316'),
       transit:    nearestList(transitElements,    lat, lng, 'Transit stop (no name in OSM)',           'transit',    20),

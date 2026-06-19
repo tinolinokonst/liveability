@@ -1,9 +1,11 @@
 "use client"
 
-import { ReactNode } from 'react'
+import { ReactNode, useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { MapContainer, TileLayer, Marker, Popup, Circle, Polygon } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import { Maximize2, Minimize2 } from 'lucide-react'
 import { CrimeIncidentLocation, NearestAmenity } from '@/lib/types'
 
 export interface LegendItem {
@@ -104,6 +106,20 @@ export default function MetricInfoMap({
   legend,
   height = 380,
 }: MetricInfoMapProps) {
+  const [fullscreen, setFullscreen] = useState(false)
+
+  useEffect(() => {
+    if (!fullscreen) return
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        e.stopImmediatePropagation()
+        setFullscreen(false)
+      }
+    }
+    document.addEventListener('keydown', onKeyDown, true)
+    return () => document.removeEventListener('keydown', onKeyDown, true)
+  }, [fullscreen])
+
   const points = markers.filter(m => m.lat !== undefined && m.lng !== undefined)
   const clusters = clusterIncidents(incidents)
 
@@ -113,6 +129,173 @@ export default function MetricInfoMap({
     ...clusters.map(c => [c.lat, c.lng] as [number, number]),
     ...(nearestOutside ? [[nearestOutside.lat, nearestOutside.lng] as [number, number]] : []),
   ]
+
+  const mapChildren = (
+    <>
+      <TileLayer url={DARK_TILE_URL} attribution={DARK_TILE_ATTRIBUTION} />
+
+      {contextCircle && (
+        <Circle
+          center={[center.lat, center.lng]}
+          radius={contextCircle.radiusMeters}
+          pathOptions={{
+            color: contextCircle.color ?? centerColor,
+            fillColor: contextCircle.color ?? centerColor,
+            fillOpacity: 0.04,
+            opacity: 0.25,
+            weight: 1,
+          }}
+        >
+          <Popup>{contextCircle.label}</Popup>
+        </Circle>
+      )}
+
+      <Marker position={[center.lat, center.lng]} icon={dotIcon(centerColor, 22)}>
+        <Popup>{centerLabel}</Popup>
+      </Marker>
+
+      {points.map((m, i) => {
+        const popup = (
+          <Popup>
+            <div className="flex flex-col gap-0.5">
+              <span className="font-semibold text-white text-xs">{m.name}</span>
+              <span className="text-xs" style={{ color: '#a0a0a0' }}>
+                {m.category ? `${m.category} · ` : ''}{m.distanceKm}km away
+              </span>
+            </div>
+          </Popup>
+        )
+        if (m.polygon && m.polygonColor) {
+          const ps = POLYGON_STYLE[m.polygonColor] ?? { fillOpacity: 0.2, opacity: 0.6 }
+          return (
+            <Polygon
+              key={i}
+              positions={m.polygon}
+              pathOptions={{
+                color: m.polygonColor,
+                fillColor: m.polygonColor,
+                fillOpacity: ps.fillOpacity,
+                opacity: ps.opacity,
+                weight: 2,
+              }}
+            >
+              {popup}
+            </Polygon>
+          )
+        }
+        return (
+          <Marker key={i} position={[m.lat as number, m.lng as number]} icon={dotIcon('#9ca3af', 10)}>
+            {popup}
+          </Marker>
+        )
+      })}
+
+      {nearestOutside && (
+        <Marker
+          position={[nearestOutside.lat, nearestOutside.lng]}
+          icon={dotIcon('#ef4444', 16)}
+        >
+          <Popup>
+            <div className="flex flex-col gap-0.5">
+              <span className="font-semibold text-white text-xs">
+                {nearestOutside.name ?? 'Nearest'}
+              </span>
+              <span className="text-xs" style={{ color: '#a0a0a0' }}>
+                {nearestOutside.distanceKm}km away (outside radius)
+              </span>
+            </div>
+          </Popup>
+        </Marker>
+      )}
+
+      {clusters.map((c, i) => (
+        <Marker key={`incident-${i}`} position={[c.lat, c.lng]} icon={clusterCountIcon('#ef4444', c.count)}>
+          <Popup>{c.count} reported incident{c.count > 1 ? 's' : ''}</Popup>
+        </Marker>
+      ))}
+
+      {circleRadiusMeters !== undefined && (
+        <Circle
+          center={[center.lat, center.lng]}
+          radius={circleRadiusMeters}
+          pathOptions={{ color: '#ef4444', fillOpacity: 0.08 }}
+        >
+          {circleLabel && <Popup>{circleLabel}</Popup>}
+        </Circle>
+      )}
+
+      {searchRadiusMeters !== undefined && (
+        <Circle
+          center={[center.lat, center.lng]}
+          radius={searchRadiusMeters}
+          pathOptions={{ color: '#f97316', fillColor: '#f97316', fillOpacity: 0.1, opacity: 0.4 }}
+        />
+      )}
+    </>
+  )
+
+  const legendEl = legend && legend.length > 0 && (
+    <div
+      className="absolute bottom-2 left-2 rounded-lg px-2.5 py-2 flex flex-col gap-1 z-[1000]"
+      style={{ backgroundColor: 'rgba(15,15,15,0.85)', border: '1px solid #2a2a2a' }}
+    >
+      {legend.map((item, i) => (
+        <div key={i} className="flex items-center gap-1.5">
+          <span
+            className="shrink-0"
+            style={{
+              display: 'inline-block',
+              width: 8,
+              height: 8,
+              backgroundColor: item.color,
+              borderRadius: item.shape === 'square' ? '1px' : '50%',
+              boxShadow: item.active ? `0 0 0 2px ${item.color}55` : undefined,
+            }}
+          />
+          <span
+            style={{ color: item.active ? '#ffffff' : '#e5e5e5', fontSize: 10, lineHeight: 1.1, fontWeight: item.active ? 700 : 400 }}
+          >
+            {item.label}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+
+  if (fullscreen) {
+    return createPortal(
+      <div
+        className="fixed inset-0 z-[99999]"
+        onClick={() => setFullscreen(false)}
+      >
+        <div
+          className="relative w-full h-full"
+          onClick={e => e.stopPropagation()}
+        >
+          <MapContainer
+            center={[center.lat, center.lng]}
+            zoom={14}
+            bounds={bounds.length > 1 ? bounds : undefined}
+            boundsOptions={{ padding: [30, 30] }}
+            style={{ height: '100%', width: '100%' }}
+            scrollWheelZoom={true}
+          >
+            {mapChildren}
+          </MapContainer>
+          <button
+            onClick={() => setFullscreen(false)}
+            aria-label="Exit fullscreen"
+            className="absolute top-3 right-3 z-[1000] rounded-lg p-1.5 transition-colors"
+            style={{ backgroundColor: 'rgba(15,15,15,0.85)', border: '1px solid #2a2a2a', color: '#e5e5e5' }}
+          >
+            <Minimize2 size={16} />
+          </button>
+          {legendEl}
+        </div>
+      </div>,
+      document.body
+    )
+  }
 
   return (
     <div className="rounded-xl overflow-hidden relative" style={{ height, width: '100%' }}>
@@ -124,134 +307,17 @@ export default function MetricInfoMap({
         style={{ height: '100%', width: '100%' }}
         scrollWheelZoom={false}
       >
-        <TileLayer url={DARK_TILE_URL} attribution={DARK_TILE_ATTRIBUTION} />
-
-        {contextCircle && (
-          <Circle
-            center={[center.lat, center.lng]}
-            radius={contextCircle.radiusMeters}
-            pathOptions={{
-              color: contextCircle.color ?? centerColor,
-              fillColor: contextCircle.color ?? centerColor,
-              fillOpacity: 0.04,
-              opacity: 0.25,
-              weight: 1,
-            }}
-          >
-            <Popup>{contextCircle.label}</Popup>
-          </Circle>
-        )}
-
-        <Marker position={[center.lat, center.lng]} icon={dotIcon(centerColor, 22)}>
-          <Popup>{centerLabel}</Popup>
-        </Marker>
-
-        {points.map((m, i) => {
-          const popup = (
-            <Popup>
-              <div className="flex flex-col gap-0.5">
-                <span className="font-semibold text-white text-xs">{m.name}</span>
-                <span className="text-xs" style={{ color: '#a0a0a0' }}>
-                  {m.category ? `${m.category} · ` : ''}{m.distanceKm}km away
-                </span>
-              </div>
-            </Popup>
-          )
-          if (m.polygon && m.polygonColor) {
-            const ps = POLYGON_STYLE[m.polygonColor] ?? { fillOpacity: 0.2, opacity: 0.6 }
-            return (
-              <Polygon
-                key={i}
-                positions={m.polygon}
-                pathOptions={{
-                  color: m.polygonColor,
-                  fillColor: m.polygonColor,
-                  fillOpacity: ps.fillOpacity,
-                  opacity: ps.opacity,
-                  weight: 2,
-                }}
-              >
-                {popup}
-              </Polygon>
-            )
-          }
-          return (
-            <Marker key={i} position={[m.lat as number, m.lng as number]} icon={dotIcon('#9ca3af', 10)}>
-              {popup}
-            </Marker>
-          )
-        })}
-
-        {nearestOutside && (
-          <Marker
-            position={[nearestOutside.lat, nearestOutside.lng]}
-            icon={dotIcon('#ef4444', 16)}
-          >
-            <Popup>
-              <div className="flex flex-col gap-0.5">
-                <span className="font-semibold text-white text-xs">
-                  {nearestOutside.name ?? 'Nearest'}
-                </span>
-                <span className="text-xs" style={{ color: '#a0a0a0' }}>
-                  {nearestOutside.distanceKm}km away (outside radius)
-                </span>
-              </div>
-            </Popup>
-          </Marker>
-        )}
-
-        {clusters.map((c, i) => (
-          <Marker key={`incident-${i}`} position={[c.lat, c.lng]} icon={clusterCountIcon('#ef4444', c.count)}>
-            <Popup>{c.count} reported incident{c.count > 1 ? 's' : ''}</Popup>
-          </Marker>
-        ))}
-
-        {circleRadiusMeters !== undefined && (
-          <Circle
-            center={[center.lat, center.lng]}
-            radius={circleRadiusMeters}
-            pathOptions={{ color: '#ef4444', fillOpacity: 0.08 }}
-          >
-            {circleLabel && <Popup>{circleLabel}</Popup>}
-          </Circle>
-        )}
-
-        {searchRadiusMeters !== undefined && (
-          <Circle
-            center={[center.lat, center.lng]}
-            radius={searchRadiusMeters}
-            pathOptions={{ color: '#f97316', fillColor: '#f97316', fillOpacity: 0.1, opacity: 0.4 }}
-          />
-        )}
+        {mapChildren}
       </MapContainer>
-
-      {legend && legend.length > 0 && (
-        <div
-          className="absolute bottom-2 left-2 rounded-lg px-2.5 py-2 flex flex-col gap-1 z-[1000]"
-          style={{ backgroundColor: 'rgba(15,15,15,0.85)', border: '1px solid #2a2a2a' }}
-        >
-          {legend.map((item, i) => (
-            <div key={i} className="flex items-center gap-1.5">
-              <span
-                className="shrink-0"
-                style={{
-                  display: 'inline-block',
-                  width: 8,
-                  height: 8,
-                  backgroundColor: item.color,
-                  borderRadius: item.shape === 'square' ? '1px' : '50%',
-                  boxShadow: item.active ? `0 0 0 2px ${item.color}55` : undefined,
-                }}
-              />
-              <span
-                style={{ color: item.active ? '#ffffff' : '#e5e5e5', fontSize: 10, lineHeight: 1.1, fontWeight: item.active ? 700 : 400 }}
-              >
-                {item.label}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
+      <button
+        onClick={() => setFullscreen(true)}
+        aria-label="Expand map"
+        className="absolute top-2 right-2 z-[1000] rounded-lg p-1.5 transition-colors"
+        style={{ backgroundColor: 'rgba(15,15,15,0.85)', border: '1px solid #2a2a2a', color: '#e5e5e5' }}
+      >
+        <Maximize2 size={14} />
+      </button>
+      {legendEl}
     </div>
   )
 }
