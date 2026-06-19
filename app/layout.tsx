@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import TransitionWrapper from "@/components/TransitionWrapper";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Liveability — Find your perfect neighborhood",
@@ -19,8 +20,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-        <TransitionWrapper>{children}</TransitionWrapper>
+      <body className="flex min-h-screen flex-col">
+        <main className="flex-1">
+          <TransitionWrapper>{children}</TransitionWrapper>
+        </main>
+        <Footer />
       </body>
     </html>
   );
