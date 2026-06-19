@@ -51,10 +51,13 @@ const FALLBACK_SCORES: Omit<AmenityScores, 'radius'> = {
 }
 
 interface OverpassElement {
+  type?: 'node' | 'way' | 'relation'
+  id?: number
   tags?: Record<string, string>
   lat?: number
   lon?: number
   center?: { lat: number; lon: number }
+  nodes?: number[]
 }
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -156,7 +159,16 @@ function nearest(elements: OverpassElement[], lat: number, lng: number, fallback
   return best
 }
 
-function nearestList(elements: OverpassElement[], lat: number, lng: number, fallbackName: string, kind?: AmenityKind, limit: number = 8): NearestAmenity[] {
+function nearestList(
+  elements: OverpassElement[],
+  lat: number,
+  lng: number,
+  fallbackName: string,
+  kind?: AmenityKind,
+  limit: number = 8,
+  nodeMap?: Map<number, [number, number]>,
+  polygonColor?: string,
+): NearestAmenity[] {
   const places: NearestAmenity[] = []
 
   for (const e of elements) {
@@ -165,12 +177,25 @@ function nearestList(elements: OverpassElement[], lat: number, lng: number, fall
     if (elat === undefined || elon === undefined) continue
 
     const distanceKm = haversineKm(lat, lng, elat, elon)
+
+    let polygon: [number, number][] | undefined
+    if (polygonColor && nodeMap && e.nodes?.length) {
+      const coords: [number, number][] = []
+      for (const nid of e.nodes) {
+        const pt = nodeMap.get(nid)
+        if (pt) coords.push(pt)
+      }
+      if (coords.length >= 3) polygon = coords
+    }
+
     places.push({
       name: elementName(e, fallbackName),
       distanceKm: Math.round(distanceKm * 10) / 10,
       lat: elat,
       lng: elon,
       category: kind ? elementCategory(e, kind) : undefined,
+      polygon,
+      polygonColor: polygon ? polygonColor : undefined,
     })
   }
 
@@ -190,6 +215,14 @@ export async function fetchAmenityScores(lat: number, lng: number, radius: numbe
 
   const elements: OverpassElement[] = data.elements || []
   const usedRadius: number = data.radius ?? radius
+
+  // Build a map of node id → [lat, lon] so we can reconstruct way polygon geometry
+  const nodeMap = new Map<number, [number, number]>()
+  for (const e of elements) {
+    if (e.id !== undefined && e.lat !== undefined && e.lon !== undefined) {
+      nodeMap.set(e.id, [e.lat, e.lon])
+    }
+  }
 
   const groceryElements = elements.filter(e =>
     ['supermarket', 'grocery', 'convenience', 'food', 'deli', 'greengrocer', 'organic', 'health_food'].includes(e.tags?.shop || '')
@@ -288,16 +321,16 @@ export async function fetchAmenityScores(lat: number, lng: number, radius: numbe
     nearestWorship: nearest(worshipElements, lat, lng, 'Place of worship (no name in OSM)', 'worship'),
     nearestParking: nearest(parkingElements, lat, lng, 'Parking (no name in OSM)', 'parking'),
     places: {
-      grocery: nearestList(groceryElements, lat, lng, 'Grocery store (no name in OSM)', 'grocery'),
-      transit: nearestList(transitElements, lat, lng, 'Transit stop (no name in OSM)', 'transit', 20),
-      park: nearestList(parkElements, lat, lng, 'Park (no name in OSM)', 'park'),
-      school: nearestList(schoolElements, lat, lng, 'School (no name in OSM)', 'school'),
-      healthcare: nearestList(healthcareElements, lat, lng, 'Healthcare facility (no name in OSM)', 'healthcare'),
-      dining: nearestList(diningElements, lat, lng, 'Restaurant/cafe (no name in OSM)', 'dining'),
-      library: nearestList(libraryElements, lat, lng, 'Library (no name in OSM)', 'library'),
-      bank: nearestList(bankElements, lat, lng, 'Bank/ATM (no name in OSM)', 'bank'),
-      worship: nearestList(worshipElements, lat, lng, 'Place of worship (no name in OSM)', 'worship'),
-      parking: nearestList(parkingElements, lat, lng, 'Parking (no name in OSM)', 'parking'),
+      grocery:    nearestList(groceryElements,    lat, lng, 'Grocery store (no name in OSM)',         'grocery',    8,  nodeMap, '#f97316'),
+      transit:    nearestList(transitElements,    lat, lng, 'Transit stop (no name in OSM)',           'transit',    20),
+      park:       nearestList(parkElements,       lat, lng, 'Park (no name in OSM)',                  'park',       8,  nodeMap, '#22c55e'),
+      school:     nearestList(schoolElements,     lat, lng, 'School (no name in OSM)',                'school',     8,  nodeMap, '#3b82f6'),
+      healthcare: nearestList(healthcareElements, lat, lng, 'Healthcare facility (no name in OSM)',   'healthcare', 8,  nodeMap, '#ef4444'),
+      dining:     nearestList(diningElements,     lat, lng, 'Restaurant/cafe (no name in OSM)',       'dining'),
+      library:    nearestList(libraryElements,    lat, lng, 'Library (no name in OSM)',               'library',    8,  nodeMap, '#8b5cf6'),
+      bank:       nearestList(bankElements,       lat, lng, 'Bank/ATM (no name in OSM)',              'bank'),
+      worship:    nearestList(worshipElements,    lat, lng, 'Place of worship (no name in OSM)',      'worship'),
+      parking:    nearestList(parkingElements,    lat, lng, 'Parking (no name in OSM)',               'parking'),
     },
   }
 }

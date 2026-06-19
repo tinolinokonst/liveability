@@ -10,6 +10,8 @@ export interface NearestAmenity {
   lat?: number
   lng?: number
   category?: string
+  polygon?: [number, number][]
+  polygonColor?: string
 }
 
 export interface CrimeIncidentLocation {

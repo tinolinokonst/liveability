@@ -11,6 +11,14 @@ const MetricInfoMap = dynamic(() => import('./MetricInfoMap'), { ssr: false })
 const CRIME_RADIUS_METERS = 1000
 const AQI_CONTEXT_RADIUS_METERS = 5000
 
+const POLYGON_METRIC_COLOR: Partial<Record<MetricKey, string>> = {
+  green:      '#22c55e',
+  grocery:    '#f97316',
+  healthcare: '#ef4444',
+  school:     '#3b82f6',
+  library:    '#8b5cf6',
+}
+
 const AMENITY_NOUN: Partial<Record<MetricKey, string>> = {
   grocery:    'grocery stores',
   transit:    'transit stops',
@@ -203,10 +211,13 @@ export default function MetricInfoModal({ metricKey, value, score, radius, place
               } : undefined}
               legend={[
                 { color: '#f97316', label: 'Your address' },
-                ...(!placesEmpty
-                  ? [{ color: '#9ca3af', label: metricKey === 'walkability' ? 'Nearby amenities' : `Nearby ${amenityNoun}` }]
-                  : []
-                ),
+                ...(!placesEmpty ? (() => {
+                  const polygonColor = POLYGON_METRIC_COLOR[metricKey]
+                  const label = metricKey === 'walkability' ? 'Nearby amenities' : `Nearby ${amenityNoun}`
+                  return polygonColor
+                    ? [{ color: polygonColor, label, shape: 'square' as const }]
+                    : [{ color: '#9ca3af', label }]
+                })() : []),
                 ...(showNearestOutside
                   ? [{ color: '#ef4444', label: `Nearest ${amenityNoun}` }]
                   : []

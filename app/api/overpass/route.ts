@@ -89,7 +89,9 @@ export async function GET(request: NextRequest) {
   node["amenity"="parking"](around:${parkingRadius},${lat},${lng});
   way["amenity"="parking"](around:${parkingRadius},${lat},${lng});
 );
-out tags center;`
+out body center;
+>;
+out skel qt;`
 
   for (const url of OVERPASS_URLS) {
     const data = await queryOverpass(url, query)

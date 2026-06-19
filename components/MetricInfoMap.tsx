@@ -1,7 +1,7 @@
 "use client"
 
 import { ReactNode } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, Circle, Polygon } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { CrimeIncidentLocation, NearestAmenity } from '@/lib/types'
@@ -10,6 +10,7 @@ export interface LegendItem {
   color: string
   label: string
   active?: boolean
+  shape?: 'circle' | 'square'
 }
 
 export interface ContextCircle {
@@ -38,6 +39,14 @@ interface MetricInfoMapProps {
   nearestOutside?: NearestOutside
   legend?: LegendItem[]
   height?: number
+}
+
+const POLYGON_STYLE: Record<string, { fillOpacity: number; opacity: number }> = {
+  '#22c55e': { fillOpacity: 0.25, opacity: 0.7 },
+  '#f97316': { fillOpacity: 0.20, opacity: 0.6 },
+  '#ef4444': { fillOpacity: 0.20, opacity: 0.6 },
+  '#3b82f6': { fillOpacity: 0.20, opacity: 0.6 },
+  '#8b5cf6': { fillOpacity: 0.20, opacity: 0.6 },
 }
 
 const DARK_TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
@@ -137,8 +146,8 @@ export default function MetricInfoMap({
           <Popup>{centerLabel}</Popup>
         </Marker>
 
-        {points.map((m, i) => (
-          <Marker key={i} position={[m.lat as number, m.lng as number]} icon={dotIcon('#9ca3af', 10)}>
+        {points.map((m, i) => {
+          const popup = (
             <Popup>
               <div className="flex flex-col gap-0.5">
                 <span className="font-semibold text-white text-xs">{m.name}</span>
@@ -147,8 +156,31 @@ export default function MetricInfoMap({
                 </span>
               </div>
             </Popup>
-          </Marker>
-        ))}
+          )
+          if (m.polygon && m.polygonColor) {
+            const ps = POLYGON_STYLE[m.polygonColor] ?? { fillOpacity: 0.2, opacity: 0.6 }
+            return (
+              <Polygon
+                key={i}
+                positions={m.polygon}
+                pathOptions={{
+                  color: m.polygonColor,
+                  fillColor: m.polygonColor,
+                  fillOpacity: ps.fillOpacity,
+                  opacity: ps.opacity,
+                  weight: 2,
+                }}
+              >
+                {popup}
+              </Polygon>
+            )
+          }
+          return (
+            <Marker key={i} position={[m.lat as number, m.lng as number]} icon={dotIcon('#9ca3af', 10)}>
+              {popup}
+            </Marker>
+          )
+        })}
 
         {nearestOutside && (
           <Marker
@@ -201,11 +233,13 @@ export default function MetricInfoMap({
           {legend.map((item, i) => (
             <div key={i} className="flex items-center gap-1.5">
               <span
-                className="rounded-full shrink-0"
+                className="shrink-0"
                 style={{
+                  display: 'inline-block',
                   width: 8,
                   height: 8,
                   backgroundColor: item.color,
+                  borderRadius: item.shape === 'square' ? '1px' : '50%',
                   boxShadow: item.active ? `0 0 0 2px ${item.color}55` : undefined,
                 }}
               />
