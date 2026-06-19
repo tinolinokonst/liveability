@@ -1,8 +1,7 @@
 "use client"
 
 import { ReactNode, useState, useEffect } from 'react'
-import { createPortal } from 'react-dom'
-import { MapContainer, TileLayer, Marker, Popup, Circle, Polygon } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, Circle, Polygon, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Maximize2, Minimize2 } from 'lucide-react'
@@ -54,6 +53,24 @@ const POLYGON_STYLE: Record<string, { fillOpacity: number; opacity: number }> = 
 const DARK_TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
 const DARK_TILE_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+
+function MapScrollController({ enabled }: { enabled: boolean }) {
+  const map = useMap()
+  useEffect(() => {
+    if (enabled) map.scrollWheelZoom.enable()
+    else map.scrollWheelZoom.disable()
+  }, [map, enabled])
+  return null
+}
+
+function MapResizer({ trigger }: { trigger: boolean }) {
+  const map = useMap()
+  useEffect(() => {
+    const t = setTimeout(() => map.invalidateSize(), 300)
+    return () => clearTimeout(t)
+  }, [map, trigger])
+  return null
+}
 
 const CLUSTER_DEGREES = 0.0007 // roughly ~70m grid cells for incident clustering
 
@@ -132,7 +149,13 @@ export default function MetricInfoMap({
 
   const mapChildren = (
     <>
-      <TileLayer url={DARK_TILE_URL} attribution={DARK_TILE_ATTRIBUTION} />
+      <TileLayer
+        url={DARK_TILE_URL}
+        attribution={DARK_TILE_ATTRIBUTION}
+        keepBuffer={4}
+        updateWhenIdle={true}
+        updateWhenZooming={false}
+      />
 
       {contextCircle && (
         <Circle
@@ -262,62 +285,45 @@ export default function MetricInfoMap({
     </div>
   )
 
-  if (fullscreen) {
-    return createPortal(
-      <div
-        className="fixed inset-0 z-[99999]"
-        onClick={() => setFullscreen(false)}
-      >
-        <div
-          className="relative w-full h-full"
-          onClick={e => e.stopPropagation()}
-        >
-          <MapContainer
-            center={[center.lat, center.lng]}
-            zoom={14}
-            bounds={bounds.length > 1 ? bounds : undefined}
-            boundsOptions={{ padding: [30, 30] }}
-            style={{ height: '100%', width: '100%' }}
-            scrollWheelZoom={true}
-          >
-            {mapChildren}
-          </MapContainer>
-          <button
-            onClick={() => setFullscreen(false)}
-            aria-label="Exit fullscreen"
-            className="absolute top-3 right-3 z-[1000] rounded-lg p-1.5 transition-colors"
-            style={{ backgroundColor: 'rgba(15,15,15,0.85)', border: '1px solid #2a2a2a', color: '#e5e5e5' }}
-          >
-            <Minimize2 size={16} />
-          </button>
-          {legendEl}
-        </div>
-      </div>,
-      document.body
-    )
-  }
+  const outerStyle = fullscreen
+    ? { position: 'fixed' as const, inset: 0, zIndex: 99999 }
+    : { position: 'relative' as const, height, width: '100%', borderRadius: '0.75rem', overflow: 'hidden' as const }
 
   return (
-    <div className="rounded-xl overflow-hidden relative" style={{ height, width: '100%' }}>
-      <MapContainer
-        center={[center.lat, center.lng]}
-        zoom={14}
-        bounds={bounds.length > 1 ? bounds : undefined}
-        boundsOptions={{ padding: [30, 30] }}
-        style={{ height: '100%', width: '100%' }}
-        scrollWheelZoom={false}
-      >
-        {mapChildren}
-      </MapContainer>
-      <button
-        onClick={() => setFullscreen(true)}
-        aria-label="Expand map"
-        className="absolute top-2 right-2 z-[1000] rounded-lg p-1.5 transition-colors"
-        style={{ backgroundColor: 'rgba(15,15,15,0.85)', border: '1px solid #2a2a2a', color: '#e5e5e5' }}
-      >
-        <Maximize2 size={14} />
-      </button>
-      {legendEl}
+    <div style={outerStyle}>
+      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <MapContainer
+          center={[center.lat, center.lng]}
+          zoom={14}
+          bounds={bounds.length > 1 ? bounds : undefined}
+          boundsOptions={{ padding: [30, 30] }}
+          style={{ height: '100%', width: '100%' }}
+          scrollWheelZoom={false}
+          minZoom={10}
+          maxZoom={19}
+        >
+          <MapScrollController enabled={fullscreen} />
+          <MapResizer trigger={fullscreen} />
+          {mapChildren}
+        </MapContainer>
+
+        <button
+          onClick={() => setFullscreen(fs => !fs)}
+          aria-label={fullscreen ? 'Exit fullscreen' : 'Expand map'}
+          className="absolute z-[1000] rounded-lg p-1.5 transition-colors"
+          style={{
+            top: fullscreen ? 12 : 8,
+            right: fullscreen ? 12 : 8,
+            backgroundColor: 'rgba(15,15,15,0.85)',
+            border: '1px solid #2a2a2a',
+            color: '#e5e5e5',
+          }}
+        >
+          {fullscreen ? <Minimize2 size={16} /> : <Maximize2 size={14} />}
+        </button>
+
+        {legendEl}
+      </div>
     </div>
   )
 }

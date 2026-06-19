@@ -35,11 +35,18 @@ const RADIUS_OPTIONS: Array<{ label: string; meters: number }> = [
 const COLUMBUS_CENTER = { lat: 39.9612, lng: -82.9988 }
 const COLUMBUS_BIAS_RADIUS_M = 40000
 
+function isPlausibleAddress(addr: string): boolean {
+  const trimmed = addr.trim()
+  if (trimmed.length < 10) return false
+  return /\d+\s+\w/.test(trimmed)
+}
+
 export default function AddressSearch({ onAdd, compareCount = 0, userId, initialAddress, onBack }: AddressSearchProps) {
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(false)
   const [radiusLoading, setRadiusLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [validationError, setValidationError] = useState(false)
   const [result, setResult] = useState<AddressMetrics | null>(null)
   const [amenityData, setAmenityData] = useState<AmenityScores | null>(null)
   const [aqiData, setAqiData] = useState<AQIResult | null>(null)
@@ -50,6 +57,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
   const [saved, setSaved] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
+  const autocompleteSelectedRef = useRef(false)
 
   // Wire up Google Places Autocomplete on the address input
   useEffect(() => {
@@ -75,6 +83,8 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
           const place = autocomplete!.getPlace()
           const address = place.formatted_address || place.name
           if (address) {
+            autocompleteSelectedRef.current = true
+            setValidationError(false)
             setQuery(address)
             runSearch(address)
           }
@@ -101,6 +111,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
 
     setLoading(true)
     setError(null)
+    setValidationError(false)
     setResult(null)
     setSaved(false)
 
@@ -138,6 +149,10 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault()
+    if (!autocompleteSelectedRef.current && !isPlausibleAddress(query)) {
+      setValidationError(true)
+      return
+    }
     await runSearch(query)
   }
 
@@ -214,25 +229,39 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
           <ArrowLeft size={14} /> Back to AI Match results
         </button>
       )}
-      <form onSubmit={handleSearch} className="flex gap-3">
-        <input
-          ref={inputRef}
-          type="text"
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          placeholder="Enter a Columbus, OH address..."
-          autoComplete="off"
-          autoCorrect="off"
-          autoCapitalize="off"
-          spellCheck={false}
-          className="flex-1 rounded-xl px-4 py-3 text-sm text-white placeholder-[#a0a0a0] outline-none focus:ring-2 focus:ring-[#f97316] transition-all"
-          style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
-        />
+      <form onSubmit={handleSearch} className="flex gap-3 items-start">
+        <div className="flex-1 flex flex-col gap-1">
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={e => {
+              setQuery(e.target.value)
+              setValidationError(false)
+              autocompleteSelectedRef.current = false
+            }}
+            placeholder="Enter a Columbus, OH address..."
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder-[#a0a0a0] outline-none focus:ring-2 focus:ring-[#f97316] transition-all"
+            style={{ backgroundColor: '#1a1a1a', border: `1px solid ${validationError ? '#ef4444' : '#2a2a2a'}` }}
+          />
+          {validationError && (
+            <p className="text-xs px-1" style={{ color: '#ef4444' }}>
+              Please enter a full street address (e.g. 3101 Leeds Rd, Columbus, OH)
+            </p>
+          )}
+        </div>
         <button
           type="submit"
-          disabled={loading || !query.trim()}
-          className="px-5 py-3 rounded-xl font-semibold text-sm text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ backgroundColor: '#f97316' }}
+          disabled={loading}
+          className="px-5 py-3 rounded-xl font-semibold text-sm text-white transition-all disabled:cursor-not-allowed"
+          style={{
+            backgroundColor: '#f97316',
+            opacity: loading ? 0.5 : (!isPlausibleAddress(query) && !autocompleteSelectedRef.current ? 0.65 : 1),
+          }}
         >
           {loading ? 'Searching...' : 'Search'}
         </button>
