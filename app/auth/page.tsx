@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import SiteHeader from '@/components/SiteHeader'
+import Link from 'next/link'
 
 function AuthForm() {
   const router = useRouter()
@@ -53,7 +53,11 @@ function AuthForm() {
 
   return (
     <>
-      <SiteHeader />
+      <header className="px-6 py-4" style={{ borderBottom: '1px solid #2a2a2a' }}>
+        <Link href="/" className="font-black text-white text-lg tracking-tight">
+          Liveability
+        </Link>
+      </header>
       <div className="flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
