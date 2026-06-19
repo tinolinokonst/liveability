@@ -35,10 +35,12 @@ const RADIUS_OPTIONS: Array<{ label: string; meters: number }> = [
 const COLUMBUS_CENTER = { lat: 39.9612, lng: -82.9988 }
 const COLUMBUS_BIAS_RADIUS_M = 40000
 
-function isPlausibleAddress(addr: string): boolean {
+function isValidAddress(addr: string): boolean {
   const trimmed = addr.trim()
   if (trimmed.length < 10) return false
-  return /\d+\s+\w/.test(trimmed)
+  if (!/\d+/.test(trimmed)) return false
+  if (!/\d+\s+[a-zA-Z]{3,}/.test(trimmed)) return false
+  return true
 }
 
 export default function AddressSearch({ onAdd, compareCount = 0, userId, initialAddress, onBack }: AddressSearchProps) {
@@ -149,10 +151,11 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault()
-    if (!autocompleteSelectedRef.current && !isPlausibleAddress(query)) {
+    if (!autocompleteSelectedRef.current && !isValidAddress(query)) {
       setValidationError(true)
       return
     }
+    setValidationError(false)
     await runSearch(query)
   }
 
@@ -257,10 +260,16 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
         <button
           type="submit"
           disabled={loading}
+          onClick={(e) => {
+            if (!autocompleteSelectedRef.current && !isValidAddress(query)) {
+              e.preventDefault()
+              setValidationError(true)
+            }
+          }}
           className="px-5 py-3 rounded-xl font-semibold text-sm text-white transition-all disabled:cursor-not-allowed"
           style={{
             backgroundColor: '#f97316',
-            opacity: loading ? 0.5 : (!isPlausibleAddress(query) && !autocompleteSelectedRef.current ? 0.65 : 1),
+            opacity: loading ? 0.5 : (!isValidAddress(query) && !autocompleteSelectedRef.current ? 0.65 : 1),
           }}
         >
           {loading ? 'Searching...' : 'Search'}
