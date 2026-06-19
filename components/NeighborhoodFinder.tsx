@@ -87,6 +87,16 @@ function rentLabel(rent: number) {
   return                  { label: 'Pricey',      color: '#ef4444' }
 }
 
+function resolveNeighborhoodName(name: string | null | undefined): string | null {
+  if (!name) return null
+  const found = COLUMBUS_NEIGHBORHOODS.find(n =>
+    n.name.toLowerCase() === name.toLowerCase() ||
+    n.name.toLowerCase().includes(name.toLowerCase()) ||
+    name.toLowerCase().includes(n.name.toLowerCase())
+  )
+  return found?.name ?? null
+}
+
 interface NeighborhoodFinderProps {
   userId?: string | null
   initialNeighborhoodName?: string | null
@@ -104,24 +114,31 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
   const [searchQuery, setSearchQuery] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
 
-  const [selectedName, setSelectedName] = useState<string | null>(null)
+  // Initialize synchronously so the detail view shows immediately on mount
+  // without flashing the full rankings list first
+  const [selectedName, setSelectedName] = useState<string | null>(() => resolveNeighborhoodName(initialNeighborhoodName))
   const [metrics, setMetrics] = useState<AddressMetrics | null>(null)
-  const [metricsLoading, setMetricsLoading] = useState(false)
+  const [metricsLoading, setMetricsLoading] = useState(() => resolveNeighborhoodName(initialNeighborhoodName) !== null)
   const [metricsError, setMetricsError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
-  // Auto-select a neighborhood when navigated from AI Match
+  // Fetch metrics whenever a neighborhood is selected (covers both initial mount and user clicks)
   useEffect(() => {
-    if (!initialNeighborhoodName) return
-    const target = COLUMBUS_NEIGHBORHOODS.find(n =>
-      n.name.toLowerCase() === initialNeighborhoodName.toLowerCase() ||
-      n.name.toLowerCase().includes(initialNeighborhoodName.toLowerCase()) ||
-      initialNeighborhoodName.toLowerCase().includes(n.name.toLowerCase())
-    )
-    if (target) handleSelectNeighborhood(target)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialNeighborhoodName])
+    if (!selectedName) return
+    const n = COLUMBUS_NEIGHBORHOODS.find(nb => nb.name === selectedName)
+    if (!n) { setMetricsLoading(false); return }
+
+    let cancelled = false
+    setMetricsLoading(true)
+
+    fetchFullMetrics(n.name, { lat: n.lat, lng: n.lng, formattedAddress: n.name }, 800)
+      .then(m => { if (!cancelled) setMetrics(m) })
+      .catch(err => { if (!cancelled) setMetricsError(err instanceof Error ? err.message : 'Failed to load neighborhood data') })
+      .finally(() => { if (!cancelled) setMetricsLoading(false) })
+
+    return () => { cancelled = true }
+  }, [selectedName])
 
   const searchMatches = searchQuery.trim().length > 0
     ? COLUMBUS_NEIGHBORHOODS.filter(n =>
@@ -147,22 +164,12 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
     setActivePreset('Custom')
   }
 
-  async function handleSelectNeighborhood(n: Neighborhood) {
-    setSelectedName(n.name)
+  function handleSelectNeighborhood(n: Neighborhood) {
     setMetrics(null)
     setMetricsError(null)
     setSaved(false)
     setMetricsLoading(true)
-
-    try {
-      const location = { lat: n.lat, lng: n.lng, formattedAddress: n.name }
-      const m = await fetchFullMetrics(n.name, location, 800)
-      setMetrics(m)
-    } catch (err) {
-      setMetricsError(err instanceof Error ? err.message : 'Failed to load neighborhood data')
-    } finally {
-      setMetricsLoading(false)
-    }
+    setSelectedName(n.name) // triggers the fetch useEffect
   }
 
   async function handleSaveNeighborhood() {
@@ -183,25 +190,26 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
     return (
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setSelectedName(null)}
-            className="text-xs transition-colors flex items-center gap-1 self-start"
-            style={{ color: '#a0a0a0' }}
-          >
-            <ArrowLeft size={14} /> Back to neighborhood rankings
-          </button>
-          {onBack && (
-            <>
-              <span style={{ color: '#2a2a2a' }}>·</span>
-              <button
-                onClick={onBack}
-                className="text-xs transition-colors flex items-center gap-1 self-start"
-                style={{ color: '#f97316' }}
-              >
-                <ArrowLeft size={14} /> Back to AI Match results
-              </button>
-            </>
+          {onBack ? (
+            <button
+              onClick={onBack}
+              className="text-sm font-semibold flex items-center gap-2 px-4 py-2 rounded-xl transition-all"
+              style={{ color: '#f97316', backgroundColor: '#1a1a1a', border: '1px solid #f97316' }}
+              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#f973161a')}
+              onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#1a1a1a')}
+            >
+              <ArrowLeft size={14} /> Back to AI Match results
+            </button>
+          ) : (
+            <button
+              onClick={() => setSelectedName(null)}
+              className="text-xs transition-colors flex items-center gap-1"
+              style={{ color: '#a0a0a0' }}
+            >
+              <ArrowLeft size={14} /> Back to neighborhood rankings
+            </button>
           )}
+          <span className="text-sm font-semibold text-white">{selectedName}</span>
         </div>
 
         {metricsError && (

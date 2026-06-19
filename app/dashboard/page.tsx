@@ -187,11 +187,16 @@ export default function Dashboard() {
             className="rounded-2xl p-6"
             style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
           >
-            <h2 className="text-white font-bold mb-1">Neighborhoods</h2>
-            <p style={{ color: '#a0a0a0' }} className="text-xs mb-6">
-              Adjust the sliders to rank neighborhoods based on what matters to you. Currently covering Columbus, Ohio.
-            </p>
+            {!targetNeighborhood && (
+              <>
+                <h2 className="text-white font-bold mb-1">Neighborhoods</h2>
+                <p style={{ color: '#a0a0a0' }} className="text-xs mb-6">
+                  Adjust the sliders to rank neighborhoods based on what matters to you. Currently covering Columbus, Ohio.
+                </p>
+              </>
+            )}
             <NeighborhoodFinder
+              key={targetNeighborhood ?? '__list__'}
               userId={userId}
               initialNeighborhoodName={targetNeighborhood}
               onBack={targetNeighborhood ? () => setTab('ai-match') : undefined}
