@@ -83,12 +83,15 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
 
         listener = autocomplete.addListener('place_changed', () => {
           const place = autocomplete!.getPlace()
+          // A real autocomplete selection always has formatted_address.
+          // If only place.name is set, the user pressed Enter without selecting
+          // from the dropdown — treat that as manual input and validate normally.
+          const isRealSelection = !!place.formatted_address
           const address = place.formatted_address || place.name
           if (address) {
-            autocompleteSelectedRef.current = true
-            setValidationError(false)
+            autocompleteSelectedRef.current = isRealSelection
             setQuery(address)
-            runSearch(address)
+            runSearch(address, isRealSelection)
           }
         })
       })
@@ -104,16 +107,21 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
   useEffect(() => {
     if (!initialAddress) return
     setQuery(initialAddress)
-    runSearch(initialAddress)
+    runSearch(initialAddress, true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialAddress])
 
-  async function runSearch(address: string) {
-    if (!address.trim()) return
+  async function runSearch(address: string, bypass = false) {
+    const trimmed = address.trim()
+    if (!trimmed) return
+    if (!bypass && !isValidAddress(trimmed)) {
+      setValidationError(true)
+      return
+    }
 
+    setValidationError(false)
     setLoading(true)
     setError(null)
-    setValidationError(false)
     setResult(null)
     setSaved(false)
 
@@ -151,12 +159,12 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault()
-    if (!autocompleteSelectedRef.current && !isValidAddress(query)) {
+    const bypass = autocompleteSelectedRef.current
+    if (!bypass && !isValidAddress(query)) {
       setValidationError(true)
       return
     }
-    setValidationError(false)
-    await runSearch(query)
+    await runSearch(query, bypass)
   }
 
   // Re-query Overpass when the amenity radius changes
