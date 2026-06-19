@@ -235,7 +235,24 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
         )}
 
         {metricsLoading && (
-          <p style={{ color: '#a0a0a0' }} className="text-sm">Loading data for {selectedName}...</p>
+          <div className="flex flex-col gap-4 animate-pulse">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col gap-2">
+                <div className="h-3 w-16 rounded" style={{ backgroundColor: '#2a2a2a' }} />
+                <div className="h-4 w-48 rounded" style={{ backgroundColor: '#2a2a2a' }} />
+              </div>
+              <div className="h-10 w-10 rounded" style={{ backgroundColor: '#2a2a2a' }} />
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="rounded-xl p-4" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
+                  <div className="h-3 w-20 rounded mb-3" style={{ backgroundColor: '#2a2a2a' }} />
+                  <div className="h-7 w-12 rounded mb-2" style={{ backgroundColor: '#2a2a2a' }} />
+                  <div className="h-2 w-full rounded" style={{ backgroundColor: '#2a2a2a' }} />
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         {metrics && (

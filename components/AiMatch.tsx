@@ -1,11 +1,17 @@
 "use client"
 
 import { useState, useEffect, useRef } from 'react'
-import { Sparkles, Send, RotateCcw, Database, Home, ExternalLink, ArrowRight } from 'lucide-react'
+import { Sparkles, Send, RotateCcw, Database, Home, ExternalLink, ArrowRight, Loader2 } from 'lucide-react'
 import { COLUMBUS_NEIGHBORHOODS } from '@/lib/neighborhoods'
 import { AiMatchListingsState, AiRentListing } from '@/lib/types'
 
 export type { AiMatchListingsState, AiRentListing }
+
+const STATUS_MESSAGES = [
+  'Analyzing your preferences...',
+  'Matching against Columbus data...',
+  'Generating recommendations...',
+]
 
 const EXAMPLE_PROMPTS = [
   "I work from home and want a quiet neighborhood with good coffee shops and parks within walking distance. Budget around $1,400/month.",
@@ -65,9 +71,17 @@ export default function AiMatch({
   onViewAddress,
 }: AiMatchProps) {
   const [loading, setLoading] = useState(false)
+  const [statusIdx, setStatusIdx] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const responseRef = useRef<HTMLDivElement>(null)
   const listingsFetchedRef = useRef(false)
+
+  // Cycle status messages while loading
+  useEffect(() => {
+    if (!loading) { setStatusIdx(0); return }
+    const id = setInterval(() => setStatusIdx(prev => (prev + 1) % STATUS_MESSAGES.length), 2500)
+    return () => clearInterval(id)
+  }, [loading])
 
   // Reset the listings-fetched guard whenever response is cleared
   useEffect(() => {
@@ -212,6 +226,16 @@ export default function AiMatch({
             <div className="flex-1 h-px" style={{ backgroundColor: '#2a2a2a' }} />
           </div>
         </>
+      )}
+
+      {/* Loading indicator — shown before first streaming chunk arrives */}
+      {loading && !response && (
+        <div className="flex flex-col items-center justify-center gap-4 py-12">
+          <Loader2 size={28} className="animate-spin" style={{ color: '#f97316' }} />
+          <p className="text-sm font-medium transition-opacity" style={{ color: '#a0a0a0' }}>
+            {STATUS_MESSAGES[statusIdx]}
+          </p>
+        </div>
       )}
 
       {/* Streaming result */}
