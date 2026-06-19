@@ -1,80 +1,83 @@
 import Link from "next/link";
 
+const GENERAL_LINKS = [
+  { label: "About Us", href: "/about" },
+  { label: "How It Works", href: "/how-it-works" },
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms of Use", href: "/terms" },
+];
+
+const DATA_SOURCES = [
+  { label: "EPA AirNow", href: "https://www.airnow.gov/" },
+  { label: "OpenStreetMap", href: "https://www.openstreetmap.org/" },
+  { label: "City of Columbus GIS", href: "https://gis.columbus.gov/" },
+  { label: "US Census Bureau", href: "https://www.census.gov/" },
+  { label: "Rentcast", href: "https://rentcast.io/" },
+];
+
 export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-auto border-t border-gray-200 bg-gray-50">
+    <footer style={{ backgroundColor: "#0f0f0f", borderTop: "1px solid #2a2a2a" }}>
       <div className="mx-auto max-w-6xl px-6 py-10">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3">
           {/* Brand */}
           <div>
-            <Link href="/" className="text-lg font-bold text-gray-900">
+            <Link href="/" className="text-lg font-bold text-white">
               Liveability
             </Link>
-            <p className="mt-2 max-w-xs text-sm text-gray-600">
+            <p className="mt-2 max-w-xs text-sm text-[#a0a0a0]">
               Data-driven quality-of-life scores for neighborhoods and addresses
               in Columbus, Ohio.
             </p>
           </div>
 
-          {/* General links */}
+          {/* General */}
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-900">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-white">
               General
             </h3>
             <ul className="mt-3 space-y-2 text-sm">
-              <li>
-                <Link href="/about" className="text-gray-600 hover:text-gray-900">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/terms-of-use"
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  Terms of Use
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/privacy-policy"
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/cookie-policy"
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  Cookie Policy
-                </Link>
-              </li>
+              {GENERAL_LINKS.map(({ label, href }) => (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    className="text-[#a0a0a0] transition-colors hover:text-[#f97316]"
+                  >
+                    {label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Spare column for future links (Contact, Methodology, etc.) */}
+          {/* Data Sources */}
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-900">
-              Resources
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-white">
+              Data Sources
             </h3>
             <ul className="mt-3 space-y-2 text-sm">
-              <li>
-                <Link
-                  href="/how-it-works"
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  How It Works
-                </Link>
-              </li>
+              {DATA_SOURCES.map(({ label, href }) => (
+                <li key={href}>
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#a0a0a0] transition-colors hover:text-[#f97316]"
+                  >
+                    {label}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
 
-        <div className="mt-10 border-t border-gray-200 pt-6 text-sm text-gray-500">
+        <div
+          className="mt-10 pt-6 text-sm text-[#a0a0a0]"
+          style={{ borderTop: "1px solid #2a2a2a" }}
+        >
           &copy; {year} Liveability. All rights reserved.
         </div>
       </div>
