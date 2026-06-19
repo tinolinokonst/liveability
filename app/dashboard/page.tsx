@@ -26,9 +26,12 @@ export default function Dashboard() {
   const [aiResponse, setAiResponse] = useState('')
   const [aiListingsState, setAiListingsState] = useState<AiMatchListingsState | null>(null)
 
-  // Navigation targets set when drilling into detail from AI Match
+  // Navigation targets
   const [targetNeighborhood, setTargetNeighborhood] = useState<string | null>(null)
+  const [neighborhoodNavSource, setNeighborhoodNavSource] = useState<'ai-match' | 'saved' | null>(null)
   const [targetAddress, setTargetAddress] = useState<string | null>(null)
+  // Address to pre-fill in Search when navigating from Neighborhoods (no "back" button shown)
+  const [neighborhoodSearchAddress, setNeighborhoodSearchAddress] = useState<string | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -54,22 +57,40 @@ export default function Dashboard() {
     setCompared(prev => prev.filter(a => a.id !== id))
   }
 
-  // Manual tab bar click — clears AI match navigation targets
+  // Manual tab bar click — clears all navigation targets
   function handleTabClick(newTab: Tab) {
     setTargetNeighborhood(null)
+    setNeighborhoodNavSource(null)
     setTargetAddress(null)
+    setNeighborhoodSearchAddress(null)
     setTab(newTab)
   }
 
   // AI Match → neighborhood detail
   function handleViewNeighborhood(name: string) {
     setTargetNeighborhood(name)
+    setNeighborhoodNavSource('ai-match')
     setTab('neighborhoods')
   }
 
-  // AI Match → address search detail
+  // Saved Addresses → neighborhood detail
+  function handleViewNeighborhoodFromSaved(name: string) {
+    setTargetNeighborhood(name)
+    setNeighborhoodNavSource('saved')
+    setTab('neighborhoods')
+  }
+
+  // AI Match → address search (shows "back to AI Match" button)
   function handleViewAddress(address: string) {
     setTargetAddress(address)
+    setNeighborhoodSearchAddress(null)
+    setTab('search')
+  }
+
+  // Neighborhood detail → address search (no back button — neutral navigation)
+  function handleViewAddressFromNeighborhood(address: string) {
+    setNeighborhoodSearchAddress(address)
+    setTargetAddress(null)
     setTab('search')
   }
 
@@ -145,7 +166,7 @@ export default function Dashboard() {
                 onAdd={addToCompare}
                 compareCount={compared.length}
                 userId={userId}
-                initialAddress={targetAddress}
+                initialAddress={targetAddress ?? neighborhoodSearchAddress}
                 onBack={targetAddress ? () => setTab('ai-match') : undefined}
               />
             </div>
@@ -199,7 +220,9 @@ export default function Dashboard() {
               key={targetNeighborhood ?? '__list__'}
               userId={userId}
               initialNeighborhoodName={targetNeighborhood}
-              onBack={targetNeighborhood ? () => setTab('ai-match') : undefined}
+              onBack={neighborhoodNavSource ? () => setTab(neighborhoodNavSource === 'ai-match' ? 'ai-match' : 'saved') : undefined}
+              backLabel={neighborhoodNavSource === 'ai-match' ? 'Back to AI Match results' : neighborhoodNavSource === 'saved' ? 'Back to saved addresses' : undefined}
+              onViewAddress={handleViewAddressFromNeighborhood}
             />
           </div>
         )}
@@ -213,7 +236,7 @@ export default function Dashboard() {
             <p style={{ color: '#a0a0a0' }} className="text-xs mb-6">
               Addresses you&apos;ve saved, with their last-fetched metrics
             </p>
-            <SavedAddresses onAdd={addToCompare} compareCount={compared.length} />
+            <SavedAddresses onAdd={addToCompare} compareCount={compared.length} onViewNeighborhood={handleViewNeighborhoodFromSaved} />
           </div>
         )}
 

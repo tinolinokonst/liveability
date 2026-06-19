@@ -1,13 +1,15 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { ArrowLeft, Check } from 'lucide-react'
-import { Neighborhood, WeightConfig, Profile, PROFILE_WEIGHTS, AddressMetrics } from '@/lib/types'
+import { ArrowLeft, Bookmark, Check, MapPin } from 'lucide-react'
+import { Neighborhood, WeightConfig, Profile, PROFILE_WEIGHTS, AddressMetrics, SavedAddress } from '@/lib/types'
 import { fetchFullMetrics } from '@/lib/metrics'
-import { saveAddress } from '@/lib/savedAddresses'
+import { fetchSavedAddresses, saveAddress } from '@/lib/savedAddresses'
 import LocalNews from './LocalNews'
 import AddressResults from './AddressResults'
-import { COLUMBUS_NEIGHBORHOODS } from '@/lib/neighborhoods'
+import { COLUMBUS_NEIGHBORHOODS, nearestNeighborhood } from '@/lib/neighborhoods'
+
+const NEIGHBORHOOD_NAME_SET = new Set(COLUMBUS_NEIGHBORHOODS.map(n => n.name))
 
 const PROFILES: Profile[] = ['Family', 'Young Professional', 'Retiree', 'Nature Lover']
 
@@ -101,12 +103,14 @@ interface NeighborhoodFinderProps {
   userId?: string | null
   initialNeighborhoodName?: string | null
   onBack?: () => void
+  backLabel?: string
+  onViewAddress?: (address: string) => void
 }
 
 const MIN_RENT = 800
 const MAX_RENT = 2500
 
-export default function NeighborhoodFinder({ userId, initialNeighborhoodName, onBack }: NeighborhoodFinderProps) {
+export default function NeighborhoodFinder({ userId, initialNeighborhoodName, onBack, backLabel, onViewAddress }: NeighborhoodFinderProps) {
   const [weights, setWeights] = useState<WeightConfig>(DEFAULT_WEIGHTS)
   const [activePreset, setActivePreset] = useState('Balanced')
   const [expandedNews, setExpandedNews] = useState<string | null>(null)
@@ -122,6 +126,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
   const [metricsError, setMetricsError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [savedInArea, setSavedInArea] = useState<SavedAddress[]>([])
 
   // Fetch metrics whenever a neighborhood is selected (covers both initial mount and user clicks)
   useEffect(() => {
@@ -139,6 +144,17 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
 
     return () => { cancelled = true }
   }, [selectedName])
+
+  // Load saved addresses once per neighborhood view, filter to those nearest this neighborhood
+  useEffect(() => {
+    if (!selectedName || !userId) { setSavedInArea([]); return }
+    fetchSavedAddresses()
+      .then(all => {
+        const street = all.filter(a => !NEIGHBORHOOD_NAME_SET.has(a.address))
+        setSavedInArea(street.filter(a => nearestNeighborhood(a.lat, a.lng) === selectedName))
+      })
+      .catch(() => setSavedInArea([]))
+  }, [selectedName, userId])
 
   const searchMatches = searchQuery.trim().length > 0
     ? COLUMBUS_NEIGHBORHOODS.filter(n =>
@@ -198,7 +214,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
               onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#f973161a')}
               onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#1a1a1a')}
             >
-              <ArrowLeft size={14} /> Back to AI Match results
+              <ArrowLeft size={14} /> {backLabel ?? 'Back to AI Match results'}
             </button>
           ) : (
             <button
@@ -248,6 +264,36 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
             </div>
 
             <AddressResults metrics={metrics} />
+
+            {savedInArea.length > 0 && (
+              <div
+                className="rounded-xl p-4 flex flex-col gap-3"
+                style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}
+              >
+                <div className="flex items-center gap-2">
+                  <Bookmark size={12} style={{ color: '#f97316' }} />
+                  <span className="text-xs font-semibold" style={{ color: '#a0a0a0' }}>
+                    {savedInArea.length} of your saved address{savedInArea.length === 1 ? ' is' : 'es are'} in this area
+                  </span>
+                  <span className="text-xs" style={{ color: '#3a3a3a' }}>· approx.</span>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  {savedInArea.map(a => (
+                    <button
+                      key={a.id}
+                      onClick={() => onViewAddress?.(a.address)}
+                      className="text-xs text-left flex items-center gap-2 transition-colors"
+                      style={{ color: '#a0a0a0', cursor: onViewAddress ? 'pointer' : 'default' }}
+                      onMouseEnter={e => { if (onViewAddress) e.currentTarget.style.color = '#e0e0e0' }}
+                      onMouseLeave={e => { e.currentTarget.style.color = '#a0a0a0' }}
+                    >
+                      <MapPin size={10} className="shrink-0" style={{ color: '#a0a0a0' }} />
+                      {a.address}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
