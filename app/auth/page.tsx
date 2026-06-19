@@ -3,8 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import SiteHeader from '@/components/SiteHeader'
 
 function AuthForm() {
   const router = useRouter()
@@ -53,17 +52,12 @@ function AuthForm() {
   }
 
   return (
-    <main
-      className="min-h-screen flex items-center justify-center px-4"
-      style={{ backgroundColor: '#0f0f0f' }}
-    >
+    <>
+      <SiteHeader />
+      <div className="flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-sm">
-        {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="text-white font-black text-2xl tracking-tight">
-            Liveability
-          </Link>
-          <p style={{ color: '#a0a0a0' }} className="text-sm mt-2">
+          <p style={{ color: '#a0a0a0' }} className="text-sm">
             Neighborhood intelligence beyond the listing
           </p>
           <p className="text-xs font-semibold mt-1" style={{ color: '#f97316' }}>
@@ -157,13 +151,9 @@ function AuthForm() {
           </form>
         </div>
 
-        <p className="text-center text-xs mt-6" style={{ color: '#a0a0a0' }}>
-          <Link href="/" className="hover:text-white transition-colors inline-flex items-center gap-1">
-            <ArrowLeft size={14} /> Back to home
-          </Link>
-        </p>
       </div>
-    </main>
+      </div>
+    </>
   )
 }
 

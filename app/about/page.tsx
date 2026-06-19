@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import SiteHeader from "@/components/SiteHeader";
 
 export const metadata: Metadata = {
   title: "About | Liveability",
@@ -8,7 +9,9 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="mx-auto max-w-3xl px-6 py-16">
+    <>
+      <SiteHeader />
+      <div className="mx-auto max-w-3xl px-6 py-16">
       <h1 className="text-3xl font-bold tracking-tight text-white">About Liveability</h1>
 
       <div className="mt-8 space-y-6 text-base leading-relaxed text-[#a0a0a0]">
@@ -53,5 +56,6 @@ export default function AboutPage() {
         </p>
       </div>
     </div>
+    </>
   );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import SiteHeader from "@/components/SiteHeader";
 
 export const metadata: Metadata = {
   title: "Terms of Use | Liveability",
@@ -7,7 +8,9 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
-    <div className="mx-auto max-w-3xl px-6 py-16">
+    <>
+      <SiteHeader />
+      <div className="mx-auto max-w-3xl px-6 py-16">
       <h1 className="text-3xl font-bold tracking-tight text-white">Terms of Use</h1>
       <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: June 2026</p>
 
@@ -65,5 +68,6 @@ export default function TermsPage() {
         </section>
       </div>
     </div>
+    </>
   );
 }
