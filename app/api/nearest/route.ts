@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { NearestEssentialItem, NearestEssentials } from '@/lib/types'
+import { guardRequest } from '@/lib/apiGuard'
+import { parseCoords } from '@/lib/coords'
 
 const OVERPASS_URLS = [
   'https://overpass-api.de/api/interpreter',
@@ -73,45 +75,46 @@ const EMPTY_RESULT: Omit<NearestEssentials, 'searchRadiusKm'> = {
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = request.nextUrl
-  const lat = searchParams.get('lat')
-  const lng = searchParams.get('lng')
+  const guard = await guardRequest('nearest', 60, 3600)
+  if ('response' in guard) return guard.response
 
-  if (!lat || !lng) {
-    return NextResponse.json({ error: 'lat and lng are required' }, { status: 400 })
+  const { searchParams } = request.nextUrl
+  const coords = parseCoords(searchParams.get('lat'), searchParams.get('lng'))
+
+  if (!coords) {
+    return NextResponse.json({ error: 'Valid Columbus-area lat and lng are required' }, { status: 400 })
   }
 
-  const latN = Number(lat)
-  const lngN = Number(lng)
+  const { lat: latN, lng: lngN } = coords
 
   const query = `[out:json][timeout:30];
 (
-  node["railway"="station"](around:${SEARCH_RADIUS},${lat},${lng});
-  way["railway"="station"](around:${SEARCH_RADIUS},${lat},${lng});
-  node["highway"="bus_stop"](around:${SEARCH_RADIUS},${lat},${lng});
-  node["shop"~"^(supermarket|grocery|convenience|food|deli|greengrocer|organic|health_food)$"](around:${SEARCH_RADIUS},${lat},${lng});
-  way["shop"~"^(supermarket|grocery|convenience|food|deli|greengrocer|organic|health_food)$"](around:${SEARCH_RADIUS},${lat},${lng});
-  node["amenity"="hospital"](around:${SEARCH_RADIUS},${lat},${lng});
-  way["amenity"="hospital"](around:${SEARCH_RADIUS},${lat},${lng});
-  node["amenity"="pharmacy"](around:${SEARCH_RADIUS},${lat},${lng});
-  node["amenity"~"^(school|college|university|kindergarten)$"](around:${SEARCH_RADIUS},${lat},${lng});
-  way["amenity"~"^(school|college|university|kindergarten)$"](around:${SEARCH_RADIUS},${lat},${lng});
-  node["amenity"="library"](around:${SEARCH_RADIUS},${lat},${lng});
-  way["amenity"="library"](around:${SEARCH_RADIUS},${lat},${lng});
-  node["leisure"="park"](around:${SEARCH_RADIUS},${lat},${lng});
-  way["leisure"="park"](around:${SEARCH_RADIUS},${lat},${lng});
-  relation["leisure"="park"](around:${SEARCH_RADIUS},${lat},${lng});
-  node["leisure"="garden"](around:${SEARCH_RADIUS},${lat},${lng});
-  way["leisure"="garden"](around:${SEARCH_RADIUS},${lat},${lng});
-  node["landuse"="recreation_ground"](around:${SEARCH_RADIUS},${lat},${lng});
-  way["landuse"="recreation_ground"](around:${SEARCH_RADIUS},${lat},${lng});
-  node["amenity"~"^(bank|atm)$"](around:${SEARCH_RADIUS},${lat},${lng});
-  node["amenity"~"^(restaurant|cafe|fast_food)$"](around:${SEARCH_RADIUS},${lat},${lng});
-  way["amenity"~"^(restaurant|cafe|fast_food)$"](around:${SEARCH_RADIUS},${lat},${lng});
-  node["amenity"="place_of_worship"](around:${SEARCH_RADIUS},${lat},${lng});
-  way["amenity"="place_of_worship"](around:${SEARCH_RADIUS},${lat},${lng});
-  node["amenity"="parking"](around:${SEARCH_RADIUS},${lat},${lng});
-  way["amenity"="parking"](around:${SEARCH_RADIUS},${lat},${lng});
+  node["railway"="station"](around:${SEARCH_RADIUS},${latN},${lngN});
+  way["railway"="station"](around:${SEARCH_RADIUS},${latN},${lngN});
+  node["highway"="bus_stop"](around:${SEARCH_RADIUS},${latN},${lngN});
+  node["shop"~"^(supermarket|grocery|convenience|food|deli|greengrocer|organic|health_food)$"](around:${SEARCH_RADIUS},${latN},${lngN});
+  way["shop"~"^(supermarket|grocery|convenience|food|deli|greengrocer|organic|health_food)$"](around:${SEARCH_RADIUS},${latN},${lngN});
+  node["amenity"="hospital"](around:${SEARCH_RADIUS},${latN},${lngN});
+  way["amenity"="hospital"](around:${SEARCH_RADIUS},${latN},${lngN});
+  node["amenity"="pharmacy"](around:${SEARCH_RADIUS},${latN},${lngN});
+  node["amenity"~"^(school|college|university|kindergarten)$"](around:${SEARCH_RADIUS},${latN},${lngN});
+  way["amenity"~"^(school|college|university|kindergarten)$"](around:${SEARCH_RADIUS},${latN},${lngN});
+  node["amenity"="library"](around:${SEARCH_RADIUS},${latN},${lngN});
+  way["amenity"="library"](around:${SEARCH_RADIUS},${latN},${lngN});
+  node["leisure"="park"](around:${SEARCH_RADIUS},${latN},${lngN});
+  way["leisure"="park"](around:${SEARCH_RADIUS},${latN},${lngN});
+  relation["leisure"="park"](around:${SEARCH_RADIUS},${latN},${lngN});
+  node["leisure"="garden"](around:${SEARCH_RADIUS},${latN},${lngN});
+  way["leisure"="garden"](around:${SEARCH_RADIUS},${latN},${lngN});
+  node["landuse"="recreation_ground"](around:${SEARCH_RADIUS},${latN},${lngN});
+  way["landuse"="recreation_ground"](around:${SEARCH_RADIUS},${latN},${lngN});
+  node["amenity"~"^(bank|atm)$"](around:${SEARCH_RADIUS},${latN},${lngN});
+  node["amenity"~"^(restaurant|cafe|fast_food)$"](around:${SEARCH_RADIUS},${latN},${lngN});
+  way["amenity"~"^(restaurant|cafe|fast_food)$"](around:${SEARCH_RADIUS},${latN},${lngN});
+  node["amenity"="place_of_worship"](around:${SEARCH_RADIUS},${latN},${lngN});
+  way["amenity"="place_of_worship"](around:${SEARCH_RADIUS},${latN},${lngN});
+  node["amenity"="parking"](around:${SEARCH_RADIUS},${latN},${lngN});
+  way["amenity"="parking"](around:${SEARCH_RADIUS},${latN},${lngN});
 );
 out tags center;`
 

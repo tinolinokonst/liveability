@@ -13,9 +13,9 @@ export function loadGoogleMapsScript(): Promise<void> {
   if (loadPromise) return loadPromise
 
   loadPromise = new Promise((resolve, reject) => {
-    const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+    const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY
     if (!key) {
-      reject(new Error('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is not configured'))
+      reject(new Error('NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY is not configured'))
       return
     }
 

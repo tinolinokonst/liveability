@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { guardRequest } from '@/lib/apiGuard'
+import { parseCoords } from '@/lib/coords'
 
 const BASE = 'https://api.rentcast.io/v1'
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000
@@ -53,23 +55,28 @@ async function rentcastGet(path: string, params: Record<string, string>): Promis
 //   radius=...     → miles radius for listings mode (default 2)
 
 export async function GET(request: NextRequest) {
+  const guard = await guardRequest('rentcast', 30, 3600)
+  if ('response' in guard) return guard.response
+
   const sp = request.nextUrl.searchParams
   const mode    = sp.get('mode') ?? 'estimate'
   const address = sp.get('address') ?? ''
-  const lat     = sp.get('lat') ?? ''
-  const lng     = sp.get('lng') ?? ''
+  const latRaw  = sp.get('lat')
+  const lngRaw  = sp.get('lng')
   const radius  = sp.get('radius') ?? '2'
 
-  if (!address && (!lat || !lng)) {
+  if (!address && (!latRaw || !lngRaw)) {
     return NextResponse.json({ error: 'Provide address or lat+lng' }, { status: 400 })
   }
 
   try {
     if (mode === 'listings') {
-      if (!lat || !lng) {
-        return NextResponse.json({ error: 'lat+lng required for listings mode' }, { status: 400 })
+      const coords = parseCoords(latRaw, lngRaw)
+      if (!coords) {
+        return NextResponse.json({ error: 'Valid Columbus-area lat and lng are required' }, { status: 400 })
       }
-      const cacheKey = `listings:${lat},${lng}:r${radius}`
+
+      const cacheKey = `listings:${coords.lat},${coords.lng}:r${radius}`
       const cached = fromCache(cacheKey)
       if (cached) {
         console.log(`[Rentcast] cache hit: ${cacheKey}`)
@@ -77,8 +84,8 @@ export async function GET(request: NextRequest) {
       }
 
       const data = await rentcastGet('/listings/rental/long-term', {
-        latitude: lat,
-        longitude: lng,
+        latitude: String(coords.lat),
+        longitude: String(coords.lng),
         radius,
         status: 'Active',
         limit: '6',
@@ -88,7 +95,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Default: rent estimate (also returns comparables we use as nearby listings)
-    const cacheKey = address ? `estimate:${address}` : `estimate:${lat},${lng}`
+    let coords: { lat: number; lng: number } | null = null
+    if (!address) {
+      coords = parseCoords(latRaw, lngRaw)
+      if (!coords) {
+        return NextResponse.json({ error: 'Valid Columbus-area lat and lng are required' }, { status: 400 })
+      }
+    }
+
+    const cacheKey = address ? `estimate:${address}` : `estimate:${coords!.lat},${coords!.lng}`
     const cached = fromCache(cacheKey)
     if (cached) {
       console.log(`[Rentcast] cache hit: ${cacheKey}`)
@@ -97,7 +112,7 @@ export async function GET(request: NextRequest) {
 
     const params: Record<string, string> = address
       ? { address }
-      : { latitude: lat, longitude: lng }
+      : { latitude: String(coords!.lat), longitude: String(coords!.lng) }
 
     const data = await rentcastGet('/avm/rent/long-term', params)
     toCache(cacheKey, data)
@@ -105,6 +120,6 @@ export async function GET(request: NextRequest) {
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Rentcast unavailable'
     console.error('[Rentcast] error:', msg)
-    return NextResponse.json({ error: msg }, { status: 503 })
+    return NextResponse.json({ error: 'Listings data temporarily unavailable' }, { status: 503 })
   }
 }

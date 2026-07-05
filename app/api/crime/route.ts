@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { guardRequest } from '@/lib/apiGuard'
+import { parseCoords } from '@/lib/coords'
 
 // Columbus does not currently publish a queryable point-level crime incident layer on
 // gis.columbus.gov, maps2.columbus.gov, or opendata.columbus.gov (PublicSafety/MapServer only
@@ -55,14 +57,17 @@ async function fetchStateCrimeContext() {
 }
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams
-  const lat = searchParams.get('lat')
-  const lng = searchParams.get('lng')
+  const guard = await guardRequest('crime', 60, 3600)
+  if ('response' in guard) return guard.response
 
-  if (!lat || !lng) {
-    return NextResponse.json({ error: 'lat and lng are required' }, { status: 400 })
+  const searchParams = request.nextUrl.searchParams
+  const coords = parseCoords(searchParams.get('lat'), searchParams.get('lng'))
+
+  if (!coords) {
+    return NextResponse.json({ error: 'Valid Columbus-area lat and lng are required' }, { status: 400 })
   }
 
+  const { lat, lng } = coords
   const oneYearAgo = Date.now() - 365 * 24 * 60 * 60 * 1000
 
   const params = new URLSearchParams({

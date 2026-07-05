@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { guardRequest } from '@/lib/apiGuard'
 
 export async function GET(request: NextRequest) {
+  const guard = await guardRequest('geocoding', 60, 3600)
+  if ('response' in guard) return guard.response
+
   const searchParams = request.nextUrl.searchParams
   const address = searchParams.get('address')
 
@@ -8,9 +12,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'address is required' }, { status: 400 })
   }
 
-  const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+  const key = process.env.GOOGLE_MAPS_SERVER_KEY
   if (!key) {
-    return NextResponse.json({ error: 'NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is not configured' }, { status: 500 })
+    return NextResponse.json({ error: 'GOOGLE_MAPS_SERVER_KEY is not configured' }, { status: 500 })
   }
 
   const query = address.toLowerCase().includes('columbus') ? address : `${address}, Columbus, OH`

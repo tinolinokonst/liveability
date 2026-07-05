@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { guardRequest } from '@/lib/apiGuard'
 
 const TIMEOUT_MS = 10000
 
@@ -11,6 +12,9 @@ function extractTag(xml: string, tag: string): string {
 }
 
 export async function GET(request: NextRequest) {
+  const guard = await guardRequest('news', 60, 3600)
+  if ('response' in guard) return guard.response
+
   const searchParams = request.nextUrl.searchParams
   const query = searchParams.get('q')
 

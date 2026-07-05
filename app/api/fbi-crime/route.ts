@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { guardRequest } from '@/lib/apiGuard'
 
 // Columbus Division of Police ORI code in the FBI UCR system
 const COLUMBUS_ORI = 'OH0250100'
@@ -6,6 +7,9 @@ const TIMEOUT_MS = 10000
 const UNAVAILABLE = { agencyName: null, violentCrimeRate: null, propertyCrimeRate: null, year: null, available: false, message: 'FBI Crime Data API key not configured' }
 
 export async function GET() {
+  const guard = await guardRequest('fbi-crime', 60, 3600)
+  if ('response' in guard) return guard.response
+
   const apiKey = process.env.NEXT_PUBLIC_DATA_GOV_API_KEY
   if (!apiKey) {
     return NextResponse.json(UNAVAILABLE)

@@ -40,6 +40,11 @@ function AuthForm() {
         router.push('/dashboard')
       }
     } else {
+      if (password.length < 8) {
+        setError('Password must be at least 8 characters.')
+        setLoading(false)
+        return
+      }
       const { error } = await supabase.auth.signUp({ email, password })
       if (error) {
         setError(error.message)
@@ -120,7 +125,7 @@ function AuthForm() {
                 onChange={e => setPassword(e.target.value)}
                 required
                 placeholder="••••••••"
-                minLength={6}
+                minLength={8}
                 className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-[#a0a0a0] outline-none focus:ring-2 focus:ring-[#f97316] transition-all"
                 style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}
               />

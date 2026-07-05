@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { COLUMBUS_NEIGHBORHOODS } from '@/lib/neighborhoods'
+import { guardRequest } from '@/lib/apiGuard'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -23,6 +24,9 @@ const NEIGHBORHOOD_SUMMARY = COLUMBUS_NEIGHBORHOODS.map(n => ({
 }))
 
 export async function POST(request: NextRequest) {
+  const guard = await guardRequest('ai-match', 10, 3600)
+  if ('response' in guard) return guard.response
+
   const body = await request.json().catch(() => null)
   if (!body?.description || typeof body.description !== 'string') {
     return new Response(JSON.stringify({ error: 'description is required' }), {

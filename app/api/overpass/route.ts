@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { guardRequest } from '@/lib/apiGuard'
+import { parseCoords } from '@/lib/coords'
 
 const OVERPASS_URLS = [
   'https://overpass-api.de/api/interpreter',
@@ -39,13 +41,17 @@ async function queryOverpass(url: string, query: string) {
 }
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams
-  const lat = searchParams.get('lat')
-  const lng = searchParams.get('lng')
+  const guard = await guardRequest('overpass', 60, 3600)
+  if ('response' in guard) return guard.response
 
-  if (!lat || !lng) {
-    return NextResponse.json({ error: 'lat and lng are required' }, { status: 400 })
+  const searchParams = request.nextUrl.searchParams
+  const coords = parseCoords(searchParams.get('lat'), searchParams.get('lng'))
+
+  if (!coords) {
+    return NextResponse.json({ error: 'Valid Columbus-area lat and lng are required' }, { status: 400 })
   }
+
+  const { lat, lng } = coords
 
   const requestedRadius = Number(searchParams.get('radius'))
   const radius = ALLOWED_RADII.includes(requestedRadius) ? requestedRadius : DEFAULT_RADIUS

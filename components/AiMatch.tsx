@@ -20,8 +20,17 @@ const EXAMPLE_PROMPTS = [
   "Retired couple looking for clean air, green spaces, and easy access to healthcare. Prefer quiet streets and walkable amenities.",
 ]
 
-function renderMarkdown(text: string): string {
+function escapeHtml(text: string): string {
   return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function renderMarkdown(text: string): string {
+  return escapeHtml(text)
     .replace(/^### (.+)$/gm, '<h3 class="text-base font-bold text-white mt-5 mb-1.5">$1</h3>')
     .replace(/^## (.+)$/gm, '<h2 class="text-lg font-black mt-6 mb-2" style="color:#f97316">$1</h2>')
     .replace(/\*\*(.+?)\*\*/g, '<strong class="text-white">$1</strong>')
