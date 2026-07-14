@@ -330,7 +330,6 @@ export default function AiMatch({
             <span className="text-sm font-semibold text-white">
               Active listings near {listingsState.neighborhood}
             </span>
-            <span className="text-xs" style={{ color: '#3a3a3a' }}>via Rentcast</span>
           </div>
 
           {listingsState.status === 'loading' && (
@@ -396,7 +395,8 @@ export default function AiMatch({
 
           {listingsState.status === 'empty' && (
             <p className="text-xs" style={{ color: '#3a3a3a' }}>
-              No active listings found near {listingsState.neighborhood} right now — Rentcast coverage varies by area.
+              Live rental listings aren&apos;t available for Switzerland yet — use the average rent
+              shown in each city&apos;s details as a guide.
             </p>
           )}
         </div>

@@ -44,9 +44,9 @@ export const METRIC_INFO: Record<MetricKey, MetricInfo> = {
   aqi: {
     label: 'Air Quality (AQI)',
     description:
-      "The Air Quality Index measures pollution levels on a 0-500 scale based on EPA categories: Good (0-50), Moderate (51-100), Unhealthy for Sensitive Groups (101-150), Unhealthy (151-200), Very Unhealthy (201-300), and Hazardous (301+). Lower numbers mean cleaner air and a higher score here.",
-    source: 'Open-Meteo Air Quality API',
-    sourceUrl: 'https://open-meteo.com/en/docs/air-quality-api',
+      "An air quality index computed from the Swiss Federal Office for the Environment's (BAFU) annual air pollution modeling, sampled at the exact coordinate: PM2.5, PM10, NO₂, and ozone concentrations are compared against the Swiss Ordinance on Air Pollution Control limit values. An index of 50 corresponds to pollution at the Swiss legal limits; lower numbers mean cleaner air and a higher score. Falls back to Open-Meteo real-time data when the BAFU layers are unavailable.",
+    source: 'Swiss Federal Office for the Environment (BAFU)',
+    sourceUrl: 'https://www.bafu.admin.ch/bafu/en/home/topics/air.html',
   },
   walkability: {
     label: 'Walkability',
@@ -82,9 +82,9 @@ export const METRIC_INFO: Record<MetricKey, MetricInfo> = {
   safety: {
     label: 'Safety / Crime',
     description:
-      "Represents reported crime incidents within roughly 1km of this address over the trailing 12 months. Fewer incidents mean a higher safety score. Point-level crime data is not yet integrated for Switzerland, so this metric currently falls back to an estimated score until that data becomes available.",
-    source: 'Local incident data (coming soon for Switzerland)',
-    sourceUrl: 'https://www.bfs.admin.ch/bfs/en/home/statistics/crime-criminal-justice.html',
+      "A canton-level safety indicator derived from the Swiss Federal Statistical Office's Police Crime Statistics (offences under the Swiss Criminal Code per 1,000 residents, 2024). Cantons with fewer offences per resident score higher. This is canton-level data — Switzerland does not publish address-level crime incidents, so no street-level precision is implied.",
+    source: 'Swiss Federal Statistical Office (Police Crime Statistics)',
+    sourceUrl: 'https://www.bfs.admin.ch/bfs/en/home/statistics/crime-criminal-justice/police.html',
   },
   healthcare: {
     label: 'Healthcare Access',
@@ -145,29 +145,29 @@ export const METRIC_INFO: Record<MetricKey, MetricInfo> = {
   sunlight: {
     label: 'Sunlight',
     description:
-      "Estimates how much direct sunlight this building's roof receives over a year, based on Google's Solar API rooftop exposure modeling (which accounts for nearby buildings, trees, and roof geometry). A higher score reflects more annual sunshine hours, scaled against a typical US range of roughly 1,000-2,200 hours per year.",
+      "Estimates how much direct sunlight this building's roof receives over a year, based on Google's Solar API rooftop exposure modeling (which accounts for nearby buildings, trees, and roof geometry). A higher score reflects more annual sunshine hours, scaled against a typical range of roughly 1,000-2,200 hours per year.",
     source: 'Google Solar API',
     sourceUrl: 'https://developers.google.com/maps/documentation/solar/overview',
   },
   noise: {
-    label: 'Noise Estimate',
+    label: 'Noise (Road Traffic)',
     description:
-      "This is an ESTIMATE, not a direct noise measurement. It's derived from how close this address is to roads in OpenStreetMap and their classification (e.g. a nearby motorway lowers the score more than a residential street). A higher score suggests a quieter location, but actual noise levels depend on traffic volume, time of day, and other factors not captured here.",
-    source: 'OpenStreetMap (Overpass)',
-    sourceUrl: 'https://www.openstreetmap.org',
+      "Modeled road traffic noise in decibels at this exact location, from the sonBASE noise database of the Swiss Federal Office for the Environment (BAFU). Around 45 dB (day) scores near 100, 75 dB or more scores 0. Values are modeled from traffic data, not measured on site. If the federal layer can't be queried, an OpenStreetMap road-proximity estimate is used instead and labeled accordingly.",
+    source: 'Swiss Federal Office for the Environment (sonBASE)',
+    sourceUrl: 'https://www.bafu.admin.ch/bafu/en/home/topics/noise.html',
   },
   demographics: {
-    label: 'Neighborhood Demographics',
+    label: 'Commune Snapshot',
     description:
-      "Demographic data from the US Census Bureau's American Community Survey, reflecting the Census tract this address falls within. This is informational context only and is not factored into the overall livability score.",
-    source: 'US Census Bureau (ACS 5-Year Estimates)',
-    sourceUrl: 'https://www.census.gov/programs-surveys/acs',
+      "The Swiss commune (Gemeinde) this address falls within, resolved from the swissBOUNDARIES3D dataset. Commune-level statistics from the Swiss Federal Statistical Office are coming soon. Source: Federal Office of Topography swisstopo. This is informational context only and is not factored into the overall liveability score.",
+    source: 'Federal Office of Topography swisstopo',
+    sourceUrl: 'https://www.swisstopo.admin.ch/en/landscape-model-swissboundaries3d',
   },
   census: {
     label: 'Community Snapshot',
     description:
-      "Key demographic indicators for the Census tract this address falls within, sourced from the US Census Bureau's American Community Survey 5-year estimates. Includes median household income, total population, and median age. This is informational context only — it is not scored or factored into the overall liveability score.",
-    source: 'US Census Bureau (ACS 5-Year Estimates)',
-    sourceUrl: 'https://www.census.gov/programs-surveys/acs',
+      "The Swiss commune (Gemeinde) this address falls within — name, canton, and BFS commune number — resolved from the swissBOUNDARIES3D dataset. Commune-level statistics (population, median age, income) from the Swiss Federal Statistical Office are coming soon. Source: Federal Office of Topography swisstopo. This is informational context only — it is not scored or factored into the overall liveability score.",
+    source: 'Federal Office of Topography swisstopo',
+    sourceUrl: 'https://www.swisstopo.admin.ch/en/landscape-model-swissboundaries3d',
   },
 }

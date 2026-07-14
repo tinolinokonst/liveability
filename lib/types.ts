@@ -113,6 +113,9 @@ export interface NoiseResult {
   nearestRoad: NoiseRoad | null
   available: boolean
   message?: string
+  db?: number | null
+  dbNight?: number | null
+  source?: string
 }
 
 export interface DemographicsResult {
@@ -120,6 +123,10 @@ export interface DemographicsResult {
   totalPopulation: number | null
   medianAge?: number | null
   tract?: string
+  commune?: string
+  canton?: string
+  bfsNumber?: number
+  source?: string
   available: boolean
   message?: string
 }
@@ -213,6 +220,7 @@ export interface AddressMetrics {
   nearestEssentials?: NearestEssentials
   cityAqi?: number
   cityAqiName?: string
+  aqiSource?: string
 }
 
 export interface SavedAddress {

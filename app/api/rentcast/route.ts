@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { guardRequest } from '@/lib/apiGuard'
 import { parseCoords } from '@/lib/coords'
+import { nearestArea } from '@/lib/neighborhoods'
+
+// Rentcast only covers the US. For the Swiss deployment the integration is gated
+// off and rent estimates come from the Phase 1 city-level cost tiers instead
+// (clearly labeled as estimates). The Rentcast client below is kept intact for a
+// future non-Swiss deployment; flip the region env var to re-enable it.
+const IS_SWISS_DEPLOYMENT = process.env.NEXT_PUBLIC_DEPLOY_REGION !== 'us'
 
 const BASE = 'https://api.rentcast.io/v1'
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000
@@ -48,10 +55,10 @@ async function rentcastGet(path: string, params: Record<string, string>): Promis
 
 // ── GET /api/rentcast ────────────────────────────────────────────────────────
 // Query params:
-//   mode=estimate  → GET /avm/rent/long-term (default)
-//   mode=listings  → GET /listings/rental/long-term
+//   mode=estimate  → rent estimate (Swiss: city-tier estimate; US: Rentcast AVM)
+//   mode=listings  → active rental listings (Swiss: none; US: Rentcast)
 //   address=...    → full address string
-//   lat=...&lng=...→ coordinate alternative
+//   lat=...&lng=...→ coordinate alternative (required for Swiss estimates)
 //   radius=...     → miles radius for listings mode (default 2)
 
 export async function GET(request: NextRequest) {
@@ -69,11 +76,38 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Provide address or lat+lng' }, { status: 400 })
   }
 
+  // ── Swiss deployment: no Rentcast coverage ─────────────────────────────────
+  if (IS_SWISS_DEPLOYMENT) {
+    if (mode === 'listings') {
+      // No live rental listings source for Switzerland yet
+      return NextResponse.json([])
+    }
+
+    const coords = parseCoords(latRaw, lngRaw)
+    if (!coords) {
+      return NextResponse.json(
+        { error: 'Valid Switzerland lat and lng are required for rent estimates' },
+        { status: 400 }
+      )
+    }
+
+    const city = nearestArea(coords.lat, coords.lng)
+    return NextResponse.json({
+      rent: city.rent,
+      rentRangeLow: Math.round(city.rent * 0.85),
+      rentRangeHigh: Math.round(city.rent * 1.15),
+      city: city.name,
+      estimated: true,
+      source: 'City-level average, estimated',
+    })
+  }
+
+  // ── US deployment: Rentcast ────────────────────────────────────────────────
   try {
     if (mode === 'listings') {
       const coords = parseCoords(latRaw, lngRaw)
       if (!coords) {
-        return NextResponse.json({ error: 'Valid Switzerland lat and lng are required' }, { status: 400 })
+        return NextResponse.json({ error: 'Valid lat and lng are required' }, { status: 400 })
       }
 
       const cacheKey = `listings:${coords.lat},${coords.lng}:r${radius}`
@@ -99,7 +133,7 @@ export async function GET(request: NextRequest) {
     if (!address) {
       coords = parseCoords(latRaw, lngRaw)
       if (!coords) {
-        return NextResponse.json({ error: 'Valid Switzerland lat and lng are required' }, { status: 400 })
+        return NextResponse.json({ error: 'Valid lat and lng are required' }, { status: 400 })
       }
     }
 

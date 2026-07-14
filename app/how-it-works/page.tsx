@@ -26,7 +26,7 @@ const METHODOLOGY = [
   {
     icon: Wind,
     title: 'Air Quality',
-    desc: 'Pulled from Open-Meteo, using modeled readings for the exact coordinates of the searched address.',
+    desc: 'BAFU (Swiss Federal Office for the Environment) annual air pollution modeling — PM2.5, PM10, NO₂, and ozone — sampled at the exact coordinates of the searched address and compared against Swiss limit values.',
   },
   {
     icon: Footprints,
@@ -36,7 +36,7 @@ const METHODOLOGY = [
   {
     icon: Shield,
     title: 'Safety',
-    desc: 'Point-level crime data is not yet integrated for Switzerland, so the safety score currently falls back to an estimate while we work on local sources.',
+    desc: 'Canton-level indicator from the Swiss Federal Statistical Office’s Police Crime Statistics (offences per 1,000 residents). Clearly labeled canton-level — Switzerland does not publish address-level crime data.',
   },
   {
     icon: Newspaper,
@@ -46,8 +46,8 @@ const METHODOLOGY = [
 ]
 
 const FRESHNESS = [
-  { icon: Wind, title: 'Air quality', desc: 'Near real-time — Open-Meteo updates hourly.' },
-  { icon: Shield, title: 'Crime data', desc: 'Not yet integrated for Switzerland — the safety score is an estimate for now.' },
+  { icon: Wind, title: 'Air quality', desc: 'BAFU annual pollution modeling, updated yearly; Open-Meteo real-time data as fallback.' },
+  { icon: Shield, title: 'Crime data', desc: 'FSO Police Crime Statistics, published annually (currently 2024 data).' },
   { icon: Footprints, title: 'OpenStreetMap amenities', desc: 'Community-maintained, generally accurate but can lag for very recent openings or closures.' },
   { icon: Newspaper, title: 'News', desc: 'Pulled live every time you search.' },
 ]
@@ -63,7 +63,7 @@ const FAQ = [
   },
   {
     q: 'How accurate is the data?',
-    a: 'Every number comes directly from its source — Open-Meteo, OpenStreetMap, or Google — at the time of your search. Accuracy depends on how current and complete those sources are; see the Data Freshness section above for details.',
+    a: 'Every number comes directly from its source — BAFU, swisstopo, the FSO, OpenStreetMap, or Google — at the time of your search. Accuracy depends on how current and complete those sources are; see the Data Freshness section above for details.',
   },
   {
     q: 'Can I request other countries?',
@@ -212,7 +212,7 @@ export default function HowItWorks() {
                   </li>
                   <li className="flex items-start gap-3">
                     <Check size={18} className="shrink-0 mt-0.5" style={{ color: '#22c55e' }} />
-                    Pulled from Open-Meteo, OpenStreetMap, and Google
+                    Pulled from Swiss federal sources (BAFU, swisstopo, FSO), OpenStreetMap, and Google
                   </li>
                   <li className="flex items-start gap-3">
                     <Check size={18} className="shrink-0 mt-0.5" style={{ color: '#22c55e' }} />
@@ -290,8 +290,9 @@ export default function HowItWorks() {
               <div className="flex items-start gap-4">
                 <Calculator size={22} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
                 <p style={{ color: '#a0a0a0' }} className="text-sm sm:text-base leading-relaxed">
-                  <span className="text-white font-semibold">Air quality</span> uses the EPA&apos;s standard
-                  AQI categories (Good, Moderate, Unhealthy, etc.) to translate the raw AQI number into a score.
+                  <span className="text-white font-semibold">Air quality</span> compares modeled pollutant
+                  concentrations (PM2.5, PM10, NO₂, ozone) against Swiss legal limit values — an index of 50
+                  means pollution at the limit — and translates that into a score and category.
                 </p>
               </div>
               <div className="flex items-start gap-4">
@@ -372,7 +373,7 @@ export default function HowItWorks() {
       <footer className="max-w-5xl mx-auto px-6 py-8" style={{ borderTop: '1px solid #1a1a1a' }}>
         <div className="flex items-center justify-between text-xs" style={{ color: '#a0a0a0' }}>
           <span>Liveability · Switzerland</span>
-          <span>Data: Open-Meteo · OpenStreetMap · Google Maps</span>
+          <span>Data: BAFU · swisstopo · FSO · OpenStreetMap · Google Maps</span>
         </div>
       </footer>
     </div>

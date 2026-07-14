@@ -2,6 +2,7 @@ export interface AQIResult {
   aqi: number
   category: string
   score: number
+  source?: string
 }
 
 export async function fetchAQI(lat: number, lng: number): Promise<AQIResult> {
@@ -9,6 +10,14 @@ export async function fetchAQI(lat: number, lng: number): Promise<AQIResult> {
   if (!res.ok) throw new Error('AQI fetch failed')
 
   const data = await res.json()
+
+  // New shape: the route computes index, category, and score server-side
+  // (BAFU annual modeling, or Open-Meteo fallback)
+  if (typeof data.aqi === 'number' && typeof data.category === 'string' && typeof data.score === 'number') {
+    return { aqi: data.aqi, category: data.category, score: data.score, source: data.source }
+  }
+
+  // Legacy shape: raw Open-Meteo passthrough
   const aqi: number = data.current?.us_aqi ?? 50
 
   let category = 'Good'

@@ -166,11 +166,11 @@ export function buildComparison(metricKey: string, metrics: AddressMetrics): Rea
       const colCat = colAqiCat(cityAqi)
       let rel: string
       if (absDiff < 5) {
-        rel = `similar to ${cityName}'s citywide reading of AQI ${cityAqi} (${colCat}) today`
+        rel = `similar to the reading of ${cityAqi} (${colCat}) at ${cityName}'s city center`
       } else if (diff < 0) {
-        rel = `${absDiff} pts lower than ${cityName}'s citywide AQI of ${cityAqi} (${colCat}) today — better air`
+        rel = `${absDiff} pts lower than the reading of ${cityAqi} (${colCat}) at ${cityName}'s city center — better air`
       } else {
-        rel = `${absDiff} pts higher than ${cityName}'s citywide AQI of ${cityAqi} (${colCat}) today — worse air`
+        rel = `${absDiff} pts higher than the reading of ${cityAqi} (${colCat}) at ${cityName}'s city center — worse air`
       }
       return <ComparisonBlock>This AQI of <strong>{metrics.aqi}</strong> is <strong>{rel}</strong>.</ComparisonBlock>
     }
@@ -270,10 +270,30 @@ export function buildDetail(metricKey: string, metrics: AddressMetrics): React.R
     case 'parking':
       return amenityDetail(places?.parking?.[0] ?? null, metrics.parkingCount, 'parking option', 'parking option', 'parking options', 400, places?.parking, 'Parking options')
     case 'safety': {
-      if (metrics.crimeIncidentCount === undefined || metrics.safetyScore === undefined) return <p>{NA}</p>
-      const count = metrics.crimeIncidentCount
+      if (metrics.safetyScore === undefined) return <p>{NA}</p>
       const stateCtx = metrics.stateCrimeContext
-      const fbi = metrics.fbiCrime
+      const hasIncidents = (metrics.crimeIncidents?.length ?? 0) > 0
+
+      // Canton-level indicator (Swiss data): no address-level incident counts exist
+      if (stateCtx?.available && stateCtx.rate !== null && !hasIncidents) {
+        return (
+          <>
+            <p>
+              This area has a safety score of <strong>{metrics.safetyScore}/100</strong>, derived from
+              canton-level crime statistics: the <strong>{stateCtx.state}</strong> registered{' '}
+              <strong>{stateCtx.rate} offences per 1,000 residents</strong>
+              {stateCtx.year ? ` in ${stateCtx.year}` : ''} under the Swiss Criminal Code.
+            </p>
+            <p>
+              <strong>Canton-level</strong>, Source: Swiss Federal Statistical Office (Police Crime
+              Statistics). This is not address-specific — point-level crime data is not published
+              for Switzerland.
+            </p>
+          </>
+        )
+      }
+
+      const count = metrics.crimeIncidentCount ?? 0
       return (
         <>
           <p>
@@ -281,21 +301,6 @@ export function buildDetail(metricKey: string, metrics: AddressMetrics): React.R
             <strong>{count} incident{count === 1 ? '' : 's'}</strong> in the past 12 months within 1km.
             {metrics.safetyNote ? ` ${metrics.safetyNote}` : ''}
           </p>
-          {stateCtx?.available && stateCtx.rate !== null && (
-            <p>
-              <strong>State-level context:</strong> {stateCtx.state} reported a violent crime rate of{' '}
-              <strong>{stateCtx.rate} per 100,000 residents</strong>
-              {stateCtx.year ? ` in ${stateCtx.year}` : ''}, per the FBI Crime Data Explorer.
-              This is statewide context, separate from the local incident count above.
-            </p>
-          )}
-          {fbi?.available && fbi.violentCrimeRate !== null && (
-            <p>
-              <strong>Citywide context:</strong> {fbi.agencyName ?? 'The local police agency'} reported a violent crime rate of{' '}
-              <strong>{fbi.violentCrimeRate} per 100,000 residents</strong>
-              {fbi.year ? ` in ${fbi.year}` : ''}. This is a city-level figure, not address-specific.
-            </p>
-          )}
         </>
       )
     }
@@ -315,11 +320,35 @@ export function buildDetail(metricKey: string, metrics: AddressMetrics): React.R
       if (!metrics.noise?.available || metrics.noise.score === null) {
         return <p>{metrics.noise?.message ?? 'Noise estimate unavailable'}</p>
       }
-      const road = metrics.noise.nearestRoad
+      const noise = metrics.noise
+      if (noise.source?.includes('sonBASE')) {
+        return (
+          <>
+            {noise.db != null ? (
+              <p>
+                Modeled road traffic noise at this address is <strong>{noise.db} dB during the day</strong>
+                {noise.dbNight != null && <> and <strong>{noise.dbNight} dB at night</strong></>}, giving it a
+                noise score of <strong>{noise.score}/100 ({noise.level})</strong>.
+              </p>
+            ) : (
+              <p>
+                There is <strong>no mapped road noise</strong> at this location — it sits below the mapping
+                threshold of the federal noise database, indicating a quiet setting
+                (score <strong>{noise.score}/100</strong>).
+              </p>
+            )}
+            <p>
+              Source: sonBASE noise database, Swiss Federal Office for the Environment (BAFU). Values are
+              modeled, not measured on site.
+            </p>
+          </>
+        )
+      }
+      const road = noise.nearestRoad
       return (
         <p>
           This is an <strong>estimate</strong>, not a direct noise measurement. Based on nearby roads in
-          OpenStreetMap, this address has a noise score of <strong>{metrics.noise.score}/100 ({metrics.noise.level})</strong>.
+          OpenStreetMap, this address has a noise score of <strong>{noise.score}/100 ({noise.level})</strong>.
           {road && (
             <> The nearest classified road is <strong>{road.name}</strong> ({road.classification}),{' '}
             {road.distanceKm}km away.</>
@@ -342,11 +371,32 @@ export function buildDetail(metricKey: string, metrics: AddressMetrics): React.R
       )
     }
     case 'census': {
-      // Prefer censusData (richer, has medianAge) over legacy demographics field
+      // Prefer censusData (richer) over legacy demographics field
       const data = metrics.censusData ?? metrics.demographics
       if (!data?.available) {
-        return <p>{data?.message ?? 'Demographic data unavailable for this location'}</p>
+        return <p>{data?.message ?? 'Commune data unavailable for this location'}</p>
       }
+
+      // Swiss commune snapshot (resolved from swissBOUNDARIES3D)
+      if (data.commune) {
+        return (
+          <>
+            <p>
+              This address lies in the commune of <strong>{data.commune}</strong>
+              {data.canton ? <>, canton of <strong>{data.canton}</strong></> : null}
+              {data.bfsNumber ? <> (BFS commune number <strong>{data.bfsNumber}</strong>)</> : null}.
+            </p>
+            <p>
+              Commune-level statistics (population, median age, income) from the Swiss Federal
+              Statistical Office are coming soon.
+            </p>
+            <p>Source: Federal Office of Topography swisstopo (swissBOUNDARIES3D).</p>
+            <p>This is informational context only — it is not scored or factored into the overall liveability score.</p>
+          </>
+        )
+      }
+
+      // Legacy US Census tract data (older saved addresses)
       const { medianHouseholdIncome, totalPopulation, medianAge, tract } = data
       return (
         <>
@@ -451,22 +501,24 @@ function compositeSubtitle(metrics: AddressMetrics): string {
   return parts.join(' · ')
 }
 
-// ─── Rentcast cost of living ─────────────────────────────────────────────────
+// ─── Cost of living (Swiss city-tier estimate; Rentcast on US deployments) ───
 
 interface RentEstimate {
   rent: number
   rentRangeLow: number
   rentRangeHigh: number
+  city?: string
+  estimated?: boolean
   subjectProperty?: { propertyType?: string; bedrooms?: number; bathrooms?: number }
 }
 
-function RentcastCostCard({ address }: { address: string }) {
+function RentCostCard({ center }: { center: { lat: number; lng: number } }) {
   const [data, setData] = useState<RentEstimate | null>(null)
   const [status, setStatus] = useState<'loading' | 'ok' | 'error'>('loading')
 
   useEffect(() => {
-    if (!address) { setStatus('error'); return }
-    fetch(`/api/rentcast?mode=estimate&address=${encodeURIComponent(address)}`)
+    if (!center.lat && !center.lng) { setStatus('error'); return }
+    fetch(`/api/rentcast?mode=estimate&lat=${center.lat}&lng=${center.lng}`)
       .then(r => r.json())
       .then((json: RentEstimate & { error?: string }) => {
         if (json.error || !json.rent) { setStatus('error'); return }
@@ -474,7 +526,7 @@ function RentcastCostCard({ address }: { address: string }) {
         setStatus('ok')
       })
       .catch(() => setStatus('error'))
-  }, [address])
+  }, [center.lat, center.lng])
 
   const prop = data?.subjectProperty
 
@@ -489,7 +541,7 @@ function RentcastCostCard({ address }: { address: string }) {
           Cost of Living
         </span>
         <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ color: '#a0a0a0', backgroundColor: '#2a2a2a' }}>
-          Rent estimate
+          {data?.estimated ? 'Estimated' : 'Rent estimate'}
         </span>
       </div>
 
@@ -511,9 +563,15 @@ function RentcastCostCard({ address }: { address: string }) {
             {prop?.bedrooms != null && ` · ${prop.bedrooms}bd`}
             {prop?.bathrooms != null && `/${prop.bathrooms}ba`}
           </p>
-          <p style={{ color: '#a0a0a0' }} className="text-xs flex items-center gap-1 -mb-1">
-            Source: <a href="https://rentcast.io" target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors">Rentcast AVM</a>
-          </p>
+          {data.estimated ? (
+            <p style={{ color: '#a0a0a0' }} className="text-xs -mb-1">
+              Estimated, city-level average{data.city ? ` (${data.city})` : ''} — not an address-specific figure
+            </p>
+          ) : (
+            <p style={{ color: '#a0a0a0' }} className="text-xs flex items-center gap-1 -mb-1">
+              Source: <a href="https://rentcast.io" target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors">Rentcast AVM</a>
+            </p>
+          )}
         </>
       )}
 
@@ -569,16 +627,25 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
   const location = metrics.location ?? { lat: 0, lng: 0, formattedAddress: metrics.address ?? '' }
   const center = { lat: location.lat, lng: location.lng }
 
-  // Community Snapshot data: prefer new censusData (has medianAge), fall back to legacy demographics
+  // Community Snapshot data: prefer new censusData, fall back to legacy demographics
   const communityData = metrics.censusData ?? metrics.demographics
-  const communityValue = communityData?.available && communityData.medianHouseholdIncome !== null
-    ? `$${communityData.medianHouseholdIncome.toLocaleString()} median income`
-    : 'Demographic data unavailable'
+  const communityValue = communityData?.available
+    ? communityData.commune
+      ? `${communityData.commune}${communityData.canton ? ` (${communityData.canton})` : ''}`
+      : communityData.medianHouseholdIncome !== null
+        ? `$${communityData.medianHouseholdIncome.toLocaleString()} median income`
+        : 'Commune data unavailable'
+    : 'Commune data unavailable'
   const communityDesc = communityData?.available
-    ? [
-        communityData.totalPopulation !== null ? `Pop: ${communityData.totalPopulation.toLocaleString()}` : null,
-        (communityData as { medianAge?: number | null }).medianAge != null ? `Median age: ${(communityData as { medianAge?: number | null }).medianAge}` : null,
-      ].filter(Boolean).join(' · ') || undefined
+    ? communityData.commune
+      ? [
+          communityData.bfsNumber ? `Commune (BFS no. ${communityData.bfsNumber})` : 'Commune',
+          'FSO statistics coming soon',
+        ].join(' · ')
+      : [
+          communityData.totalPopulation !== null ? `Pop: ${communityData.totalPopulation.toLocaleString()}` : null,
+          (communityData as { medianAge?: number | null }).medianAge != null ? `Median age: ${(communityData as { medianAge?: number | null }).medianAge}` : null,
+        ].filter(Boolean).join(' · ') || undefined
     : undefined
 
   return (
@@ -587,7 +654,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
       <CompositeScoreBanner metrics={metrics} />
 
       {/* Cost of Living */}
-      <RentcastCostCard address={metrics.address ?? location.formattedAddress} />
+      <RentCostCard center={center} />
 
       {/* Nearest Essentials */}
       {metrics.nearestEssentials && (
@@ -607,7 +674,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             value={metrics.aqi === undefined ? NA : `${metrics.aqi}`}
             score={metrics.aqiScore ?? 0}
             description={metrics.aqiCategory ?? NA}
-            source="Open-Meteo Air Quality API"
+            source={metrics.aqiSource ?? 'Open-Meteo Air Quality API'}
             updated={updated}
             metricKey="aqi"
             center={center}
@@ -647,11 +714,15 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             detail={buildDetail('sunlight', metrics)}
           />
           <MetricCard
-            label="Noise Estimate"
+            label={metrics.noise?.source?.includes('sonBASE') ? 'Noise (Road Traffic)' : 'Noise Estimate'}
             value={metrics.noise?.available && metrics.noise.level !== null ? metrics.noise.level : NA}
             score={metrics.noise?.score ?? 0}
-            description="ESTIMATE based on nearby roads"
-            source="OpenStreetMap (Overpass)"
+            description={metrics.noise?.source?.includes('sonBASE')
+              ? (metrics.noise?.db != null ? `Modeled ${metrics.noise.db} dB (day)` : 'No mapped road noise here')
+              : 'ESTIMATE based on nearby roads'}
+            source={metrics.noise?.source?.includes('sonBASE')
+              ? 'Swiss Federal Office for the Environment (sonBASE)'
+              : 'OpenStreetMap (Overpass)'}
             updated={updated}
             metricKey="noise"
             icon={Volume2}
@@ -841,10 +912,12 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <MetricCard
             label="Safety / Crime"
-            value={fmtCount(metrics.crimeIncidentCount, 'incidents')}
+            value={(metrics.crimeIncidents?.length ?? 0) > 0
+              ? fmtCount(metrics.crimeIncidentCount, 'incidents')
+              : fmtScore(metrics.safetyScore)}
             score={metrics.safetyScore ?? 0}
             description={metrics.safetyNote || ((metrics.crimeTopTypes ?? []).length ? `Top: ${(metrics.crimeTopTypes ?? []).join(', ')}` : 'Within 1km, last 12 months')}
-            source="Local incident data (not yet available for Switzerland)"
+            source="Swiss Federal Statistical Office (Police Crime Statistics)"
             updated={updated}
             metricKey="safety"
             center={center}
@@ -856,7 +929,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             label="Community Snapshot"
             value={communityValue}
             description={communityDesc}
-            source="US Census Bureau (ACS)"
+            source="Federal Office of Topography swisstopo"
             updated={updated}
             metricKey="census"
             icon={Users}

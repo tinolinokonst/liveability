@@ -14,10 +14,10 @@ import Reveal from '@/components/Reveal'
 import MotionLink from '@/components/MotionLink'
 
 const FEATURES = [
-  { icon: Wind,          label: 'Air Quality',          desc: 'Real-time AQI from Open-Meteo' },
+  { icon: Wind,          label: 'Air Quality',          desc: 'BAFU air pollution modeling at your address' },
   { icon: Sun,           label: 'Sunlight',              desc: 'Daily sun hours and UV index estimates' },
-  { icon: Volume2,       label: 'Noise Estimate',        desc: 'Ambient noise level for the area' },
-  { icon: Shield,        label: 'Safety & Crime',        desc: 'Safety estimates for the area' },
+  { icon: Volume2,       label: 'Road Noise',            desc: 'Modeled dB values from sonBASE (BAFU)' },
+  { icon: Shield,        label: 'Safety & Crime',        desc: 'Canton-level FSO crime statistics' },
   { icon: Footprints,    label: 'Walkability',           desc: 'Amenities within your chosen radius' },
   { icon: Bus,           label: 'Transit Access',        desc: 'Bus stops and transit stations nearby' },
   { icon: ShoppingCart,  label: 'Grocery Access',        desc: 'Supermarkets and food stores nearby' },
@@ -29,7 +29,7 @@ const FEATURES = [
   { icon: Building2,     label: 'Places of Worship',     desc: 'Religious buildings near the address' },
   { icon: Trees,         label: 'Green Space & Parks',   desc: 'Parks, gardens, and recreation areas' },
   { icon: Car,           label: 'Parking',               desc: 'Parking availability in the immediate area' },
-  { icon: Users,         label: 'Community Snapshot',    desc: 'Demographic context for the area' },
+  { icon: Users,         label: 'Community Snapshot',    desc: 'Your commune, from swisstopo boundaries' },
 ]
 
 export default function Home() {
@@ -194,7 +194,7 @@ export default function Home() {
       <footer className="max-w-5xl mx-auto px-6 py-8" style={{ borderTop: '1px solid #1a1a1a' }}>
         <div className="flex items-center justify-between text-xs" style={{ color: '#a0a0a0' }}>
           <span>Liveability · Switzerland</span>
-          <span>Data: Open-Meteo · OpenStreetMap · Google Maps</span>
+          <span>Data: BAFU · swisstopo · FSO · OpenStreetMap · Google Maps</span>
         </div>
       </footer>
     </main>

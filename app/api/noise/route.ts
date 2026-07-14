@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { guardRequest } from '@/lib/apiGuard'
 import { parseCoords } from '@/lib/coords'
+import { wmsPointValue } from '@/lib/geoAdmin'
+
+// Primary source: sonBASE road traffic noise (modeled dB values), published by the
+// Swiss Federal Office for the Environment (BAFU) and sampled per coordinate via
+// the geo.admin.ch WMS. Fallback: the original OSM road-proximity estimate.
+const SONBASE_DAY = 'ch.bafu.laerm-strassenlaerm_tag'
+const SONBASE_NIGHT = 'ch.bafu.laerm-strassenlaerm_nacht'
+const SONBASE_SOURCE = 'Swiss Federal Office for the Environment (sonBASE)'
 
 const OVERPASS_URLS = [
   'https://overpass.osm.ch/api/interpreter',
@@ -12,7 +20,7 @@ const TIMEOUT_MS = 10000
 const RADIUS_METERS = 200
 
 // Higher weight = noisier road type. Used to penalize the noise score based on
-// road classification and how close the nearest segment is.
+// road classification and how close the nearest segment is. (OSM fallback only.)
 const ROAD_WEIGHTS: Record<string, number> = {
   motorway: 90,
   motorway_link: 80,
@@ -53,6 +61,12 @@ function levelForScore(score: number): string {
   return 'Loud'
 }
 
+// Map a modeled daytime road noise level (dB) to a 0-100 score:
+// 45 dB or less scores 100, 75 dB or more scores 0.
+function scoreForDb(db: number): number {
+  return Math.round(Math.max(0, Math.min(100, ((75 - db) * 100) / 30)))
+}
+
 async function queryOverpass(url: string, query: string) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS)
@@ -79,19 +93,7 @@ async function queryOverpass(url: string, query: string) {
   }
 }
 
-export async function GET(request: NextRequest) {
-  const guard = await guardRequest('noise', 60, 3600)
-  if ('response' in guard) return guard.response
-
-  const searchParams = request.nextUrl.searchParams
-  const coords = parseCoords(searchParams.get('lat'), searchParams.get('lng'))
-
-  if (!coords) {
-    return NextResponse.json({ error: 'Valid Switzerland lat and lng are required' }, { status: 400 })
-  }
-
-  const { lat, lng } = coords
-
+async function osmFallback(lat: number, lng: number) {
   const classes = Object.keys(ROAD_WEIGHTS).join('|')
   const query = `[out:json][timeout:25];
 (
@@ -137,9 +139,70 @@ out geom tags;`
     }
 
     const score = Math.round(Math.max(0, Math.min(100, worstScore)))
-    return NextResponse.json({ score, level: levelForScore(score), nearestRoad, available: true })
+    return {
+      score,
+      level: levelForScore(score),
+      nearestRoad,
+      available: true,
+      source: 'OpenStreetMap road-proximity estimate',
+    }
   }
 
-  console.log('All Overpass endpoints failed for noise estimate, returning unavailable response')
+  return null
+}
+
+export async function GET(request: NextRequest) {
+  const guard = await guardRequest('noise', 60, 3600)
+  if ('response' in guard) return guard.response
+
+  const searchParams = request.nextUrl.searchParams
+  const coords = parseCoords(searchParams.get('lat'), searchParams.get('lng'))
+
+  if (!coords) {
+    return NextResponse.json({ error: 'Valid Switzerland lat and lng are required' }, { status: 400 })
+  }
+
+  const { lat, lng } = coords
+
+  // Primary: sonBASE modeled road noise (day + night)
+  const [day, night] = await Promise.all([
+    wmsPointValue(SONBASE_DAY, lat, lng),
+    wmsPointValue(SONBASE_NIGHT, lat, lng),
+  ])
+
+  if (day.ok) {
+    if (day.value !== null) {
+      const score = scoreForDb(day.value)
+      return NextResponse.json({
+        score,
+        level: levelForScore(score),
+        nearestRoad: null,
+        available: true,
+        db: Math.round(day.value * 10) / 10,
+        dbNight: night.ok && night.value !== null ? Math.round(night.value * 10) / 10 : null,
+        source: SONBASE_SOURCE,
+      })
+    }
+
+    // The layer responded but has no mapped road noise at this point — that means
+    // the location is away from significant roads, i.e. quiet.
+    return NextResponse.json({
+      score: 92,
+      level: 'Quiet',
+      nearestRoad: null,
+      available: true,
+      db: null,
+      dbNight: null,
+      source: SONBASE_SOURCE,
+      message: 'No mapped road noise at this location (below the sonBASE mapping threshold)',
+    })
+  }
+
+  // Fallback: OSM road-proximity estimate
+  console.log('[noise] sonBASE query failed, falling back to OSM estimate')
+  const fallback = await osmFallback(lat, lng)
+  if (fallback) return NextResponse.json(fallback)
+
+  console.log('All noise sources failed, returning unavailable response')
   return NextResponse.json(UNAVAILABLE)
 }

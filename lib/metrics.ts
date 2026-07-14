@@ -40,6 +40,7 @@ export function buildMetrics(
     aqi: aqiData.aqi,
     aqiCategory: aqiData.category,
     aqiScore: aqiData.score,
+    aqiSource: aqiData.source,
     walkabilityScore: amenityData.walkabilityScore,
     groceryScore: amenityData.groceryScore,
     transitScore: amenityData.transitScore,

@@ -8,10 +8,12 @@ const GENERAL_LINKS = [
 ];
 
 const DATA_SOURCES = [
-  { label: "Open-Meteo", href: "https://open-meteo.com/" },
+  { label: "BAFU (Federal Office for the Environment)", href: "https://www.bafu.admin.ch/" },
+  { label: "swisstopo (Federal Office of Topography)", href: "https://www.swisstopo.admin.ch/" },
+  { label: "FSO (Federal Statistical Office)", href: "https://www.bfs.admin.ch/" },
+  { label: "transport.opendata.ch", href: "https://transport.opendata.ch/" },
   { label: "OpenStreetMap", href: "https://www.openstreetmap.org/" },
   { label: "Google Maps Platform", href: "https://mapsplatform.google.com/" },
-  { label: "Rentcast", href: "https://rentcast.io/" },
 ];
 
 export default function Footer() {
@@ -74,10 +76,13 @@ export default function Footer() {
         </div>
 
         <div
-          className="mt-10 pt-6 text-sm text-[#a0a0a0]"
+          className="mt-10 pt-6 flex flex-col gap-1 text-sm text-[#a0a0a0]"
           style={{ borderTop: "1px solid #2a2a2a" }}
         >
-          &copy; {year} Liveability. All rights reserved.
+          <span>&copy; {year} Liveability. All rights reserved.</span>
+          <span className="text-xs">
+            Geodata — Source: Federal Office of Topography swisstopo
+          </span>
         </div>
       </div>
     </footer>

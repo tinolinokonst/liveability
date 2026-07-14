@@ -42,11 +42,13 @@ export default function AboutPage() {
         </p>
 
         <p>
-          We pull from public, authoritative sources wherever possible:
-          Open-Meteo for air quality, OpenStreetMap for walkability and
-          amenities, and Google&apos;s Solar and Maps platforms for sunlight and
-          geocoding. Where data is unavailable or incomplete — as some
-          Switzerland-specific sources still are — we say so rather than guess.
+          We pull from public, authoritative sources wherever possible: the
+          Swiss Federal Office for the Environment (BAFU) for air quality and
+          road noise, the Federal Office of Topography swisstopo for commune
+          boundaries, the Federal Statistical Office for crime statistics,
+          OpenStreetMap for walkability and amenities, and Google&apos;s Solar and
+          Maps platforms for sunlight and geocoding. Where data is unavailable
+          or incomplete, we say so rather than guess.
         </p>
 
         <p className="text-sm" style={{ color: '#6b6b6b' }}>
