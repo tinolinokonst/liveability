@@ -2,21 +2,21 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Sparkles, Send, RotateCcw, Database, Home, ExternalLink, ArrowRight, Loader2 } from 'lucide-react'
-import { COLUMBUS_NEIGHBORHOODS } from '@/lib/neighborhoods'
+import { SWISS_AREAS } from '@/lib/neighborhoods'
 import { AiMatchListingsState, AiRentListing } from '@/lib/types'
 
 export type { AiMatchListingsState, AiRentListing }
 
 const STATUS_MESSAGES = [
   'Analyzing your preferences...',
-  'Matching against Columbus data...',
+  'Matching against Swiss data...',
   'Generating recommendations...',
 ]
 
 const EXAMPLE_PROMPTS = [
-  "I work from home and want a quiet neighborhood with good coffee shops and parks within walking distance. Budget around $1,400/month.",
-  "Young professional commuting downtown, love restaurants and nightlife, don't have a car so transit is essential. Can spend up to $1,800.",
-  "Family with two kids, safety and good schools are the top priority. We need a grocery store nearby and prefer a quieter area. Budget $1,300.",
+  "I work from home and want a quiet city with good coffee shops and parks within walking distance. Budget around CHF 1,800/month.",
+  "Young professional commuting to the office, love restaurants and nightlife, don't have a car so transit is essential. Can spend up to CHF 2,500.",
+  "Family with two kids, safety and good schools are the top priority. We need a grocery store nearby and prefer a quieter area. Budget CHF 1,600.",
   "Retired couple looking for clean air, green spaces, and easy access to healthcare. Prefer quiet streets and walkable amenities.",
 ]
 
@@ -46,7 +46,7 @@ function parseNeighborhoodNames(text: string): string[] {
 
 function findNeighborhoodCoords(name: string): { lat: number; lng: number } | null {
   const lower = name.toLowerCase()
-  const match = COLUMBUS_NEIGHBORHOODS.find(n =>
+  const match = SWISS_AREAS.find(n =>
     n.name.toLowerCase() === lower ||
     n.name.toLowerCase().includes(lower) ||
     lower.includes(n.name.toLowerCase())
@@ -198,12 +198,12 @@ export default function AiMatch({
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
           <Sparkles size={16} style={{ color: '#f97316' }} />
-          <h2 className="text-white font-bold">Describe your ideal neighborhood</h2>
+          <h2 className="text-white font-bold">Describe your ideal city</h2>
         </div>
         <p className="text-sm leading-relaxed" style={{ color: '#a0a0a0' }}>
           Tell us what matters to you — air quality, green space, safety, schools,
           walkability, budget, anything — in your own words. Our AI will match your
-          description against real Columbus data and find your best-fit neighborhoods.
+          description against real Swiss data and find your best-fit cities.
         </p>
       </div>
 
@@ -304,7 +304,7 @@ export default function AiMatch({
                   <p className="text-xs leading-relaxed" style={{ color: '#3a3a3a' }}>
                     Matches are calculated using the same real data shown throughout Liveability —
                     walkability, air quality, safety, transit, green space, and more. This is not a
-                    black-box guess; it&apos;s the AI applying your preferences to verified neighborhood metrics.
+                    black-box guess; it&apos;s the AI applying your preferences to verified city metrics.
                   </p>
                 </div>
               </div>
@@ -356,7 +356,7 @@ export default function AiMatch({
                   >
                     <p className="text-xs leading-snug text-white font-medium">{listing.formattedAddress}</p>
                     <p className="text-xl font-bold" style={{ color: '#f97316' }}>
-                      ${listing.price.toLocaleString()}
+                      CHF {listing.price.toLocaleString()}
                       <span className="text-sm font-normal" style={{ color: '#a0a0a0' }}>/mo</span>
                     </p>
                     <p className="text-xs" style={{ color: '#a0a0a0' }}>

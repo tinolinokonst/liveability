@@ -1,5 +1,5 @@
-// Generous bounding box around the Columbus, OH metro area
-const BOUNDS = { minLat: 39.6, maxLat: 40.4, minLng: -83.5, maxLng: -82.4 }
+// Generous bounding box around Switzerland
+const BOUNDS = { minLat: 45.7, maxLat: 47.9, minLng: 5.8, maxLng: 10.6 }
 
 export function parseCoords(
   latRaw: string | null,

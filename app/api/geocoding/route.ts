@@ -17,8 +17,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'GOOGLE_MAPS_SERVER_KEY is not configured' }, { status: 500 })
   }
 
-  const query = address.toLowerCase().includes('columbus') ? address : `${address}, Columbus, OH`
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${key}`
+  // Restrict geocoding results to Switzerland
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&region=ch&components=country:CH&key=${key}`
 
   const res = await fetch(url)
   const data = await res.json()

@@ -82,9 +82,9 @@ export const METRIC_INFO: Record<MetricKey, MetricInfo> = {
   safety: {
     label: 'Safety / Crime',
     description:
-      "Represents reported crime incidents within roughly 1km of this address over the trailing 12 months. Fewer incidents mean a higher safety score. Columbus does not currently publish a queryable point-level crime layer, so this metric may fall back to an estimated score until that data becomes available.",
-    source: 'City of Columbus GIS',
-    sourceUrl: 'https://gis.columbus.gov/arcgis/rest/services/PublicSafety/PoliceIncidents/MapServer/0',
+      "Represents reported crime incidents within roughly 1km of this address over the trailing 12 months. Fewer incidents mean a higher safety score. Point-level crime data is not yet integrated for Switzerland, so this metric currently falls back to an estimated score until that data becomes available.",
+    source: 'Local incident data (coming soon for Switzerland)',
+    sourceUrl: 'https://www.bfs.admin.ch/bfs/en/home/statistics/crime-criminal-justice.html',
   },
   healthcare: {
     label: 'Healthcare Access',

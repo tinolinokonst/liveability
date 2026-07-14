@@ -70,7 +70,7 @@ function AuthForm() {
             Neighborhood intelligence beyond the listing
           </p>
           <p className="text-xs font-semibold mt-1" style={{ color: '#f97316' }}>
-            Currently covering Columbus, Ohio
+            Currently covering Switzerland
           </p>
         </div>
 

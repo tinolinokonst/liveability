@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'q is required' }, { status: 400 })
   }
 
-  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(`${query} Columbus Ohio`)}&hl=en-US&gl=US&ceid=US:en`
+  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(`${query} Switzerland`)}&hl=en-US&gl=US&ceid=US:en`
 
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS)

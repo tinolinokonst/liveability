@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
   const coords = parseCoords(searchParams.get('lat'), searchParams.get('lng'))
 
   if (!coords) {
-    return NextResponse.json({ error: 'Valid Columbus-area lat and lng are required' }, { status: 400 })
+    return NextResponse.json({ error: 'Valid Switzerland lat and lng are required' }, { status: 400 })
   }
 
   try {

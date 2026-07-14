@@ -26,7 +26,7 @@ const METHODOLOGY = [
   {
     icon: Wind,
     title: 'Air Quality',
-    desc: 'Pulled from EPA AirNow, using readings from the nearest monitoring station to the searched address.',
+    desc: 'Pulled from Open-Meteo, using modeled readings for the exact coordinates of the searched address.',
   },
   {
     icon: Footprints,
@@ -36,7 +36,7 @@ const METHODOLOGY = [
   {
     icon: Shield,
     title: 'Safety',
-    desc: 'Crime incident data from City of Columbus GIS, covering a 12-month window around the searched address.',
+    desc: 'Point-level crime data is not yet integrated for Switzerland, so the safety score currently falls back to an estimate while we work on local sources.',
   },
   {
     icon: Newspaper,
@@ -46,28 +46,28 @@ const METHODOLOGY = [
 ]
 
 const FRESHNESS = [
-  { icon: Wind, title: 'Air quality', desc: 'Near real-time — EPA AirNow updates hourly.' },
-  { icon: Shield, title: 'Crime data', desc: 'Updated monthly from City of Columbus records.' },
+  { icon: Wind, title: 'Air quality', desc: 'Near real-time — Open-Meteo updates hourly.' },
+  { icon: Shield, title: 'Crime data', desc: 'Not yet integrated for Switzerland — the safety score is an estimate for now.' },
   { icon: Footprints, title: 'OpenStreetMap amenities', desc: 'Community-maintained, generally accurate but can lag for very recent openings or closures.' },
   { icon: Newspaper, title: 'News', desc: 'Pulled live every time you search.' },
 ]
 
 const FAQ = [
   {
-    q: 'Why Columbus, Ohio?',
-    a: 'Liveability launched in Columbus because it has rich, accessible open data (city GIS, EPA monitoring, dense OpenStreetMap coverage) that lets us show real, verifiable numbers rather than estimates.',
+    q: 'Why Switzerland?',
+    a: 'Switzerland has dense, high-quality OpenStreetMap coverage, excellent public transit worth measuring, and huge variation in rent and quality of life between cities — exactly the trade-offs Liveability is built to surface.',
   },
   {
     q: 'Is Liveability free?',
-    a: 'Yes. Searching addresses, comparing them, exploring neighborhoods, and saving addresses to your account are all free.',
+    a: 'Yes. Searching addresses, comparing them, exploring cities, and saving addresses to your account are all free.',
   },
   {
     q: 'How accurate is the data?',
-    a: 'Every number comes directly from its source — EPA AirNow, OpenStreetMap, or City of Columbus GIS — at the time of your search. Accuracy depends on how current and complete those sources are; see the Data Freshness section above for details.',
+    a: 'Every number comes directly from its source — Open-Meteo, OpenStreetMap, or Google — at the time of your search. Accuracy depends on how current and complete those sources are; see the Data Freshness section above for details.',
   },
   {
-    q: 'Can I request other cities?',
-    a: 'Not yet, but expanding beyond Columbus is on the roadmap. The same data sources (EPA, OpenStreetMap, and city open-data portals) exist for most U.S. cities.',
+    q: 'Can I request other countries?',
+    a: 'Not yet, but expanding beyond Switzerland is on the roadmap. The same data sources (Open-Meteo, OpenStreetMap, and open-data portals) exist for most of Europe.',
   },
   {
     q: 'What if a data point seems wrong?',
@@ -139,7 +139,7 @@ export default function HowItWorks() {
             style={{ color: '#a0a0a0' }}
           >
             Liveability shows verified, address-level data on air quality, safety, walkability,
-            and nearby amenities for Columbus, Ohio — pulled straight from official sources for
+            and nearby amenities for Switzerland — pulled straight from official sources for
             the exact coordinates of the address you search.
           </motion.p>
         </section>
@@ -212,7 +212,7 @@ export default function HowItWorks() {
                   </li>
                   <li className="flex items-start gap-3">
                     <Check size={18} className="shrink-0 mt-0.5" style={{ color: '#22c55e' }} />
-                    Pulled from EPA AirNow, OpenStreetMap, and City of Columbus GIS
+                    Pulled from Open-Meteo, OpenStreetMap, and Google
                   </li>
                   <li className="flex items-start gap-3">
                     <Check size={18} className="shrink-0 mt-0.5" style={{ color: '#22c55e' }} />
@@ -371,8 +371,8 @@ export default function HowItWorks() {
       {/* Footer */}
       <footer className="max-w-5xl mx-auto px-6 py-8" style={{ borderTop: '1px solid #1a1a1a' }}>
         <div className="flex items-center justify-between text-xs" style={{ color: '#a0a0a0' }}>
-          <span>Liveability · Columbus, Ohio</span>
-          <span>Data: EPA AirNow · OpenStreetMap · City of Columbus GIS</span>
+          <span>Liveability · Switzerland</span>
+          <span>Data: Open-Meteo · OpenStreetMap · Google Maps</span>
         </div>
       </footer>
     </div>

@@ -114,7 +114,7 @@ export default function Dashboard() {
             Search any address or explore neighborhood rankings
           </p>
           <p className="text-xs font-semibold mt-1" style={{ color: '#f97316' }}>
-            Currently covering Columbus, Ohio
+            Currently covering Switzerland
           </p>
         </div>
 
@@ -160,7 +160,7 @@ export default function Dashboard() {
             >
               <h2 className="text-white font-bold mb-1">Search an address</h2>
               <p style={{ color: '#a0a0a0' }} className="text-xs mb-6">
-                Enter any Columbus, OH address to get real air quality and amenity scores
+                Enter any Swiss address to get real air quality and amenity scores
               </p>
               <AddressSearch
                 onAdd={addToCompare}
@@ -212,7 +212,7 @@ export default function Dashboard() {
               <>
                 <h2 className="text-white font-bold mb-1">Neighborhoods</h2>
                 <p style={{ color: '#a0a0a0' }} className="text-xs mb-6">
-                  Adjust the sliders to rank neighborhoods based on what matters to you. Currently covering Columbus, Ohio.
+                  Adjust the sliders to rank cities based on what matters to you. Currently covering Switzerland.
                 </p>
               </>
             )}

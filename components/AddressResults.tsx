@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Wind, Shield, Navigation, ShoppingBag, Sun, Volume2, Users, Leaf, DollarSign, LucideIcon } from 'lucide-react'
 import { AddressMetrics, AmenityPlaces, NearestAmenity } from '@/lib/types'
-import { getColumbusAverages } from '@/lib/neighborhoods'
+import { getSwissAverages } from '@/lib/neighborhoods'
 import MetricCard from './MetricCard'
 import InfoCard from './InfoCard'
 import LocalNews from './LocalNews'
@@ -130,7 +130,7 @@ function ComparisonBlock({ children }: { children: React.ReactNode }) {
   )
 }
 
-const COLUMBUS_AVGS = getColumbusAverages()
+const SWISS_AVGS = getSwissAverages()
 
 function compareDir(score: number, avg: number): 'above' | 'below' | 'similar' {
   if (Math.abs(score - avg) < 5) return 'similar'
@@ -150,37 +150,38 @@ function avgComparison(label: string, score: number | undefined, avg: number): R
   const dir = compareDir(score, avg)
   const diff = Math.abs(score - avg)
   const rel = dir === 'similar'
-    ? `comparable to the Columbus neighborhood average of ${avg}/100`
-    : `${dir} the Columbus average of ${avg}/100 by ${diff} points`
+    ? `comparable to the Swiss city average of ${avg}/100`
+    : `${dir} the Swiss city average of ${avg}/100 by ${diff} points`
   return <ComparisonBlock>{label} is <strong>{rel}</strong>.</ComparisonBlock>
 }
 
 export function buildComparison(metricKey: string, metrics: AddressMetrics): React.ReactNode {
   switch (metricKey) {
     case 'aqi': {
-      const colAqi = metrics.columbusAqi
-      if (colAqi == null || metrics.aqi == null) return null
-      const diff = metrics.aqi - colAqi
+      const cityAqi = metrics.cityAqi
+      const cityName = metrics.cityAqiName ?? 'the nearest major city'
+      if (cityAqi == null || metrics.aqi == null) return null
+      const diff = metrics.aqi - cityAqi
       const absDiff = Math.abs(diff)
-      const colCat = colAqiCat(colAqi)
+      const colCat = colAqiCat(cityAqi)
       let rel: string
       if (absDiff < 5) {
-        rel = `similar to Columbus's citywide reading of AQI ${colAqi} (${colCat}) today`
+        rel = `similar to ${cityName}'s citywide reading of AQI ${cityAqi} (${colCat}) today`
       } else if (diff < 0) {
-        rel = `${absDiff} pts lower than Columbus's citywide AQI of ${colAqi} (${colCat}) today — better air`
+        rel = `${absDiff} pts lower than ${cityName}'s citywide AQI of ${cityAqi} (${colCat}) today — better air`
       } else {
-        rel = `${absDiff} pts higher than Columbus's citywide AQI of ${colAqi} (${colCat}) today — worse air`
+        rel = `${absDiff} pts higher than ${cityName}'s citywide AQI of ${cityAqi} (${colCat}) today — worse air`
       }
       return <ComparisonBlock>This AQI of <strong>{metrics.aqi}</strong> is <strong>{rel}</strong>.</ComparisonBlock>
     }
-    case 'walkability':  return avgComparison('Walkability', metrics.walkabilityScore, COLUMBUS_AVGS.walkability)
-    case 'grocery':      return avgComparison('Grocery access', metrics.groceryScore, COLUMBUS_AVGS.grocery)
-    case 'transit':      return avgComparison('Transit access', metrics.transitScore, COLUMBUS_AVGS.transit)
-    case 'green':        return avgComparison('Green space', metrics.greenScore, COLUMBUS_AVGS.green)
-    case 'safety':       return avgComparison('Safety score', metrics.safetyScore, COLUMBUS_AVGS.safety)
-    case 'healthcare':   return avgComparison('Healthcare access', metrics.healthcareScore, COLUMBUS_AVGS.healthcare)
-    case 'school':       return avgComparison('Schools score', metrics.schoolScore, COLUMBUS_AVGS.school)
-    case 'dining':       return avgComparison('Dining score', metrics.diningScore, COLUMBUS_AVGS.dining)
+    case 'walkability':  return avgComparison('Walkability', metrics.walkabilityScore, SWISS_AVGS.walkability)
+    case 'grocery':      return avgComparison('Grocery access', metrics.groceryScore, SWISS_AVGS.grocery)
+    case 'transit':      return avgComparison('Transit access', metrics.transitScore, SWISS_AVGS.transit)
+    case 'green':        return avgComparison('Green space', metrics.greenScore, SWISS_AVGS.green)
+    case 'safety':       return avgComparison('Safety score', metrics.safetyScore, SWISS_AVGS.safety)
+    case 'healthcare':   return avgComparison('Healthcare access', metrics.healthcareScore, SWISS_AVGS.healthcare)
+    case 'school':       return avgComparison('Schools score', metrics.schoolScore, SWISS_AVGS.school)
+    case 'dining':       return avgComparison('Dining score', metrics.diningScore, SWISS_AVGS.dining)
     default:             return null
   }
 }
@@ -290,9 +291,9 @@ export function buildDetail(metricKey: string, metrics: AddressMetrics): React.R
           )}
           {fbi?.available && fbi.violentCrimeRate !== null && (
             <p>
-              <strong>Citywide context (FBI):</strong> Columbus Division of Police reported a violent crime rate of{' '}
+              <strong>Citywide context:</strong> {fbi.agencyName ?? 'The local police agency'} reported a violent crime rate of{' '}
               <strong>{fbi.violentCrimeRate} per 100,000 residents</strong>
-              {fbi.year ? ` in ${fbi.year}` : ''}, per the FBI Crime Data Explorer. This is a city-level figure, not address-specific.
+              {fbi.year ? ` in ${fbi.year}` : ''}. This is a city-level figure, not address-specific.
             </p>
           )}
         </>
@@ -502,10 +503,10 @@ function RentcastCostCard({ address }: { address: string }) {
       {status === 'ok' && data && (
         <>
           <div className="text-2xl font-bold text-white">
-            ${data.rent.toLocaleString()}<span className="text-base font-normal" style={{ color: '#a0a0a0' }}>/mo</span>
+            CHF {data.rent.toLocaleString()}<span className="text-base font-normal" style={{ color: '#a0a0a0' }}>/mo</span>
           </div>
           <p style={{ color: '#a0a0a0' }} className="text-xs leading-relaxed">
-            Range: ${data.rentRangeLow.toLocaleString()} – ${data.rentRangeHigh.toLocaleString()}/mo
+            Range: CHF {data.rentRangeLow.toLocaleString()} – {data.rentRangeHigh.toLocaleString()}/mo
             {prop?.propertyType && ` · ${prop.propertyType}`}
             {prop?.bedrooms != null && ` · ${prop.bedrooms}bd`}
             {prop?.bathrooms != null && `/${prop.bathrooms}ba`}
@@ -843,7 +844,7 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             value={fmtCount(metrics.crimeIncidentCount, 'incidents')}
             score={metrics.safetyScore ?? 0}
             description={metrics.safetyNote || ((metrics.crimeTopTypes ?? []).length ? `Top: ${(metrics.crimeTopTypes ?? []).join(', ')}` : 'Within 1km, last 12 months')}
-            source="City of Columbus GIS"
+            source="Local incident data (not yet available for Switzerland)"
             updated={updated}
             metricKey="safety"
             center={center}

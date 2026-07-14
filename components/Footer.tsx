@@ -8,10 +8,9 @@ const GENERAL_LINKS = [
 ];
 
 const DATA_SOURCES = [
-  { label: "EPA AirNow", href: "https://www.airnow.gov/" },
+  { label: "Open-Meteo", href: "https://open-meteo.com/" },
   { label: "OpenStreetMap", href: "https://www.openstreetmap.org/" },
-  { label: "City of Columbus GIS", href: "https://gis.columbus.gov/" },
-  { label: "US Census Bureau", href: "https://www.census.gov/" },
+  { label: "Google Maps Platform", href: "https://mapsplatform.google.com/" },
   { label: "Rentcast", href: "https://rentcast.io/" },
 ];
 
@@ -28,8 +27,8 @@ export default function Footer() {
               Liveability
             </Link>
             <p className="mt-2 max-w-xs text-sm text-[#a0a0a0]">
-              Data-driven quality-of-life scores for neighborhoods and addresses
-              in Columbus, Ohio.
+              Data-driven quality-of-life scores for cities and addresses
+              in Switzerland.
             </p>
           </div>
 

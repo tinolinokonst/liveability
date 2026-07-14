@@ -7,9 +7,9 @@ import { fetchFullMetrics } from '@/lib/metrics'
 import { fetchSavedAddresses, saveAddress } from '@/lib/savedAddresses'
 import LocalNews from './LocalNews'
 import AddressResults from './AddressResults'
-import { COLUMBUS_NEIGHBORHOODS, nearestNeighborhood } from '@/lib/neighborhoods'
+import { SWISS_AREAS, nearestNeighborhood } from '@/lib/neighborhoods'
 
-const NEIGHBORHOOD_NAME_SET = new Set(COLUMBUS_NEIGHBORHOODS.map(n => n.name))
+const NEIGHBORHOOD_NAME_SET = new Set(SWISS_AREAS.map(n => n.name))
 
 const PROFILES: Profile[] = ['Family', 'Young Professional', 'Retiree', 'Nature Lover']
 
@@ -84,14 +84,14 @@ function qualityColor(s: number) {
 }
 
 function rentLabel(rent: number) {
-  if (rent < 1200) return { label: 'Affordable', color: '#22c55e' }
-  if (rent < 1600) return { label: 'Moderate',   color: '#f59e0b' }
+  if (rent < 1600) return { label: 'Affordable', color: '#22c55e' }
+  if (rent < 2100) return { label: 'Moderate',   color: '#f59e0b' }
   return                  { label: 'Pricey',      color: '#ef4444' }
 }
 
 function resolveNeighborhoodName(name: string | null | undefined): string | null {
   if (!name) return null
-  const found = COLUMBUS_NEIGHBORHOODS.find(n =>
+  const found = SWISS_AREAS.find(n =>
     n.name.toLowerCase() === name.toLowerCase() ||
     n.name.toLowerCase().includes(name.toLowerCase()) ||
     name.toLowerCase().includes(n.name.toLowerCase())
@@ -107,8 +107,8 @@ interface NeighborhoodFinderProps {
   onViewAddress?: (address: string) => void
 }
 
-const MIN_RENT = 800
-const MAX_RENT = 2500
+const MIN_RENT = 1000
+const MAX_RENT = 3000
 
 export default function NeighborhoodFinder({ userId, initialNeighborhoodName, onBack, backLabel, onViewAddress }: NeighborhoodFinderProps) {
   const [weights, setWeights] = useState<WeightConfig>(DEFAULT_WEIGHTS)
@@ -131,7 +131,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
   // Fetch metrics whenever a neighborhood is selected (covers both initial mount and user clicks)
   useEffect(() => {
     if (!selectedName) return
-    const n = COLUMBUS_NEIGHBORHOODS.find(nb => nb.name === selectedName)
+    const n = SWISS_AREAS.find(nb => nb.name === selectedName)
     if (!n) { setMetricsLoading(false); return }
 
     let cancelled = false
@@ -157,12 +157,12 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
   }, [selectedName, userId])
 
   const searchMatches = searchQuery.trim().length > 0
-    ? COLUMBUS_NEIGHBORHOODS.filter(n =>
+    ? SWISS_AREAS.filter(n =>
         n.name.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : []
 
-  const allRanked = [...COLUMBUS_NEIGHBORHOODS]
+  const allRanked = [...SWISS_AREAS]
     .map(n => ({ ...n, score: scoreNeighborhood(n, weights) }))
     .sort((a, b) => b.score - a.score)
 
@@ -260,7 +260,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p style={{ color: '#a0a0a0' }} className="text-xs mb-1">Results for</p>
-                <p className="text-white font-semibold text-sm">{selectedName} (neighborhood center)</p>
+                <p className="text-white font-semibold text-sm">{selectedName} (city center)</p>
               </div>
               <div className="flex items-center gap-3">
                 <div className="text-right">
@@ -327,7 +327,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
           onChange={e => { setSearchQuery(e.target.value); setShowDropdown(true) }}
           onFocus={() => { if (searchQuery) setShowDropdown(true) }}
           onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
-          placeholder="Jump to a neighborhood..."
+          placeholder="Jump to a city..."
           className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-[#a0a0a0] outline-none focus:ring-2 focus:ring-[#f97316]"
           style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
         />
@@ -423,7 +423,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold" style={{ color: maxBudget < MAX_RENT ? '#f97316' : '#a0a0a0' }}>
-              {maxBudget < MAX_RENT ? `≤ $${maxBudget.toLocaleString()}/mo` : 'Any budget'}
+              {maxBudget < MAX_RENT ? `≤ CHF ${maxBudget.toLocaleString()}/mo` : 'Any budget'}
             </span>
             {maxBudget < MAX_RENT && (
               <button
@@ -446,7 +446,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
           className="w-full"
         />
         <div className="flex justify-between mt-1">
-          <span className="text-xs" style={{ color: '#a0a0a0' }}>${MIN_RENT.toLocaleString()}/mo</span>
+          <span className="text-xs" style={{ color: '#a0a0a0' }}>CHF {MIN_RENT.toLocaleString()}/mo</span>
           <span className="text-xs" style={{ color: '#a0a0a0' }}>No limit</span>
         </div>
       </div>
@@ -455,15 +455,15 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
       <div className="flex flex-col gap-3">
         <p style={{ color: '#a0a0a0' }} className="text-xs font-medium uppercase tracking-wider">
           {budgetActive
-            ? `${ranked.length} neighborhood${ranked.length === 1 ? '' : 's'} within budget`
-            : 'Columbus neighborhoods ranked'}
+            ? `${ranked.length} cit${ranked.length === 1 ? 'y' : 'ies'} within budget`
+            : 'Swiss cities ranked'}
         </p>
         {ranked.length === 0 && (
           <div
             className="rounded-xl px-4 py-6 text-center text-sm"
             style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a', color: '#a0a0a0' }}
           >
-            No neighborhoods found within this budget. Try raising the limit.
+            No cities found within this budget. Try raising the limit.
           </div>
         )}
         {ranked.map((n, i) => {
@@ -491,7 +491,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
                     className="text-xs px-2 py-0.5 rounded-full font-medium"
                     style={{ color: rent.color, backgroundColor: `${rent.color}1a` }}
                   >
-                    ${n.rent.toLocaleString()}/mo · {rent.label}
+                    CHF {n.rent.toLocaleString()}/mo · {rent.label}
                   </span>
                 </div>
 
@@ -562,7 +562,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
                   className="text-xs px-2 py-0.5 rounded-full font-medium"
                   style={{ color: rent.color, backgroundColor: `${rent.color}1a` }}
                 >
-                  ${n.rent.toLocaleString()}/mo
+                  CHF {n.rent.toLocaleString()}/mo
                 </span>
                 <span className="text-xs ml-auto" style={{ color: '#a0a0a0' }}>
                   score {n.score}
@@ -574,7 +574,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
       )}
 
       <p style={{ color: '#a0a0a0' }} className="text-xs text-center">
-        Scores based on real characteristics of each Columbus neighborhood. Adjust weights to match your priorities.
+        Scores based on real characteristics of each Swiss city. Adjust weights to match your priorities.
       </p>
     </div>
   )

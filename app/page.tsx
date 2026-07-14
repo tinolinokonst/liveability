@@ -14,10 +14,10 @@ import Reveal from '@/components/Reveal'
 import MotionLink from '@/components/MotionLink'
 
 const FEATURES = [
-  { icon: Wind,          label: 'Air Quality',          desc: 'Real-time AQI from EPA AirNow' },
+  { icon: Wind,          label: 'Air Quality',          desc: 'Real-time AQI from Open-Meteo' },
   { icon: Sun,           label: 'Sunlight',              desc: 'Daily sun hours and UV index estimates' },
   { icon: Volume2,       label: 'Noise Estimate',        desc: 'Ambient noise level for the area' },
-  { icon: Shield,        label: 'Safety & Crime',        desc: 'Incident data from City of Columbus GIS' },
+  { icon: Shield,        label: 'Safety & Crime',        desc: 'Safety estimates for the area' },
   { icon: Footprints,    label: 'Walkability',           desc: 'Amenities within your chosen radius' },
   { icon: Bus,           label: 'Transit Access',        desc: 'Bus stops and transit stations nearby' },
   { icon: ShoppingCart,  label: 'Grocery Access',        desc: 'Supermarkets and food stores nearby' },
@@ -29,7 +29,7 @@ const FEATURES = [
   { icon: Building2,     label: 'Places of Worship',     desc: 'Religious buildings near the address' },
   { icon: Trees,         label: 'Green Space & Parks',   desc: 'Parks, gardens, and recreation areas' },
   { icon: Car,           label: 'Parking',               desc: 'Parking availability in the immediate area' },
-  { icon: Users,         label: 'Community Snapshot',    desc: 'Census demographics for the area' },
+  { icon: Users,         label: 'Community Snapshot',    desc: 'Demographic context for the area' },
 ]
 
 export default function Home() {
@@ -78,7 +78,7 @@ export default function Home() {
             className="text-sm font-semibold mb-6"
             style={{ color: '#f97316' }}
           >
-            Currently focused on Columbus, Ohio
+            Currently covering Switzerland
           </motion.p>
 
           <motion.p
@@ -167,7 +167,7 @@ export default function Home() {
             />
             <h2 className="text-4xl sm:text-5xl font-black text-white mb-4 tracking-tight">Ready to find home?</h2>
             <p style={{ color: '#a0a0a0' }} className="mb-10 text-lg">
-              Search any Columbus address or browse neighborhood rankings — free.
+              Search any Swiss address or browse city rankings — free.
             </p>
             {loggedIn ? (
               <MotionLink
@@ -193,7 +193,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="max-w-5xl mx-auto px-6 py-8" style={{ borderTop: '1px solid #1a1a1a' }}>
         <div className="flex items-center justify-between text-xs" style={{ color: '#a0a0a0' }}>
-          <span>Liveability · Columbus, Ohio</span>
+          <span>Liveability · Switzerland</span>
           <span>Data: Open-Meteo · OpenStreetMap · Google Maps</span>
         </div>
       </footer>

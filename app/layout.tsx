@@ -6,10 +6,10 @@ import FooterWrapper from "@/components/FooterWrapper";
 export const metadata: Metadata = {
   title: "Liveability — Find your perfect neighborhood",
   description:
-    "Browse neighborhood rankings and address-level scores for air quality, walkability, green space, grocery access, and transit. Currently available for Columbus, OH.",
+    "Browse city rankings and address-level scores for air quality, walkability, green space, grocery access, and transit. Currently available for Switzerland.",
   openGraph: {
     title: "Liveability — Find your perfect neighborhood",
-    description: "Find your perfect neighborhood beyond just rent. Currently available for Columbus, Ohio.",
+    description: "Find your perfect neighborhood beyond just rent. Currently available for Switzerland.",
   },
 };
 

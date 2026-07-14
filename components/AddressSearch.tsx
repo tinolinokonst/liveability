@@ -13,6 +13,7 @@ import { fetchCensus } from '@/lib/census'
 import { fetchFBICrime } from '@/lib/fbi-crime'
 import { fetchNearestEssentials } from '@/lib/nearest'
 import { loadGoogleMapsScript } from '@/lib/googleMaps'
+import { nearestArea } from '@/lib/neighborhoods'
 import { saveAddress } from '@/lib/savedAddresses'
 import { AddressMetrics, AmenityScores, CrimeResult } from '@/lib/types'
 import AddressResults from './AddressResults'
@@ -32,14 +33,13 @@ const RADIUS_OPTIONS: Array<{ label: string; meters: number }> = [
   { label: '3km', meters: 3000 },
 ]
 
-const COLUMBUS_CENTER = { lat: 39.9612, lng: -82.9988 }
-const COLUMBUS_BIAS_RADIUS_M = 40000
-
 function isValidAddress(addr: string): boolean {
   const trimmed = addr.trim()
-  if (trimmed.length < 10) return false
+  if (trimmed.length < 8) return false
   if (!/\d+/.test(trimmed)) return false
-  if (!/\d+\s+[a-zA-Z]{3,}/.test(trimmed)) return false
+  // Swiss addresses put the house number after the street ("Bahnhofstrasse 1"),
+  // so require a street word followed by a number (unicode letters for ü/é/etc.)
+  if (!/[A-Za-zÀ-ÖØ-öø-ÿ]{3,}\.?\s*\d+/.test(trimmed)) return false
   return true
 }
 
@@ -72,14 +72,10 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
       .then(() => {
         if (!inputRef.current || !window.google) return
 
-        const center = new window.google.maps.LatLng(COLUMBUS_CENTER.lat, COLUMBUS_CENTER.lng)
-        const circle = new window.google.maps.Circle({ center, radius: COLUMBUS_BIAS_RADIUS_M })
-
         autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
           fields: ['formatted_address', 'geometry', 'name'],
-          componentRestrictions: { country: 'us' },
+          componentRestrictions: { country: 'ch' },
         })
-        autocomplete.setBounds(circle.getBounds())
 
         listener = autocomplete.addListener('place_changed', () => {
           const place = autocomplete!.getPlace()
@@ -128,13 +124,16 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
     try {
       const location = await geocodeAddress(address.trim())
       if (!location) {
-        setError('Address not found. Try a more specific Columbus, OH address.')
+        setError('Address not found. Try a more specific Swiss address.')
         return
       }
 
-      const [aqi, columbusAqiResult, amenity, crime, sunlight, noise, census, fbiCrime, nearest] = await Promise.all([
+      // Compare the searched address against the nearest major Swiss city center
+      const referenceCity = nearestArea(location.lat, location.lng)
+
+      const [aqi, cityAqiResult, amenity, crime, sunlight, noise, census, fbiCrime, nearest] = await Promise.all([
         fetchAQI(location.lat, location.lng),
-        fetchAQI(COLUMBUS_CENTER.lat, COLUMBUS_CENTER.lng).catch(() => null),
+        fetchAQI(referenceCity.lat, referenceCity.lng).catch(() => null),
         fetchAmenityScores(location.lat, location.lng, radius),
         fetchCrimeScore(location.lat, location.lng),
         fetchSunlight(location.lat, location.lng),
@@ -149,7 +148,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
       setCrimeData(crime)
       setFetchedAt(new Date())
       const baseResult = buildMetrics(address.trim(), location, aqi, amenity, crime, sunlight, noise, census, fbiCrime, nearest)
-      setResult(columbusAqiResult != null ? { ...baseResult, columbusAqi: columbusAqiResult.aqi } : baseResult)
+      setResult(cityAqiResult != null ? { ...baseResult, cityAqi: cityAqiResult.aqi, cityAqiName: referenceCity.name } : baseResult)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
     } finally {
@@ -194,7 +193,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
             prev.nearestEssentials ?? { trainStation: null, busStop: null, grocery: null, hospital: null, pharmacy: null, school: null, library: null, park: null, bank: null, dining: null, worship: null, parking: null, searchRadiusKm: 15 },
             prev.id
           )
-          return { ...updated, columbusAqi: prev.columbusAqi }
+          return { ...updated, cityAqi: prev.cityAqi, cityAqiName: prev.cityAqiName }
         })
       })
       .finally(() => {
@@ -251,7 +250,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
               setValidationError(false)
               autocompleteSelectedRef.current = false
             }}
-            placeholder="Enter a Columbus, OH address..."
+            placeholder="Enter a Swiss address, e.g. Bahnhofstrasse 1, Zürich..."
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
@@ -261,7 +260,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
           />
           {validationError && (
             <p className="text-xs px-1" style={{ color: '#ef4444' }}>
-              Please enter a full street address (e.g. 3101 Leeds Rd, Columbus, OH)
+              Please enter a full street address (e.g. Bahnhofstrasse 1, 8001 Zürich)
             </p>
           )}
         </div>

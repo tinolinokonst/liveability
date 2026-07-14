@@ -3,6 +3,7 @@ import { guardRequest } from '@/lib/apiGuard'
 import { parseCoords } from '@/lib/coords'
 
 const OVERPASS_URLS = [
+  'https://overpass.osm.ch/api/interpreter',
   'https://overpass-api.de/api/interpreter',
   'https://overpass.kumi.systems/api/interpreter',
 ]
@@ -21,7 +22,7 @@ async function queryOverpass(url: string, query: string) {
       body: new URLSearchParams({ data: query }).toString(),
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': 'liveability-columbus/1.0',
+        'User-Agent': 'liveability-switzerland/1.0',
       },
       signal: controller.signal,
     })
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
   const coords = parseCoords(searchParams.get('lat'), searchParams.get('lng'))
 
   if (!coords) {
-    return NextResponse.json({ error: 'Valid Columbus-area lat and lng are required' }, { status: 400 })
+    return NextResponse.json({ error: 'Valid Switzerland lat and lng are required' }, { status: 400 })
   }
 
   const { lat, lng } = coords

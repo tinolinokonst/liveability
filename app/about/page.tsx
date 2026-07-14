@@ -4,7 +4,7 @@ import SiteHeader from "@/components/SiteHeader";
 export const metadata: Metadata = {
   title: "About | Liveability",
   description:
-    "Learn what Liveability is, who it's for, and how it scores neighborhoods and addresses in Columbus, Ohio.",
+    "Learn what Liveability is, who it's for, and how it scores cities and addresses in Switzerland.",
 };
 
 export default function AboutPage() {
@@ -17,9 +17,9 @@ export default function AboutPage() {
       <div className="mt-8 space-y-6 text-base leading-relaxed text-[#a0a0a0]">
         <p>
           Liveability helps people figure out where to live by scoring
-          neighborhoods and specific addresses on the things that actually shape
-          daily life — not just rent. We focus on Columbus, Ohio, and we pull
-          data that is usually scattered across a dozen government sites into one
+          cities and specific addresses on the things that actually shape
+          daily life — not just rent. We currently cover Switzerland, and we pull
+          data that is usually scattered across a dozen sites into one
           place: air quality, noise, walkability, green space, transit access,
           sunlight, grocery access, and safety.
         </p>
@@ -42,11 +42,11 @@ export default function AboutPage() {
         </p>
 
         <p>
-          We pull from public, authoritative sources wherever possible: the U.S.
-          Census Bureau, the EPA AirNow program, PurpleAir for hyperlocal air
-          quality, OpenStreetMap for walkability, FBI crime data via data.gov,
-          and the City of Columbus open data portal. Where data is unavailable
-          or incomplete, we say so rather than guess.
+          We pull from public, authoritative sources wherever possible:
+          Open-Meteo for air quality, OpenStreetMap for walkability and
+          amenities, and Google&apos;s Solar and Maps platforms for sunlight and
+          geocoding. Where data is unavailable or incomplete — as some
+          Switzerland-specific sources still are — we say so rather than guess.
         </p>
 
         <p className="text-sm" style={{ color: '#6b6b6b' }}>
