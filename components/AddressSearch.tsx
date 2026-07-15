@@ -12,6 +12,7 @@ import { fetchNoiseEstimate } from '@/lib/noise'
 import { fetchCensus } from '@/lib/census'
 import { fetchFBICrime } from '@/lib/fbi-crime'
 import { fetchNearestEssentials } from '@/lib/nearest'
+import { fetchTransitCh } from '@/lib/transitCh'
 import { loadGoogleMapsScript } from '@/lib/googleMaps'
 import { nearestArea } from '@/lib/neighborhoods'
 import { saveAddress } from '@/lib/savedAddresses'
@@ -131,7 +132,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
       // Compare the searched address against the nearest major Swiss city center
       const referenceCity = nearestArea(location.lat, location.lng)
 
-      const [aqi, cityAqiResult, amenity, crime, sunlight, noise, census, fbiCrime, nearest] = await Promise.all([
+      const [aqi, cityAqiResult, amenity, crime, sunlight, noise, census, fbiCrime, nearest, transitCh] = await Promise.all([
         fetchAQI(location.lat, location.lng),
         fetchAQI(referenceCity.lat, referenceCity.lng).catch(() => null),
         fetchAmenityScores(location.lat, location.lng, radius),
@@ -141,13 +142,14 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
         fetchCensus(location.lat, location.lng),
         fetchFBICrime(),
         fetchNearestEssentials(location.lat, location.lng),
+        fetchTransitCh(location.lat, location.lng),
       ])
 
       setAqiData(aqi)
       setAmenityData(amenity)
       setCrimeData(crime)
       setFetchedAt(new Date())
-      const baseResult = buildMetrics(address.trim(), location, aqi, amenity, crime, sunlight, noise, census, fbiCrime, nearest)
+      const baseResult = buildMetrics(address.trim(), location, aqi, amenity, crime, sunlight, noise, census, fbiCrime, nearest, transitCh)
       setResult(cityAqiResult != null ? { ...baseResult, cityAqi: cityAqiResult.aqi, cityAqiName: referenceCity.name } : baseResult)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
@@ -191,6 +193,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
             prev.censusData ?? prev.demographics ?? { medianHouseholdIncome: null, totalPopulation: null, available: false },
             prev.fbiCrime ?? { agencyName: null, violentCrimeRate: null, propertyCrimeRate: null, year: null, available: false },
             prev.nearestEssentials ?? { trainStation: null, busStop: null, grocery: null, hospital: null, pharmacy: null, school: null, library: null, park: null, bank: null, dining: null, worship: null, parking: null, searchRadiusKm: 15 },
+            prev.transitCh,
             prev.id
           )
           return { ...updated, cityAqi: prev.cityAqi, cityAqiName: prev.cityAqiName }

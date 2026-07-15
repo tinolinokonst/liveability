@@ -6,7 +6,8 @@ import { fetchNoiseEstimate } from './noise'
 import { fetchCensus } from './census'
 import { fetchFBICrime } from './fbi-crime'
 import { fetchNearestEssentials } from './nearest'
-import { AddressMetrics, AmenityScores, CrimeResult, DemographicsResult, FBICrimeResult, GeoLocation, NearestEssentials, NoiseResult, SunlightResult } from './types'
+import { fetchTransitCh } from './transitCh'
+import { AddressMetrics, AmenityScores, CrimeResult, DemographicsResult, FBICrimeResult, GeoLocation, NearestEssentials, NoiseResult, SunlightResult, TransitCHResult } from './types'
 
 export function buildMetrics(
   address: string,
@@ -19,13 +20,20 @@ export function buildMetrics(
   censusData: DemographicsResult,
   fbiCrimeData: FBICrimeResult,
   nearestEssentials: NearestEssentials,
+  transitCh?: TransitCHResult,
   id?: string
 ): AddressMetrics {
+  // Prefer the live Swiss public transport score (distance + departure frequency)
+  // over the OSM stop-count score when available
+  const transitScore = transitCh?.available && transitCh.score !== null
+    ? transitCh.score
+    : amenityData.transitScore
+
   const overallScore = Math.round(
     aqiData.score * 0.20 +
     amenityData.walkabilityScore * 0.20 +
     amenityData.groceryScore * 0.10 +
-    amenityData.transitScore * 0.10 +
+    transitScore * 0.10 +
     amenityData.greenScore * 0.10 +
     amenityData.schoolScore * 0.05 +
     amenityData.healthcareScore * 0.10 +
@@ -43,7 +51,7 @@ export function buildMetrics(
     aqiSource: aqiData.source,
     walkabilityScore: amenityData.walkabilityScore,
     groceryScore: amenityData.groceryScore,
-    transitScore: amenityData.transitScore,
+    transitScore,
     greenScore: amenityData.greenScore,
     groceryCount: amenityData.groceryCount,
     transitCount: amenityData.transitCount,
@@ -88,6 +96,7 @@ export function buildMetrics(
     censusData,
     fbiCrime: fbiCrimeData,
     nearestEssentials,
+    transitCh,
   }
 }
 
@@ -97,7 +106,7 @@ export async function fetchFullMetrics(
   radius: number = 800,
   id?: string
 ): Promise<AddressMetrics> {
-  const [aqi, amenity, crime, sunlight, noise, census, fbiCrime, nearest] = await Promise.all([
+  const [aqi, amenity, crime, sunlight, noise, census, fbiCrime, nearest, transitCh] = await Promise.all([
     fetchAQI(location.lat, location.lng),
     fetchAmenityScores(location.lat, location.lng, radius),
     fetchCrimeScore(location.lat, location.lng),
@@ -106,7 +115,8 @@ export async function fetchFullMetrics(
     fetchCensus(location.lat, location.lng),
     fetchFBICrime(),
     fetchNearestEssentials(location.lat, location.lng),
+    fetchTransitCh(location.lat, location.lng),
   ])
 
-  return buildMetrics(address, location, aqi, amenity, crime, sunlight, noise, census, fbiCrime, nearest, id)
+  return buildMetrics(address, location, aqi, amenity, crime, sunlight, noise, census, fbiCrime, nearest, transitCh, id)
 }

@@ -19,7 +19,7 @@ const FEATURES = [
   { icon: Volume2,       label: 'Road Noise',            desc: 'Modeled dB values from sonBASE (BAFU)' },
   { icon: Shield,        label: 'Safety & Crime',        desc: 'Canton-level FSO crime statistics' },
   { icon: Footprints,    label: 'Walkability',           desc: 'Amenities within your chosen radius' },
-  { icon: Bus,           label: 'Transit Access',        desc: 'Bus stops and transit stations nearby' },
+  { icon: Bus,           label: 'Transit Access',        desc: 'Live Swiss departures via transport.opendata.ch' },
   { icon: ShoppingCart,  label: 'Grocery Access',        desc: 'Supermarkets and food stores nearby' },
   { icon: Utensils,      label: 'Dining & Cafes',        desc: 'Restaurants and cafes within reach' },
   { icon: GraduationCap, label: 'Schools',               desc: 'K–12 schools and universities nearby' },

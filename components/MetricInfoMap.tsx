@@ -185,6 +185,11 @@ export default function MetricInfoMap({
               <span className="text-xs" style={{ color: '#a0a0a0' }}>
                 {m.category ? `${m.category} · ` : ''}{m.distanceKm}km away
               </span>
+              {m.popupLines?.map((line, j) => (
+                <span key={j} className="text-xs" style={{ color: '#a0a0a0' }}>
+                  {line}
+                </span>
+              ))}
             </div>
           </Popup>
         )

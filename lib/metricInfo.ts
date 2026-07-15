@@ -66,9 +66,9 @@ export const METRIC_INFO: Record<MetricKey, MetricInfo> = {
   transit: {
     label: 'Transit Access',
     description:
-      "Counts bus stops, bus stations, train/tram stops, and public transport stop positions within 800 meters, including route numbers where tagged in OpenStreetMap. The score is scaled so that 10 or more transit access points nearby earns a perfect score, reflecting how easy it is to get around without a car.",
-    source: 'OpenStreetMap (Overpass)',
-    sourceUrl: 'https://www.openstreetmap.org',
+      "Live Swiss public transport data: the nearest stations, their distance, and real upcoming departures. The score combines distance to the nearest station (a station within ~100m scores the full 60 distance points, fading to 0 at 1km) with departure frequency (12+ departures in the next hour earns the full 40 frequency points). Switzerland's dense network justifies this more generous scale than a stop-count approach.",
+    source: 'transport.opendata.ch / Swiss public transport',
+    sourceUrl: 'https://transport.opendata.ch/',
     placesKey: 'transit',
   },
   green: {

@@ -12,6 +12,36 @@ export interface NearestAmenity {
   category?: string
   polygon?: [number, number][]
   polygonColor?: string
+  popupLines?: string[]
+}
+
+export interface TransitDeparture {
+  line: string
+  to: string
+  time: string // ISO timestamp
+  delay: number | null
+}
+
+export interface TransitStation {
+  id: string
+  name: string
+  distanceM: number
+  lat: number
+  lng: number
+  icon: string | null
+  departures: TransitDeparture[]
+}
+
+export interface TransitCHResult {
+  available: boolean
+  score: number | null
+  stationCount: number
+  radiusM?: number
+  departuresNextHour?: number
+  nearest: TransitStation | null
+  stations: TransitStation[]
+  source?: string
+  message?: string
 }
 
 export interface CrimeIncidentLocation {
@@ -221,6 +251,7 @@ export interface AddressMetrics {
   cityAqi?: number
   cityAqiName?: string
   aqiSource?: string
+  transitCh?: TransitCHResult
 }
 
 export interface SavedAddress {

@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { Wind, Shield, Navigation, ShoppingBag, Sun, Volume2, Users, Leaf, DollarSign, LucideIcon } from 'lucide-react'
-import { AddressMetrics, AmenityPlaces, NearestAmenity } from '@/lib/types'
+import { AddressMetrics, AmenityPlaces, NearestAmenity, TransitCHResult } from '@/lib/types'
 import { getSwissAverages } from '@/lib/neighborhoods'
+import { formatDepartureTime, formatStationDistance } from '@/lib/transitCh'
 import MetricCard from './MetricCard'
 import InfoCard from './InfoCard'
 import LocalNews from './LocalNews'
@@ -75,6 +76,20 @@ function placesParagraph(places: NearestAmenity[] | undefined, label: string, ra
   const items = shown.map(p => `${p.name} (${p.distanceKm}km)`).join(', ')
   const more = places.length > 5 ? `, + ${places.length - 5} more within ${radiusStr}` : ''
   return <p>{label} within {radiusStr}: {items}{more}.</p>
+}
+
+// Map pins for Swiss public transport stations: name + distance, plus the next
+// three live departures in the popup
+function transitStationMarkers(transit: TransitCHResult | undefined): NearestAmenity[] | null {
+  if (!transit?.available || transit.stations.length === 0) return null
+  return transit.stations.map(s => ({
+    name: s.name,
+    distanceKm: Math.round(s.distanceM / 100) / 10,
+    lat: s.lat,
+    lng: s.lng,
+    category: s.icon ?? 'station',
+    popupLines: s.departures.slice(0, 3).map(d => `${d.line} → ${d.to} · ${formatDepartureTime(d.time)}`),
+  }))
 }
 
 function combinedWalkabilityPlaces(places: AmenityPlaces | undefined): NearestAmenity[] {
@@ -225,6 +240,46 @@ export function buildDetail(metricKey: string, metrics: AddressMetrics): React.R
     case 'grocery':
       return amenityDetail(places?.grocery?.[0] ?? null, metrics.groceryCount, 'grocery store', 'grocery option', 'grocery options', radius, places?.grocery, 'Grocery stores')
     case 'transit': {
+      const transit = metrics.transitCh
+
+      // Live Swiss public transport data (transport.opendata.ch)
+      if (transit?.available && transit.nearest) {
+        const nearest = transit.nearest
+        const nextDepartures = nearest.departures.slice(0, 6)
+        return (
+          <>
+            <p>
+              The nearest station is <strong>{nearest.name}</strong>,{' '}
+              <strong>{formatStationDistance(nearest.distanceM)} away</strong>. There{' '}
+              {isAre(transit.stationCount)} <strong>{transit.stationCount} station{transit.stationCount === 1 ? '' : 's'}</strong>{' '}
+              within {radiusLabel(transit.radiusM ?? 800)}
+              {typeof transit.departuresNextHour === 'number' && (
+                <>, with <strong>{transit.departuresNextHour} departure{transit.departuresNextHour === 1 ? '' : 's'} in the
+                next hour</strong> at the nearest station</>
+              )}.
+            </p>
+            {nextDepartures.length > 0 && (
+              <div className="flex flex-col gap-1">
+                <p className="font-semibold text-white">Next departures from {nearest.name}:</p>
+                <ul style={{ paddingLeft: '1rem', listStyleType: 'disc' }} className="flex flex-col gap-1">
+                  {nextDepartures.map((d, i) => (
+                    <li key={i}>
+                      <strong className="text-white">{d.line}</strong> → {d.to} ·{' '}
+                      <strong className="text-white">{formatDepartureTime(d.time)}</strong>
+                      {d.delay ? <span> (+{d.delay} min)</span> : null}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <p>
+              Departures are live at the time of your search. Source: transport.opendata.ch / Swiss public transport.
+            </p>
+          </>
+        )
+      }
+
+      // Fallback: OSM stop counts
       const count = metrics.transitCount
       const list = places?.transit ?? []
       if (count === undefined) return <p>{NA}</p>
@@ -737,14 +792,20 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <MetricCard
             label="Transit Access"
-            value={fmtCount(metrics.transitCount, 'stops')}
+            value={metrics.transitCh?.available
+              ? fmtCount(metrics.transitCh.stationCount, 'stations')
+              : fmtCount(metrics.transitCount, 'stops')}
             score={metrics.transitScore ?? 0}
-            description="Bus stops & stations within 800m"
-            source="OpenStreetMap (Overpass)"
+            description={metrics.transitCh?.available && metrics.transitCh.nearest
+              ? `Nearest: ${metrics.transitCh.nearest.name} — ${formatStationDistance(metrics.transitCh.nearest.distanceM)}`
+              : 'Bus stops & stations within 800m'}
+            source={metrics.transitCh?.available
+              ? 'transport.opendata.ch / Swiss public transport'
+              : 'OpenStreetMap (Overpass)'}
             updated={updated}
             metricKey="transit"
             radius={radius}
-            places={places?.transit}
+            places={transitStationMarkers(metrics.transitCh) ?? places?.transit}
             center={center}
             searchRadius={800}
             detail={buildDetail('transit', metrics)}
