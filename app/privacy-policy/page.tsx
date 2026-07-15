@@ -32,7 +32,7 @@ export default function PrivacyPolicyPage() {
             securely on our behalf.
           </p>
           <p>
-            We also collect the addresses and neighborhoods you search so we can
+            We also collect the addresses and areas you search so we can
             return livability scores. We may collect technical information about
             your device and usage, including your IP address, browser type, time
             of visit, and pages viewed. We use cookies and similar technologies
@@ -62,9 +62,9 @@ export default function PrivacyPolicyPage() {
           <p>
             To generate livability scores, Liveability sends location queries
             (such as an address or coordinates) to third-party and public data
-            providers, including Google Maps for geocoding, the EPA AirNow
-            program, PurpleAir, OpenStreetMap, the U.S. Census Bureau, and FBI
-            crime data via data.gov. These queries are about locations, not about
+            providers, including Google Maps for geocoding, Swiss federal geodata services
+            (BAFU, swisstopo, the Federal Statistical Office),
+            transport.opendata.ch, and OpenStreetMap. These queries are about locations, not about
             you personally. Each provider operates under its own privacy policy,
             which we do not control.
           </p>

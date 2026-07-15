@@ -56,8 +56,8 @@ export default function PrivacyPage() {
           <p>
             To generate liveability scores, we send location coordinates (not
             your personal information) to public and third-party data APIs,
-            including EPA AirNow, OpenStreetMap, the U.S. Census Bureau, Google
-            Maps (geocoding), and Rentcast. Each provider operates under its own
+            including Swiss federal geodata services (BAFU, swisstopo, FSO),
+            transport.opendata.ch, OpenStreetMap, and Google Maps (geocoding). Each provider operates under its own
             privacy policy.
           </p>
         </section>

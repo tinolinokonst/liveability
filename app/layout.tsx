@@ -4,12 +4,12 @@ import TransitionWrapper from "@/components/TransitionWrapper";
 import FooterWrapper from "@/components/FooterWrapper";
 
 export const metadata: Metadata = {
-  title: "Liveability — Find your perfect neighborhood",
+  title: "Liveability — Find where to live",
   description:
-    "Browse city rankings and address-level scores for air quality, walkability, green space, grocery access, and transit. Currently available for Switzerland.",
+    "Browse area rankings and address-level scores for air quality, walkability, green space, grocery access, and transit. Currently available for Switzerland.",
   openGraph: {
-    title: "Liveability — Find your perfect neighborhood",
-    description: "Find your perfect neighborhood beyond just rent. Currently available for Switzerland.",
+    title: "Liveability — Find where to live",
+    description: "Find where to live beyond just rent. Currently available for Switzerland.",
   },
 };
 

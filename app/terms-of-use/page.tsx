@@ -38,7 +38,7 @@ export default function TermsOfUsePage() {
             Liveability is provided for informational purposes only. Before you
             act on any information you find here, you should independently
             confirm any facts that are important to your decision, including
-            facts about a specific address or neighborhood. If you rely on
+            facts about a specific address or area. If you rely on
             information or scores from Liveability, you do so at your own risk
             and you are solely responsible for any loss that results.
           </p>
@@ -120,8 +120,9 @@ export default function TermsOfUsePage() {
           </h2>
           <p>
             Liveability relies on data from third-party and public sources,
-            including the U.S. Census Bureau, the EPA AirNow program, PurpleAir,
-            OpenStreetMap, Google Maps, and FBI crime data via data.gov. We do
+            including the Swiss Federal Office for the Environment (BAFU), the
+            Federal Office of Topography swisstopo, the Swiss Federal Statistical
+            Office, transport.opendata.ch, OpenStreetMap, and Google Maps. We do
             not control these sources and are not responsible for the accuracy,
             completeness, or availability of their data. The Service may also
             contain links to third-party sites that we do not operate. We are

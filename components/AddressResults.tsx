@@ -165,8 +165,8 @@ function avgComparison(label: string, score: number | undefined, avg: number): R
   const dir = compareDir(score, avg)
   const diff = Math.abs(score - avg)
   const rel = dir === 'similar'
-    ? `comparable to the Swiss city average of ${avg}/100`
-    : `${dir} the Swiss city average of ${avg}/100 by ${diff} points`
+    ? `comparable to the Swiss area average of ${avg}/100`
+    : `${dir} the Swiss area average of ${avg}/100 by ${diff} points`
   return <ComparisonBlock>{label} is <strong>{rel}</strong>.</ComparisonBlock>
 }
 
@@ -373,7 +373,7 @@ export function buildDetail(metricKey: string, metrics: AddressMetrics): React.R
     }
     case 'noise': {
       if (!metrics.noise?.available || metrics.noise.score === null) {
-        return <p>{metrics.noise?.message ?? 'Noise estimate unavailable'}</p>
+        return <p>{metrics.noise?.message ?? 'Noise data unavailable'}</p>
       }
       const noise = metrics.noise
       if (noise.source?.includes('sonBASE')) {
@@ -620,7 +620,7 @@ function RentCostCard({ center }: { center: { lat: number; lng: number } }) {
           </p>
           {data.estimated ? (
             <p style={{ color: '#a0a0a0' }} className="text-xs -mb-1">
-              Estimated, city-level average{data.city ? ` (${data.city})` : ''} — not an address-specific figure
+              Estimated, area-level average{data.city ? ` (${data.city})` : ''} — not an address-specific figure
             </p>
           ) : (
             <p style={{ color: '#a0a0a0' }} className="text-xs flex items-center gap-1 -mb-1">
@@ -769,15 +769,15 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             detail={buildDetail('sunlight', metrics)}
           />
           <MetricCard
-            label={metrics.noise?.source?.includes('sonBASE') ? 'Noise (Road Traffic)' : 'Noise Estimate'}
+            label="Noise"
             value={metrics.noise?.available && metrics.noise.level !== null ? metrics.noise.level : NA}
             score={metrics.noise?.score ?? 0}
             description={metrics.noise?.source?.includes('sonBASE')
               ? (metrics.noise?.db != null ? `Modeled ${metrics.noise.db} dB (day)` : 'No mapped road noise here')
-              : 'ESTIMATE based on nearby roads'}
+              : 'Based on nearby roads (estimated)'}
             source={metrics.noise?.source?.includes('sonBASE')
               ? 'Swiss Federal Office for the Environment (sonBASE)'
-              : 'OpenStreetMap (Overpass)'}
+              : 'OpenStreetMap road proximity (estimated)'}
             updated={updated}
             metricKey="noise"
             icon={Volume2}

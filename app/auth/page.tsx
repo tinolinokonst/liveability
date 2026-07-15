@@ -67,7 +67,7 @@ function AuthForm() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <p style={{ color: '#a0a0a0' }} className="text-sm">
-            Neighborhood intelligence beyond the listing
+            Location intelligence beyond the listing
           </p>
           <p className="text-xs font-semibold mt-1" style={{ color: '#f97316' }}>
             Currently covering Switzerland

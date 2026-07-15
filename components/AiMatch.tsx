@@ -14,7 +14,7 @@ const STATUS_MESSAGES = [
 ]
 
 const EXAMPLE_PROMPTS = [
-  "I work from home and want a quiet city with good coffee shops and parks within walking distance. Budget around CHF 1,800/month.",
+  "I work from home and want a quiet area with good coffee shops and parks within walking distance. Budget around CHF 1,800/month.",
   "Young professional commuting to the office, love restaurants and nightlife, don't have a car so transit is essential. Can spend up to CHF 2,500.",
   "Family with two kids, safety and good schools are the top priority. We need a grocery store nearby and prefer a quieter area. Budget CHF 1,600.",
   "Retired couple looking for clean air, green spaces, and easy access to healthcare. Prefer quiet streets and walkable amenities.",
@@ -198,12 +198,12 @@ export default function AiMatch({
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
           <Sparkles size={16} style={{ color: '#f97316' }} />
-          <h2 className="text-white font-bold">Describe your ideal city</h2>
+          <h2 className="text-white font-bold">Describe your ideal area</h2>
         </div>
         <p className="text-sm leading-relaxed" style={{ color: '#a0a0a0' }}>
           Tell us what matters to you — air quality, green space, safety, schools,
           walkability, budget, anything — in your own words. Our AI will match your
-          description against real Swiss data and find your best-fit cities.
+          description against real Swiss data and find your best-fit areas.
         </p>
       </div>
 

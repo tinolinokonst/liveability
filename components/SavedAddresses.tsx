@@ -338,7 +338,7 @@ export default function SavedAddresses({ onAdd, compareCount = 0, onViewNeighbor
                           onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
                           onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
                         >
-                          View neighborhood →
+                          View area →
                         </button>
                       )}
                     </div>
@@ -376,7 +376,7 @@ export default function SavedAddresses({ onAdd, compareCount = 0, onViewNeighbor
                 <div className="flex items-center gap-2">
                   <Building2 size={13} style={{ color: '#f97316' }} />
                   <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#a0a0a0' }}>
-                    Saved Neighborhoods
+                    Saved Areas
                   </span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

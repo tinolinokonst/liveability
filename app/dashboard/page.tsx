@@ -109,9 +109,9 @@ export default function Dashboard() {
       <div className="max-w-4xl mx-auto px-6 py-8">
         {/* Page title */}
         <div className="mb-8">
-          <h1 className="text-3xl font-black text-white mb-2">Find your next neighborhood</h1>
+          <h1 className="text-3xl font-black text-white mb-2">Find your next home base</h1>
           <p style={{ color: '#a0a0a0' }} className="text-sm">
-            Search any address or explore neighborhood rankings
+            Search any address or explore area rankings
           </p>
           <p className="text-xs font-semibold mt-1" style={{ color: '#f97316' }}>
             Currently covering Switzerland
@@ -125,7 +125,7 @@ export default function Dashboard() {
         >
           {([
             { key: 'search' as Tab,        label: 'Address Search',  icon: null },
-            { key: 'neighborhoods' as Tab, label: 'Neighborhoods',   icon: null },
+            { key: 'neighborhoods' as Tab, label: 'Areas',           icon: null },
             { key: 'saved' as Tab,         label: 'Saved Addresses', icon: null },
             { key: 'ai-match' as Tab,      label: 'AI Match',        icon: Sparkles },
           ] as const).map(t => {
@@ -210,9 +210,9 @@ export default function Dashboard() {
           >
             {!targetNeighborhood && (
               <>
-                <h2 className="text-white font-bold mb-1">Neighborhoods</h2>
+                <h2 className="text-white font-bold mb-1">Areas</h2>
                 <p style={{ color: '#a0a0a0' }} className="text-xs mb-6">
-                  Adjust the sliders to rank cities based on what matters to you. Currently covering Switzerland.
+                  Adjust the sliders to rank areas based on what matters to you. Currently covering Switzerland.
                 </p>
               </>
             )}

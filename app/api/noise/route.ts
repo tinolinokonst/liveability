@@ -38,7 +38,7 @@ const ROAD_WEIGHTS: Record<string, number> = {
   service: 6,
 }
 
-const UNAVAILABLE = { score: null, level: null, nearestRoad: null, available: false, message: 'Noise estimate unavailable' }
+const UNAVAILABLE = { score: null, level: null, nearestRoad: null, available: false, message: 'Noise data unavailable' }
 
 interface OverpassWay {
   tags?: Record<string, string>

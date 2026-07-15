@@ -4,7 +4,7 @@ import SiteHeader from "@/components/SiteHeader";
 export const metadata: Metadata = {
   title: "About | Liveability",
   description:
-    "Learn what Liveability is, who it's for, and how it scores cities and addresses in Switzerland.",
+    "Learn what Liveability is, who it's for, and how it scores areas and addresses in Switzerland.",
 };
 
 export default function AboutPage() {
@@ -17,7 +17,7 @@ export default function AboutPage() {
       <div className="mt-8 space-y-6 text-base leading-relaxed text-[#a0a0a0]">
         <p>
           Liveability helps people figure out where to live by scoring
-          cities and specific addresses on the things that actually shape
+          areas and specific addresses on the things that actually shape
           daily life — not just rent. We currently cover Switzerland, and we pull
           data that is usually scattered across a dozen sites into one
           place: air quality, noise, walkability, green space, transit access,

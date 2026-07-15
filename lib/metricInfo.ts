@@ -19,7 +19,7 @@ export type MetricKey =
   | 'demographics'
   | 'census'
 
-// EPA AirNow category colors
+// AQI category colors (US EPA category names)
 export function aqiColor(category: string): string {
   switch (category) {
     case 'Good': return '#22c55e'
@@ -150,9 +150,9 @@ export const METRIC_INFO: Record<MetricKey, MetricInfo> = {
     sourceUrl: 'https://developers.google.com/maps/documentation/solar/overview',
   },
   noise: {
-    label: 'Noise (Road Traffic)',
+    label: 'Noise',
     description:
-      "Modeled road traffic noise in decibels at this exact location, from the sonBASE noise database of the Swiss Federal Office for the Environment (BAFU). Around 45 dB (day) scores near 100, 75 dB or more scores 0. Values are modeled from traffic data, not measured on site. If the federal layer can't be queried, an OpenStreetMap road-proximity estimate is used instead and labeled accordingly.",
+      "Noise levels from sonBASE, the Swiss Federal Office for the Environment's countrywide noise model covering road, rail, and air traffic, day and night. The score maps the modeled decibel value at this exact location: around 45 dB (day) scores near 100, 75 dB or more scores 0. If the federal layer can't be queried, an OpenStreetMap road-proximity fallback is used instead and labeled \"(estimated)\".",
     source: 'Swiss Federal Office for the Environment (sonBASE)',
     sourceUrl: 'https://www.bafu.admin.ch/bafu/en/home/topics/noise.html',
   },

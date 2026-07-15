@@ -59,7 +59,7 @@ const FAQ = [
   },
   {
     q: 'Is Liveability free?',
-    a: 'Yes. Searching addresses, comparing them, exploring cities, and saving addresses to your account are all free.',
+    a: 'Yes. Searching addresses, comparing them, exploring areas, and saving addresses to your account are all free.',
   },
   {
     q: 'How accurate is the data?',

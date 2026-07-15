@@ -139,7 +139,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
 
     fetchFullMetrics(n.name, { lat: n.lat, lng: n.lng, formattedAddress: n.name }, 800)
       .then(m => { if (!cancelled) setMetrics(m) })
-      .catch(err => { if (!cancelled) setMetricsError(err instanceof Error ? err.message : 'Failed to load neighborhood data') })
+      .catch(err => { if (!cancelled) setMetricsError(err instanceof Error ? err.message : 'Failed to load area data') })
       .finally(() => { if (!cancelled) setMetricsLoading(false) })
 
     return () => { cancelled = true }
@@ -196,7 +196,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
       await saveAddress(userId, metrics)
       setSaved(true)
     } catch (err) {
-      setMetricsError(err instanceof Error ? err.message : 'Failed to save neighborhood')
+      setMetricsError(err instanceof Error ? err.message : 'Failed to save area')
     } finally {
       setSaving(false)
     }
@@ -222,7 +222,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
               className="text-xs transition-colors flex items-center gap-1"
               style={{ color: '#a0a0a0' }}
             >
-              <ArrowLeft size={14} /> Back to neighborhood rankings
+              <ArrowLeft size={14} /> Back to area rankings
             </button>
           )}
           <span className="text-sm font-semibold text-white">{selectedName}</span>
@@ -260,7 +260,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p style={{ color: '#a0a0a0' }} className="text-xs mb-1">Results for</p>
-                <p className="text-white font-semibold text-sm">{selectedName} (city center)</p>
+                <p className="text-white font-semibold text-sm">{selectedName} (area center)</p>
               </div>
               <div className="flex items-center gap-3">
                 <div className="text-right">
@@ -274,7 +274,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
                     className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all disabled:opacity-50 inline-flex items-center gap-1.5"
                     style={{ backgroundColor: '#2a2a2a', border: '1px solid #3a3a3a' }}
                   >
-                    {saved ? <>Saved <Check size={14} /></> : saving ? 'Saving...' : 'Save this neighborhood'}
+                    {saved ? <>Saved <Check size={14} /></> : saving ? 'Saving...' : 'Save this area'}
                   </button>
                 )}
               </div>
@@ -327,7 +327,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
           onChange={e => { setSearchQuery(e.target.value); setShowDropdown(true) }}
           onFocus={() => { if (searchQuery) setShowDropdown(true) }}
           onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
-          placeholder="Jump to a city..."
+          placeholder="Jump to an area..."
           className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-[#a0a0a0] outline-none focus:ring-2 focus:ring-[#f97316]"
           style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
         />
@@ -359,7 +359,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
             className="absolute left-0 right-0 top-full mt-1 rounded-xl px-4 py-3 text-sm z-10"
             style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a', color: '#a0a0a0' }}
           >
-            No neighborhoods match &ldquo;{searchQuery}&rdquo;
+            No areas match &ldquo;{searchQuery}&rdquo;
           </div>
         )}
       </div>
@@ -418,7 +418,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
               Monthly budget
             </span>
             <span className="text-xs ml-2" style={{ color: '#a0a0a0' }}>
-              (Neighborhoods only · est. rent)
+              (Areas only · est. rent)
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -455,15 +455,15 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
       <div className="flex flex-col gap-3">
         <p style={{ color: '#a0a0a0' }} className="text-xs font-medium uppercase tracking-wider">
           {budgetActive
-            ? `${ranked.length} cit${ranked.length === 1 ? 'y' : 'ies'} within budget`
-            : 'Swiss cities ranked'}
+            ? `${ranked.length} area${ranked.length === 1 ? '' : 's'} within budget`
+            : 'Swiss areas ranked'}
         </p>
         {ranked.length === 0 && (
           <div
             className="rounded-xl px-4 py-6 text-center text-sm"
             style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a', color: '#a0a0a0' }}
           >
-            No cities found within this budget. Try raising the limit.
+            No areas found within this budget. Try raising the limit.
           </div>
         )}
         {ranked.map((n, i) => {
@@ -574,7 +574,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
       )}
 
       <p style={{ color: '#a0a0a0' }} className="text-xs text-center">
-        Scores based on real characteristics of each Swiss city. Adjust weights to match your priorities.
+        Scores based on real characteristics of each Swiss area. Adjust weights to match your priorities.
       </p>
     </div>
   )

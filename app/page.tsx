@@ -16,7 +16,7 @@ import MotionLink from '@/components/MotionLink'
 const FEATURES = [
   { icon: Wind,          label: 'Air Quality',          desc: 'BAFU air pollution modeling at your address' },
   { icon: Sun,           label: 'Sunlight',              desc: 'Daily sun hours and UV index estimates' },
-  { icon: Volume2,       label: 'Road Noise',            desc: 'Modeled dB values from sonBASE (BAFU)' },
+  { icon: Volume2,       label: 'Noise',                 desc: 'Modeled dB values from sonBASE (BAFU)' },
   { icon: Shield,        label: 'Safety & Crime',        desc: 'Canton-level FSO crime statistics' },
   { icon: Footprints,    label: 'Walkability',           desc: 'Amenities within your chosen radius' },
   { icon: Bus,           label: 'Transit Access',        desc: 'Live Swiss departures via transport.opendata.ch' },
@@ -25,7 +25,7 @@ const FEATURES = [
   { icon: GraduationCap, label: 'Schools',               desc: 'K–12 schools and universities nearby' },
   { icon: Heart,         label: 'Healthcare',            desc: 'Hospitals, clinics, and pharmacies nearby' },
   { icon: BookOpen,      label: 'Library Access',        desc: 'Public libraries in the area' },
-  { icon: Landmark,      label: 'Banks & ATMs',          desc: 'Banking and ATMs in the neighborhood' },
+  { icon: Landmark,      label: 'Banks & ATMs',          desc: 'Banking and ATMs in the area' },
   { icon: Building2,     label: 'Places of Worship',     desc: 'Religious buildings near the address' },
   { icon: Trees,         label: 'Green Space & Parks',   desc: 'Parks, gardens, and recreation areas' },
   { icon: Car,           label: 'Parking',               desc: 'Parking availability in the immediate area' },
@@ -67,8 +67,8 @@ export default function Home() {
             transition={{ duration: 0.7, ease: 'easeOut', delay: 0.1 }}
             className="text-6xl sm:text-7xl lg:text-8xl font-black text-white leading-[0.95] mb-8 tracking-tight"
           >
-            Find your perfect<br />
-            <span style={{ color: '#f97316' }}>neighborhood</span>.
+            Find where<br />
+            to <span style={{ color: '#f97316' }}>live</span>.
           </motion.h1>
 
           <motion.p
