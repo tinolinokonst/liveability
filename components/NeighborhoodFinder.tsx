@@ -7,9 +7,9 @@ import { fetchFullMetrics } from '@/lib/metrics'
 import { fetchSavedAddresses, saveAddress } from '@/lib/savedAddresses'
 import LocalNews from './LocalNews'
 import AddressResults from './AddressResults'
-import { SWISS_AREAS, nearestNeighborhood } from '@/lib/neighborhoods'
+import { SWISS_AREAS, ALL_AREAS, getDistricts, hasDistricts, nearestNeighborhood } from '@/lib/neighborhoods'
 
-const NEIGHBORHOOD_NAME_SET = new Set(SWISS_AREAS.map(n => n.name))
+const NEIGHBORHOOD_NAME_SET = new Set(ALL_AREAS.map(n => n.name))
 
 const PROFILES: Profile[] = ['Family', 'Young Professional', 'Retiree', 'Nature Lover']
 
@@ -89,14 +89,19 @@ function rentLabel(rent: number) {
   return                  { label: 'Pricey',      color: '#ef4444' }
 }
 
-function resolveNeighborhoodName(name: string | null | undefined): string | null {
+function resolveArea(name: string | null | undefined): Neighborhood | null {
   if (!name) return null
-  const found = SWISS_AREAS.find(n =>
-    n.name.toLowerCase() === name.toLowerCase() ||
-    n.name.toLowerCase().includes(name.toLowerCase()) ||
-    name.toLowerCase().includes(n.name.toLowerCase())
+  const lower = name.toLowerCase()
+  // Prefer exact matches, then district matches, then fuzzy city matches
+  return (
+    ALL_AREAS.find(n => n.name.toLowerCase() === lower) ??
+    ALL_AREAS.find(n => lower.includes(n.name.toLowerCase()) && n.parent) ??
+    ALL_AREAS.find(n =>
+      n.name.toLowerCase().includes(lower) ||
+      lower.includes(n.name.toLowerCase())
+    ) ??
+    null
   )
-  return found?.name ?? null
 }
 
 interface NeighborhoodFinderProps {
@@ -120,9 +125,12 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
 
   // Initialize synchronously so the detail view shows immediately on mount
   // without flashing the full rankings list first
-  const [selectedName, setSelectedName] = useState<string | null>(() => resolveNeighborhoodName(initialNeighborhoodName))
+  const [selectedName, setSelectedName] = useState<string | null>(() => resolveArea(initialNeighborhoodName)?.name ?? null)
+  // When a district is selected, its parent city is "expanded" so back-navigation
+  // returns to the district list
+  const [expandedCity, setExpandedCity] = useState<string | null>(() => resolveArea(initialNeighborhoodName)?.parent ?? null)
   const [metrics, setMetrics] = useState<AddressMetrics | null>(null)
-  const [metricsLoading, setMetricsLoading] = useState(() => resolveNeighborhoodName(initialNeighborhoodName) !== null)
+  const [metricsLoading, setMetricsLoading] = useState(() => resolveArea(initialNeighborhoodName) !== null)
   const [metricsError, setMetricsError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -131,7 +139,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
   // Fetch metrics whenever a neighborhood is selected (covers both initial mount and user clicks)
   useEffect(() => {
     if (!selectedName) return
-    const n = SWISS_AREAS.find(nb => nb.name === selectedName)
+    const n = ALL_AREAS.find(nb => nb.name === selectedName)
     if (!n) { setMetricsLoading(false); return }
 
     let cancelled = false
@@ -157,8 +165,9 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
   }, [selectedName, userId])
 
   const searchMatches = searchQuery.trim().length > 0
-    ? SWISS_AREAS.filter(n =>
-        n.name.toLowerCase().includes(searchQuery.toLowerCase())
+    ? ALL_AREAS.filter(n =>
+        n.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (n.parent ?? '').toLowerCase().includes(searchQuery.toLowerCase())
       )
     : []
 
@@ -181,10 +190,17 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
   }
 
   function handleSelectNeighborhood(n: Neighborhood) {
+    // Cities with districts expand to their district list instead of a detail view
+    if (!n.parent && hasDistricts(n.name)) {
+      setExpandedCity(n.name)
+      setSelectedName(null)
+      return
+    }
     setMetrics(null)
     setMetricsError(null)
     setSaved(false)
     setMetricsLoading(true)
+    setExpandedCity(n.parent ?? null)
     setSelectedName(n.name) // triggers the fetch useEffect
   }
 
@@ -201,6 +217,8 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
       setSaving(false)
     }
   }
+
+  const selectedArea = selectedName ? ALL_AREAS.find(n => n.name === selectedName) ?? null : null
 
   if (selectedName) {
     return (
@@ -222,10 +240,14 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
               className="text-xs transition-colors flex items-center gap-1"
               style={{ color: '#a0a0a0' }}
             >
-              <ArrowLeft size={14} /> Back to area rankings
+              <ArrowLeft size={14} />
+              {selectedArea?.parent ? `Back to ${selectedArea.parent} districts` : 'Back to area rankings'}
             </button>
           )}
-          <span className="text-sm font-semibold text-white">{selectedName}</span>
+          <span className="text-sm font-semibold text-white">
+            {selectedName}
+            {selectedArea?.parent && <span style={{ color: '#a0a0a0' }} className="font-normal">, {selectedArea.parent}</span>}
+          </span>
         </div>
 
         {metricsError && (
@@ -317,6 +339,97 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
     )
   }
 
+  // ── District list for an expanded city (Zürich / Geneva / Basel) ───────────
+  if (expandedCity) {
+    const districtsRanked = getDistricts(expandedCity)
+      .map(d => ({ ...d, score: scoreNeighborhood(d, weights) }))
+      .sort((a, b) => b.score - a.score)
+
+    return (
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setExpandedCity(null)}
+            className="text-xs transition-colors flex items-center gap-1"
+            style={{ color: '#a0a0a0' }}
+          >
+            <ArrowLeft size={14} /> Back to all areas
+          </button>
+          <span className="text-sm font-semibold text-white">{expandedCity} districts</span>
+        </div>
+
+        <p style={{ color: '#a0a0a0' }} className="text-xs">
+          Official districts of {expandedCity}, ranked with your current weights. Click one for
+          the full detail view with live data for its center.
+        </p>
+
+        <div className="flex flex-col gap-3">
+          {districtsRanked.map((n, i) => {
+            const rent = rentLabel(n.rent)
+            const bar = qualityColor(n.score)
+            const fit = bestFit(n)
+            return (
+              <div
+                key={n.name}
+                onClick={() => handleSelectNeighborhood(n)}
+                className="rounded-xl p-4 flex gap-4 items-start cursor-pointer transition-colors hover:border-[#f97316]"
+                style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
+              >
+                <div
+                  className="text-lg font-bold shrink-0 w-8 text-center"
+                  style={{ color: i === 0 ? '#f97316' : '#a0a0a0' }}
+                >
+                  #{i + 1}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span className="font-bold text-white text-sm">{n.name}</span>
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full font-medium"
+                      style={{ color: rent.color, backgroundColor: `${rent.color}1a` }}
+                    >
+                      CHF {n.rent.toLocaleString()}/mo · {rent.label}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    {n.notes.map(note => (
+                      <span
+                        key={note}
+                        className="text-xs px-2 py-0.5 rounded-full"
+                        style={{ backgroundColor: '#2a2a2a', color: '#a0a0a0' }}
+                      >
+                        {note}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex-1 h-1.5 rounded-full" style={{ backgroundColor: '#2a2a2a' }}>
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{ width: `${n.score}%`, backgroundColor: bar }}
+                      />
+                    </div>
+                    <span className="text-sm font-bold text-white shrink-0">{n.score}/100</span>
+                  </div>
+
+                  <span
+                    className="text-xs px-2 py-1 rounded-full font-medium"
+                    style={{ color: '#f97316', backgroundColor: '#f973161a' }}
+                  >
+                    Great fit for: {fit.profile} ({fit.score.toFixed(1)}/10)
+                  </span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col gap-6">
       {/* Search */}
@@ -350,6 +463,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
                 onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
               >
                 {n.name}
+                {n.parent && <span style={{ color: '#a0a0a0' }}>, {n.parent}</span>}
               </button>
             ))}
           </div>
@@ -485,7 +599,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
               </div>
 
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <span className="font-bold text-white text-sm">{n.name}</span>
                   <span
                     className="text-xs px-2 py-0.5 rounded-full font-medium"
@@ -493,6 +607,14 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
                   >
                     CHF {n.rent.toLocaleString()}/mo · {rent.label}
                   </span>
+                  {hasDistricts(n.name) && (
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                      style={{ color: '#f97316', backgroundColor: '#f973161a', border: '1px solid #f9731633' }}
+                    >
+                      {getDistricts(n.name).length} districts →
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap gap-1 mb-3">

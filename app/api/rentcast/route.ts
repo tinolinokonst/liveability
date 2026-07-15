@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { guardRequest } from '@/lib/apiGuard'
 import { parseCoords } from '@/lib/coords'
-import { nearestArea } from '@/lib/neighborhoods'
+import { areaDisplayName, nearestMatchableArea } from '@/lib/neighborhoods'
 
 // Rentcast only covers the US. For the Swiss deployment the integration is gated
 // off and rent estimates come from the Phase 1 city-level cost tiers instead
@@ -91,14 +91,15 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const city = nearestArea(coords.lat, coords.lng)
+    // District-level tier where the address falls in a covered city district
+    const area = nearestMatchableArea(coords.lat, coords.lng)
     return NextResponse.json({
-      rent: city.rent,
-      rentRangeLow: Math.round(city.rent * 0.85),
-      rentRangeHigh: Math.round(city.rent * 1.15),
-      city: city.name,
+      rent: area.rent,
+      rentRangeLow: Math.round(area.rent * 0.85),
+      rentRangeHigh: Math.round(area.rent * 1.15),
+      city: areaDisplayName(area),
       estimated: true,
-      source: 'City-level average, estimated',
+      source: 'Area-level average, estimated',
     })
   }
 

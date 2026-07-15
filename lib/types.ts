@@ -266,6 +266,8 @@ export interface SavedAddress {
 
 export interface Neighborhood {
   name: string
+  /** Parent city name for district-level areas (e.g. "Zürich" for "Kreis 1 (Altstadt)") */
+  parent?: string
   lat: number
   lng: number
   walkability: number
@@ -312,7 +314,7 @@ export interface AiMatchListingsState {
   listings: AiRentListing[]
 }
 
-export const PROFILE_WEIGHTS: Record<Profile, Record<keyof Omit<Neighborhood, 'name' | 'lat' | 'lng' | 'rent' | 'notes'>, number>> = {
+export const PROFILE_WEIGHTS: Record<Profile, Record<keyof Omit<Neighborhood, 'name' | 'parent' | 'lat' | 'lng' | 'rent' | 'notes'>, number>> = {
   'Family':            { walkability: 10, air: 10, green: 15, grocery: 10, transit: 5,  safety: 25, education: 25, healthcare: 5,  dining: 0,  quiet: 5  },
   'Young Professional': { walkability: 20, air: 5,  green: 5,  grocery: 10, transit: 25, safety: 10, education: 0,  healthcare: 5,  dining: 20, quiet: 0  },
   'Retiree':           { walkability: 5,  air: 10, green: 20, grocery: 10, transit: 5,  safety: 25, education: 0,  healthcare: 20, dining: 0,  quiet: 5  },

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Sparkles, Send, RotateCcw, Database, Home, ExternalLink, ArrowRight, Loader2 } from 'lucide-react'
-import { SWISS_AREAS } from '@/lib/neighborhoods'
+import { MATCHABLE_AREAS, areaDisplayName } from '@/lib/neighborhoods'
 import { AiMatchListingsState, AiRentListing } from '@/lib/types'
 
 export type { AiMatchListingsState, AiRentListing }
@@ -46,11 +46,14 @@ function parseNeighborhoodNames(text: string): string[] {
 
 function findNeighborhoodCoords(name: string): { lat: number; lng: number } | null {
   const lower = name.toLowerCase()
-  const match = SWISS_AREAS.find(n =>
-    n.name.toLowerCase() === lower ||
-    n.name.toLowerCase().includes(lower) ||
-    lower.includes(n.name.toLowerCase())
-  )
+  const match = MATCHABLE_AREAS.find(n => {
+    const short = n.name.toLowerCase()
+    const full = areaDisplayName(n).toLowerCase()
+    return (
+      short === lower || full === lower ||
+      lower.includes(short) || full.includes(lower)
+    )
+  })
   return match ? { lat: match.lat, lng: match.lng } : null
 }
 

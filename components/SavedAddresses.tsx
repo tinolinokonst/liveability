@@ -9,10 +9,10 @@ import {
 } from '@/lib/savedAddresses'
 import { fetchFullMetrics } from '@/lib/metrics'
 import { AddressMetrics, SavedAddress } from '@/lib/types'
-import { SWISS_AREAS, nearestNeighborhood } from '@/lib/neighborhoods'
+import { ALL_AREAS, nearestNeighborhood } from '@/lib/neighborhoods'
 import AddressResults from './AddressResults'
 
-const NEIGHBORHOOD_NAMES = new Set(SWISS_AREAS.map(n => n.name))
+const NEIGHBORHOOD_NAMES = new Set(ALL_AREAS.map(n => n.name))
 
 interface SavedAddressesProps {
   onAdd?: (metrics: AddressMetrics) => void

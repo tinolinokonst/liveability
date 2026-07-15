@@ -1,12 +1,13 @@
 import { NextRequest } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { SWISS_AREAS } from '@/lib/neighborhoods'
+import { MATCHABLE_AREAS, areaDisplayName } from '@/lib/neighborhoods'
 import { guardRequest } from '@/lib/apiGuard'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-const AREA_SUMMARY = SWISS_AREAS.map(n => ({
-  name: n.name,
+// Finest granularity: city districts for Zürich/Geneva/Basel, whole cities elsewhere
+const AREA_SUMMARY = MATCHABLE_AREAS.map(n => ({
+  name: areaDisplayName(n),
   scores: {
     walkability: n.walkability,
     airQuality: n.air,
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
 
   const description = body.description.slice(0, 1000)
 
-  const systemPrompt = `You are a Switzerland relocation expert helping someone find their ideal area to live in. The areas currently covered are the ${SWISS_AREAS.length} largest Swiss cities.
+  const systemPrompt = `You are a Switzerland relocation expert helping someone find their ideal area to live in. The ${MATCHABLE_AREAS.length} areas covered are the official city districts of Zürich (Stadtkreise), Geneva (quartiers), and Basel (quarters), plus nine other major Swiss cities as whole areas.
 You have data for each area with scores (0-100) for walkability, air quality, green space, grocery access, transit, safety, education, healthcare, dining, and quietness, plus average rent in CHF.
 
 Area data:
@@ -58,7 +59,7 @@ FORMATTING RULES — follow these exactly:
 Format your response as follows (use this exact structure):
 ## Top Area Matches
 
-### 1. [Area Name]
+### 1. [Area Name exactly as it appears in the data, e.g. "Kreis 6 (Unterstrass/Oberstrass), Zürich"]
 **Why it fits:** [2-3 sentences with key scores and facts bolded, e.g. "**Bern** scores **80/100** for green space and **76/100** for air quality, with **4 parks within 800m**."]
 **Key scores:** [list 3-4 relevant scores, each bolded, e.g. "Green space **80/100** · Air quality **76/100** · Safety **86/100**"]
 **Trade-offs:** [1 sentence; bold any specific numbers, e.g. "Dining score is only **68/100**, with fewer late-night options."]
