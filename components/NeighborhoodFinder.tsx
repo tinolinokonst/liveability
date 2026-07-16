@@ -89,18 +89,24 @@ function rentLabel(rent: number) {
   return                  { label: 'Pricey',      color: '#ef4444' }
 }
 
+function longestMatch(candidates: Neighborhood[]): Neighborhood | null {
+  if (candidates.length === 0) return null
+  // Prefer the longest name so e.g. "Breitenrain/Lorraine, Bern" resolves to
+  // Bern's district instead of Basel's "Breite"
+  return candidates.reduce((a, b) => (b.name.length > a.name.length ? b : a))
+}
+
 function resolveArea(name: string | null | undefined): Neighborhood | null {
   if (!name) return null
   const lower = name.toLowerCase()
   // Prefer exact matches, then district matches, then fuzzy city matches
   return (
     ALL_AREAS.find(n => n.name.toLowerCase() === lower) ??
-    ALL_AREAS.find(n => lower.includes(n.name.toLowerCase()) && n.parent) ??
-    ALL_AREAS.find(n =>
+    longestMatch(ALL_AREAS.filter(n => lower.includes(n.name.toLowerCase()) && n.parent)) ??
+    longestMatch(ALL_AREAS.filter(n =>
       n.name.toLowerCase().includes(lower) ||
       lower.includes(n.name.toLowerCase())
-    ) ??
-    null
+    ))
   )
 }
 

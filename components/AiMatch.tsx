@@ -46,7 +46,9 @@ function parseNeighborhoodNames(text: string): string[] {
 
 function findNeighborhoodCoords(name: string): { lat: number; lng: number } | null {
   const lower = name.toLowerCase()
-  const match = MATCHABLE_AREAS.find(n => {
+  // Collect all fuzzy matches and prefer the longest name, so a heading like
+  // "Breitenrain/Lorraine, Bern" never resolves to Basel's shorter "Breite"
+  const candidates = MATCHABLE_AREAS.filter(n => {
     const short = n.name.toLowerCase()
     const full = areaDisplayName(n).toLowerCase()
     return (
@@ -54,7 +56,9 @@ function findNeighborhoodCoords(name: string): { lat: number; lng: number } | nu
       lower.includes(short) || full.includes(lower)
     )
   })
-  return match ? { lat: match.lat, lng: match.lng } : null
+  if (candidates.length === 0) return null
+  const match = candidates.reduce((a, b) => (b.name.length > a.name.length ? b : a))
+  return { lat: match.lat, lng: match.lng }
 }
 
 function neighborhoodExists(name: string): boolean {
