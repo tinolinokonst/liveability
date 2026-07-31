@@ -63,7 +63,7 @@ export default function TermsPage() {
           <h2 className="text-lg font-semibold text-white">Contact</h2>
           <p>
             Questions? Reach out at{" "}
-            <span className="text-white">hello@liveability.app</span>.
+            <span className="text-white">tinolind066@gmail.com</span>.
           </p>
         </section>
       </div>
