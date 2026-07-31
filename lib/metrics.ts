@@ -4,10 +4,9 @@ import { fetchCrimeScore } from './crime'
 import { fetchSunlight } from './sunlight'
 import { fetchNoiseEstimate } from './noise'
 import { fetchCensus } from './census'
-import { fetchFBICrime } from './fbi-crime'
 import { fetchNearestEssentials } from './nearest'
 import { fetchTransitCh } from './transitCh'
-import { AddressMetrics, AmenityScores, CrimeResult, DemographicsResult, FBICrimeResult, GeoLocation, NearestEssentials, NoiseResult, SunlightResult, TransitCHResult } from './types'
+import { AddressMetrics, AmenityScores, CrimeResult, DemographicsResult, GeoLocation, NearestEssentials, NoiseResult, SunlightResult, TransitCHResult } from './types'
 
 export function buildMetrics(
   address: string,
@@ -18,7 +17,6 @@ export function buildMetrics(
   sunlightData: SunlightResult,
   noiseData: NoiseResult,
   censusData: DemographicsResult,
-  fbiCrimeData: FBICrimeResult,
   nearestEssentials: NearestEssentials,
   transitCh?: TransitCHResult,
   id?: string
@@ -94,7 +92,6 @@ export function buildMetrics(
     sunlight: sunlightData,
     noise: noiseData,
     censusData,
-    fbiCrime: fbiCrimeData,
     nearestEssentials,
     transitCh,
   }
@@ -106,17 +103,16 @@ export async function fetchFullMetrics(
   radius: number = 800,
   id?: string
 ): Promise<AddressMetrics> {
-  const [aqi, amenity, crime, sunlight, noise, census, fbiCrime, nearest, transitCh] = await Promise.all([
+  const [aqi, amenity, crime, sunlight, noise, census, nearest, transitCh] = await Promise.all([
     fetchAQI(location.lat, location.lng),
     fetchAmenityScores(location.lat, location.lng, radius),
     fetchCrimeScore(location.lat, location.lng),
     fetchSunlight(location.lat, location.lng),
     fetchNoiseEstimate(location.lat, location.lng),
     fetchCensus(location.lat, location.lng),
-    fetchFBICrime(),
     fetchNearestEssentials(location.lat, location.lng),
     fetchTransitCh(location.lat, location.lng),
   ])
 
-  return buildMetrics(address, location, aqi, amenity, crime, sunlight, noise, census, fbiCrime, nearest, transitCh, id)
+  return buildMetrics(address, location, aqi, amenity, crime, sunlight, noise, census, nearest, transitCh, id)
 }

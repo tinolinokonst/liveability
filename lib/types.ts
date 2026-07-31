@@ -246,6 +246,7 @@ export interface AddressMetrics {
   noise?: NoiseResult
   demographics?: DemographicsResult
   censusData?: DemographicsResult
+  /** @deprecated US-only FBI crime data; retained so legacy saved addresses still parse */
   fbiCrime?: FBICrimeResult
   nearestEssentials?: NearestEssentials
   cityAqi?: number

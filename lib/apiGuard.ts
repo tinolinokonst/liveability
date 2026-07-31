@@ -38,6 +38,38 @@ async function getAuthedUser(): Promise<User | null> {
   return user
 }
 
+// In-process backstop used only when the database limiter is unreachable.
+// It is per-instance rather than global, so it does not replace the DB limiter —
+// it just bounds the blast radius instead of degrading to "no limit at all".
+const memoryCounters = new Map<string, { windowStart: number; count: number }>()
+
+function checkMemoryRateLimit(
+  userId: string,
+  route: string,
+  limit: number,
+  windowSeconds: number
+): boolean {
+  const windowMs = windowSeconds * 1000
+  const now = Date.now()
+  const windowStart = Math.floor(now / windowMs) * windowMs
+  const key = `${userId}:${route}`
+
+  const entry = memoryCounters.get(key)
+  if (!entry || entry.windowStart !== windowStart) {
+    memoryCounters.set(key, { windowStart, count: 1 })
+    // Opportunistic cleanup so the map cannot grow without bound
+    if (memoryCounters.size > 5000) {
+      for (const [k, v] of memoryCounters) {
+        if (v.windowStart !== windowStart) memoryCounters.delete(k)
+      }
+    }
+    return true
+  }
+
+  entry.count += 1
+  return entry.count <= limit
+}
+
 async function checkRateLimit(
   userId: string,
   route: string,
@@ -45,9 +77,14 @@ async function checkRateLimit(
   windowSeconds: number
 ): Promise<boolean> {
   const admin = getAdminClient()
-  // Fail open if the admin client or RPC is unavailable, so a config issue
-  // degrades to "no rate limit" rather than breaking the product.
-  if (!admin) return true
+
+  // If the admin client or RPC is unavailable we still avoid hard-failing the
+  // product, but we fall back to the in-process limiter rather than to no limit.
+  if (!admin) {
+    console.error('[rate-limit] admin client unavailable, using in-process limiter')
+    return checkMemoryRateLimit(userId, route, limit, windowSeconds)
+  }
+
   const { data, error } = await admin.rpc('check_rate_limit', {
     p_user_id: userId,
     p_route: route,
@@ -56,7 +93,7 @@ async function checkRateLimit(
   })
   if (error) {
     console.error(`[rate-limit] RPC failed for ${route}:`, error.message)
-    return true
+    return checkMemoryRateLimit(userId, route, limit, windowSeconds)
   }
   return data === true
 }

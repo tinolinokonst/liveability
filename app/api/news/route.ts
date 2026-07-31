@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { guardRequest } from '@/lib/apiGuard'
+import { cleanQueryText, MAX_NEWS_QUERY_LENGTH } from '@/lib/validate'
 
 const TIMEOUT_MS = 10000
 
@@ -16,13 +17,13 @@ export async function GET(request: NextRequest) {
   if ('response' in guard) return guard.response
 
   const searchParams = request.nextUrl.searchParams
-  const query = searchParams.get('q')
+  const query = cleanQueryText(searchParams.get('q'), MAX_NEWS_QUERY_LENGTH)
 
-  if (!query) {
-    return NextResponse.json({ error: 'q is required' }, { status: 400 })
+  if (!query.ok) {
+    return NextResponse.json({ error: query.error }, { status: 400 })
   }
 
-  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(`${query} Switzerland`)}&hl=en-US&gl=US&ceid=US:en`
+  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(`${query.value} Switzerland`)}&hl=en-US&gl=US&ceid=US:en`
 
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS)
