@@ -411,65 +411,25 @@ export function buildDetail(metricKey: string, metrics: AddressMetrics): React.R
         </p>
       )
     }
-    case 'demographics': {
-      if (!metrics.demographics?.available) {
-        return <p>{metrics.demographics?.message ?? 'Demographic data unavailable for this location'}</p>
-      }
-      const { medianHouseholdIncome, totalPopulation, tract } = metrics.demographics
-      return (
-        <p>
-          Demographic data from the US Census Bureau&apos;s American Community Survey for the Census tract this
-          address falls within{tract ? ` (tract ${tract})` : ''}.{' '}
-          {medianHouseholdIncome !== null && <>Median household income is <strong>${medianHouseholdIncome.toLocaleString()}</strong>. </>}
-          {totalPopulation !== null && <>Total population is <strong>{totalPopulation.toLocaleString()}</strong>.</>}
-        </p>
-      )
-    }
     case 'census': {
-      // Prefer censusData (richer) over legacy demographics field
-      const data = metrics.censusData ?? metrics.demographics
-      if (!data?.available) {
+      const data = metrics.censusData
+      if (!data?.available || !data.commune) {
         return <p>{data?.message ?? 'Commune data unavailable for this location'}</p>
       }
 
       // Swiss commune snapshot (resolved from swissBOUNDARIES3D)
-      if (data.commune) {
-        return (
-          <>
-            <p>
-              This address lies in the commune of <strong>{data.commune}</strong>
-              {data.canton ? <>, canton of <strong>{data.canton}</strong></> : null}
-              {data.bfsNumber ? <> (BFS commune number <strong>{data.bfsNumber}</strong>)</> : null}.
-            </p>
-            <p>
-              Commune-level statistics (population, median age, income) from the Swiss Federal
-              Statistical Office are coming soon.
-            </p>
-            <p>Source: Federal Office of Topography swisstopo (swissBOUNDARIES3D).</p>
-            <p>This is informational context only — it is not scored or factored into the overall liveability score.</p>
-          </>
-        )
-      }
-
-      // Legacy US Census tract data (older saved addresses)
-      const { medianHouseholdIncome, totalPopulation, medianAge, tract } = data
       return (
         <>
           <p>
-            Data from the US Census Bureau&apos;s American Community Survey for the Census tract this address falls
-            within{tract ? ` (tract ${tract})` : ''}.
+            This address lies in the commune of <strong>{data.commune}</strong>
+            {data.canton ? <>, canton of <strong>{data.canton}</strong></> : null}
+            {data.bfsNumber ? <> (BFS commune number <strong>{data.bfsNumber}</strong>)</> : null}.
           </p>
-          <ul style={{ paddingLeft: '1rem', listStyleType: 'disc' }} className="flex flex-col gap-1">
-            {medianHouseholdIncome !== null && (
-              <li>Median household income: <strong>${medianHouseholdIncome.toLocaleString()}</strong></li>
-            )}
-            {totalPopulation !== null && (
-              <li>Census tract population: <strong>{totalPopulation.toLocaleString()}</strong></li>
-            )}
-            {medianAge != null && (
-              <li>Median age: <strong>{medianAge} years</strong></li>
-            )}
-          </ul>
+          <p>
+            Commune-level statistics (population, median age, income) from the Swiss Federal
+            Statistical Office are coming soon.
+          </p>
+          <p>Source: Federal Office of Topography swisstopo (swissBOUNDARIES3D).</p>
           <p>This is informational context only — it is not scored or factored into the overall liveability score.</p>
         </>
       )
@@ -682,25 +642,16 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
   const location = metrics.location ?? { lat: 0, lng: 0, formattedAddress: metrics.address ?? '' }
   const center = { lat: location.lat, lng: location.lng }
 
-  // Community Snapshot data: prefer new censusData, fall back to legacy demographics
-  const communityData = metrics.censusData ?? metrics.demographics
-  const communityValue = communityData?.available
-    ? communityData.commune
-      ? `${communityData.commune}${communityData.canton ? ` (${communityData.canton})` : ''}`
-      : communityData.medianHouseholdIncome !== null
-        ? `$${communityData.medianHouseholdIncome.toLocaleString()} median income`
-        : 'Commune data unavailable'
+  // Community Snapshot: the Swiss commune this address falls within
+  const communityData = metrics.censusData
+  const communityValue = communityData?.available && communityData.commune
+    ? `${communityData.commune}${communityData.canton ? ` (${communityData.canton})` : ''}`
     : 'Commune data unavailable'
-  const communityDesc = communityData?.available
-    ? communityData.commune
-      ? [
-          communityData.bfsNumber ? `Commune (BFS no. ${communityData.bfsNumber})` : 'Commune',
-          'FSO statistics coming soon',
-        ].join(' · ')
-      : [
-          communityData.totalPopulation !== null ? `Pop: ${communityData.totalPopulation.toLocaleString()}` : null,
-          (communityData as { medianAge?: number | null }).medianAge != null ? `Median age: ${(communityData as { medianAge?: number | null }).medianAge}` : null,
-        ].filter(Boolean).join(' · ') || undefined
+  const communityDesc = communityData?.available && communityData.commune
+    ? [
+        communityData.bfsNumber ? `Commune (BFS no. ${communityData.bfsNumber})` : 'Commune',
+        'FSO statistics coming soon',
+      ].join(' · ')
     : undefined
 
   return (

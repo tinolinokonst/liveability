@@ -16,7 +16,6 @@ export type MetricKey =
   | 'parking'
   | 'sunlight'
   | 'noise'
-  | 'demographics'
   | 'census'
 
 // AQI category colors (US EPA category names)
@@ -155,13 +154,6 @@ export const METRIC_INFO: Record<MetricKey, MetricInfo> = {
       "Noise levels from sonBASE, the Swiss Federal Office for the Environment's countrywide noise model covering road, rail, and air traffic, day and night. The score maps the modeled decibel value at this exact location: around 45 dB (day) scores near 100, 75 dB or more scores 0. If the federal layer can't be queried, an OpenStreetMap road-proximity fallback is used instead and labeled \"(estimated)\".",
     source: 'Swiss Federal Office for the Environment (sonBASE)',
     sourceUrl: 'https://www.bafu.admin.ch/bafu/en/home/topics/noise.html',
-  },
-  demographics: {
-    label: 'Commune Snapshot',
-    description:
-      "The Swiss commune (Gemeinde) this address falls within, resolved from the swissBOUNDARIES3D dataset. Commune-level statistics from the Swiss Federal Statistical Office are coming soon. Source: Federal Office of Topography swisstopo. This is informational context only and is not factored into the overall liveability score.",
-    source: 'Federal Office of Topography swisstopo',
-    sourceUrl: 'https://www.swisstopo.admin.ch/en/landscape-model-swissboundaries3d',
   },
   census: {
     label: 'Community Snapshot',

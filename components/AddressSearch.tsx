@@ -188,7 +188,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
             crimeData,
             prev.sunlight ?? { score: null, hoursPerYear: null, available: false },
             prev.noise ?? { score: null, level: null, nearestRoad: null, available: false },
-            prev.censusData ?? prev.demographics ?? { medianHouseholdIncome: null, totalPopulation: null, available: false },
+            prev.censusData ?? { medianHouseholdIncome: null, totalPopulation: null, available: false },
             prev.nearestEssentials ?? { trainStation: null, busStop: null, grocery: null, hospital: null, pharmacy: null, school: null, library: null, park: null, bank: null, dining: null, worship: null, parking: null, searchRadiusKm: 15 },
             prev.transitCh,
             prev.id

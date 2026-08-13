@@ -148,11 +148,15 @@ export interface NoiseResult {
   source?: string
 }
 
+/**
+ * Commune-level context for an address. Currently resolved from swisstopo's
+ * swissBOUNDARIES3D; the population/age/income fields are placeholders for the
+ * pending Swiss Federal Statistical Office integration and are null for now.
+ */
 export interface DemographicsResult {
   medianHouseholdIncome: number | null
   totalPopulation: number | null
   medianAge?: number | null
-  tract?: string
   commune?: string
   canton?: string
   bfsNumber?: number
@@ -244,7 +248,6 @@ export interface AddressMetrics {
   stateCrimeContext?: StateCrimeContext
   sunlight?: SunlightResult
   noise?: NoiseResult
-  demographics?: DemographicsResult
   censusData?: DemographicsResult
   /** @deprecated US-only FBI crime data; retained so legacy saved addresses still parse */
   fbiCrime?: FBICrimeResult
