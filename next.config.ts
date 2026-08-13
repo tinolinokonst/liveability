@@ -33,6 +33,16 @@ const CSP_REPORT_ONLY = [
 ].join('; ')
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    // The legal pages briefly existed at two URLs each. These are the retired
+    // duplicates; 308 so search engines and any existing links consolidate onto
+    // the canonical paths.
+    return [
+      { source: '/privacy-policy', destination: '/privacy', permanent: true },
+      { source: '/terms-of-use', destination: '/terms', permanent: true },
+    ]
+  },
+
   async headers() {
     return [
       {

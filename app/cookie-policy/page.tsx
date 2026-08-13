@@ -1,216 +1,115 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import SiteHeader from "@/components/SiteHeader";
 
 export const metadata: Metadata = {
   title: "Cookie Policy | Liveability",
   description:
-    "How Liveability uses cookies and similar technologies, and the choices you have.",
+    "Liveability uses one strictly necessary cookie to keep you signed in. No analytics or tracking cookies.",
 };
 
 export default function CookiePolicyPage() {
   return (
-    <main className="mx-auto max-w-3xl px-6 py-12">
-      <h1 className="text-3xl font-bold tracking-tight">Cookie Policy</h1>
-      <p className="mt-2 text-sm text-gray-500">Last updated: June 19, 2026</p>
+    <>
+      <SiteHeader />
+      <div className="mx-auto max-w-3xl px-6 py-16">
+        <h1 className="text-3xl font-bold tracking-tight text-white">Cookie Policy</h1>
+        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: August 13, 2026</p>
 
-      <div className="mt-8 space-y-8 text-base leading-relaxed text-gray-700">
-        <p>
-          This Cookie Policy explains how Liveability (&ldquo;we,&rdquo;
-          &ldquo;us&rdquo;) uses cookies and similar technologies when you visit
-          our Service. It should be read alongside our{" "}
-          <a
-            href="/privacy-policy"
-            className="font-medium text-blue-600 underline"
-          >
-            Privacy Policy
-          </a>
-          .
-        </p>
-
-        <section className="space-y-3">
-          <h2 className="text-xl font-semibold text-gray-900">
-            What Are Cookies?
-          </h2>
+        <div className="mt-10 space-y-10 text-base leading-relaxed text-[#a0a0a0]">
           <p>
-            Cookies are small text files placed on your device when you visit a
-            website. They are widely used to make sites work, to keep you signed
-            in, to remember your preferences, and to help site owners understand
-            how their site is used. We also use similar technologies such as
-            local storage, which work in a comparable way. In this policy, we
-            refer to all of these as &ldquo;cookies.&rdquo;
-          </p>
-        </section>
-
-        <section className="space-y-3">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Categories of Cookies We Use
-          </h2>
-
-          <h3 className="text-lg font-semibold text-gray-900">
-            Strictly Necessary
-          </h3>
-          <p>
-            These cookies are required for the Service to function and cannot be
-            switched off. They are used to keep you signed in, secure your
-            session, and route traffic. Because they are essential, they do not
-            require your consent. Authentication is handled by our provider
-            Supabase, and hosting is provided by Vercel.
+            Short version: Liveability sets one cookie, and only after you sign in.
+            It keeps you logged in. There are no analytics, advertising, or tracking
+            cookies, and no third-party tracking scripts. This policy should be read
+            alongside our{" "}
+            <Link href="/privacy" className="text-[#f97316] underline">
+              Privacy Policy
+            </Link>
+            .
           </p>
 
-          <h3 className="text-lg font-semibold text-gray-900">Preferences</h3>
-          <p>
-            These cookies remember choices you make, such as how you weight
-            different livability metrics, so your experience is consistent
-            across visits. Where these are not essential to the core function of
-            the Service, we set them only with your consent.
-          </p>
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold text-white">The cookie we set</h2>
+            <div
+              className="rounded-xl p-4"
+              style={{ backgroundColor: "#1a1a1a", border: "1px solid #2a2a2a" }}
+            >
+              <p className="text-white font-semibold text-sm">
+                Supabase authentication session
+              </p>
+              <p className="mt-1 text-sm">
+                Named <code className="text-[#f97316]">sb-&lt;project&gt;-auth-token</code>{" "}
+                (it may be split across a few numbered parts if it is large).
+              </p>
+              <ul className="mt-3 list-disc space-y-1 pl-5 text-sm">
+                <li>
+                  <span className="text-white">Purpose:</span> keeps you signed in as you
+                  move between pages, and lets our server confirm it is really you before
+                  returning your saved addresses.
+                </li>
+                <li>
+                  <span className="text-white">Category:</span> strictly necessary. Under
+                  Swiss and EU rules this type of cookie does not require consent, because
+                  the Service cannot provide a logged-in experience without it.
+                </li>
+                <li>
+                  <span className="text-white">Set by:</span> Supabase, our authentication
+                  provider, on our behalf.
+                </li>
+                <li>
+                  <span className="text-white">When:</span> only once you sign in. Browsing
+                  the public pages sets no cookies at all.
+                </li>
+              </ul>
+            </div>
+          </section>
 
-          <h3 className="text-lg font-semibold text-gray-900">Analytics</h3>
-          <p>
-            These cookies help us understand how visitors use the Service so we
-            can improve it, for example by measuring which pages are visited and
-            how the search and comparison features are used. We set analytics
-            cookies only with your consent, and the data they collect is used in
-            aggregate.
-          </p>
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold text-white">What we do not use</h2>
+            <p>
+              We want to be specific rather than hide behind boilerplate. Liveability does
+              not use any of the following:
+            </p>
+            <ul className="list-disc space-y-1 pl-5">
+              <li>Analytics cookies or products such as Google Analytics</li>
+              <li>Advertising, retargeting, or social media pixels</li>
+              <li>Cross-site tracking or device fingerprinting</li>
+              <li>Preference cookies — your metric weightings are held in the page only and reset when you leave</li>
+              <li>Local storage or session storage for tracking purposes</li>
+            </ul>
+            <p>
+              Because we set no non-essential cookies, there is no cookie banner and
+              nothing to opt out of.
+            </p>
+          </section>
 
-          <h3 className="text-lg font-semibold text-gray-900">
-            Third-Party Map and Location Services
-          </h3>
-          <p>
-            We use Google Maps to provide geocoding and map features. Google may
-            set its own cookies when these features load. We do not control
-            these cookies, and they are governed by Google&apos;s own policies.
-          </p>
-        </section>
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold text-white">Your control</h2>
+            <p>
+              You can block or delete cookies in your browser settings at any time. If you
+              block the session cookie you can still browse the public pages, but you will
+              not be able to stay signed in or use saved addresses. Signing out, or
+              deleting your account from the Settings page, clears the session.
+            </p>
+          </section>
 
-        <section className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Cookies in Detail
-          </h2>
-          <p>
-            The table below lists the main cookies we use. Specific names and
-            durations may change as the Service evolves.
-          </p>
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold text-white">Changes to this policy</h2>
+            <p>
+              If we ever introduce additional cookies, we will update this page before
+              doing so and, where consent is required, ask for it first.
+            </p>
+          </section>
 
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-gray-300 text-left">
-                  <th className="py-2 pr-4 font-semibold text-gray-900">
-                    Cookie
-                  </th>
-                  <th className="py-2 pr-4 font-semibold text-gray-900">
-                    Provider
-                  </th>
-                  <th className="py-2 pr-4 font-semibold text-gray-900">
-                    Category
-                  </th>
-                  <th className="py-2 pr-4 font-semibold text-gray-900">
-                    Purpose
-                  </th>
-                  <th className="py-2 font-semibold text-gray-900">Duration</th>
-                </tr>
-              </thead>
-              <tbody className="align-top text-gray-700">
-                <tr className="border-b border-gray-200">
-                  <td className="py-2 pr-4 font-mono text-xs">
-                    sb-access-token
-                  </td>
-                  <td className="py-2 pr-4">Supabase</td>
-                  <td className="py-2 pr-4">Strictly necessary</td>
-                  <td className="py-2 pr-4">
-                    Keeps you signed in to your account
-                  </td>
-                  <td className="py-2">Session / ~1 hour</td>
-                </tr>
-                <tr className="border-b border-gray-200">
-                  <td className="py-2 pr-4 font-mono text-xs">
-                    sb-refresh-token
-                  </td>
-                  <td className="py-2 pr-4">Supabase</td>
-                  <td className="py-2 pr-4">Strictly necessary</td>
-                  <td className="py-2 pr-4">
-                    Renews your session so you stay signed in
-                  </td>
-                  <td className="py-2">~30 days</td>
-                </tr>
-                <tr className="border-b border-gray-200">
-                  <td className="py-2 pr-4 font-mono text-xs">
-                    liveability-prefs
-                  </td>
-                  <td className="py-2 pr-4">Liveability</td>
-                  <td className="py-2 pr-4">Preferences</td>
-                  <td className="py-2 pr-4">
-                    Remembers your metric weightings and settings
-                  </td>
-                  <td className="py-2">~1 year</td>
-                </tr>
-                <tr className="border-b border-gray-200">
-                  <td className="py-2 pr-4 font-mono text-xs">_ga</td>
-                  <td className="py-2 pr-4">Google Analytics</td>
-                  <td className="py-2 pr-4">Analytics</td>
-                  <td className="py-2 pr-4">
-                    Distinguishes unique visitors
-                  </td>
-                  <td className="py-2">~2 years</td>
-                </tr>
-                <tr className="border-b border-gray-200">
-                  <td className="py-2 pr-4 font-mono text-xs">_ga_*</td>
-                  <td className="py-2 pr-4">Google Analytics</td>
-                  <td className="py-2 pr-4">Analytics</td>
-                  <td className="py-2 pr-4">
-                    Maintains session state for analytics
-                  </td>
-                  <td className="py-2">~2 years</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <p className="text-sm text-gray-500">
-            Note: This list reflects the cookies we expect to use based on our
-            current setup. Always verify against the cookies actually set on the
-            live Service and update this table accordingly.
-          </p>
-        </section>
-
-        <section className="space-y-3">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Your Choices
-          </h2>
-          <p>
-            When you first visit the Service, you can choose which non-essential
-            cookies to allow through our consent banner. You can change or
-            withdraw your choice at any time by reopening your cookie settings.
-            Strictly necessary cookies cannot be disabled because the Service
-            cannot function without them.
-          </p>
-          <p>
-            You can also control cookies through your browser settings,
-            including blocking or deleting them. Be aware that disabling some
-            cookies may affect how the Service works, including keeping you
-            signed in.
-          </p>
-        </section>
-
-        <section className="space-y-3">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Changes to This Policy
-          </h2>
-          <p>
-            We may update this Cookie Policy from time to time as the Service or
-            applicable law changes. Changes are effective when posted here.
-            Please revisit this page periodically.
-          </p>
-        </section>
-
-        <section className="space-y-3">
-          <h2 className="text-xl font-semibold text-gray-900">Contact</h2>
-          <p>
-            If you have questions about our use of cookies, please contact us.
-          </p>
-        </section>
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold text-white">Contact</h2>
+            <p>
+              Questions about cookies? Reach out at{" "}
+              <span className="text-white">tino.rosenkrantz@gmail.com</span>.
+            </p>
+          </section>
+        </div>
       </div>
-    </main>
+    </>
   );
 }

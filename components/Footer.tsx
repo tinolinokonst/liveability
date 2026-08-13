@@ -4,6 +4,7 @@ const GENERAL_LINKS = [
   { label: "About Us", href: "/about" },
   { label: "How It Works", href: "/how-it-works" },
   { label: "Privacy Policy", href: "/privacy" },
+  { label: "Cookie Policy", href: "/cookie-policy" },
   { label: "Terms of Use", href: "/terms" },
 ];
 
