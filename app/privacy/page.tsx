@@ -50,15 +50,21 @@ export default function PrivacyPage() {
           <section className="space-y-3">
             <h2 className="text-lg font-semibold text-white">Cookies</h2>
             <p>
-              We use a single category of cookie: the authentication session cookie
-              set by Supabase when you sign in. It is strictly necessary to keep you
-              signed in, and no cookie is set at all until you do. We do not use
-              analytics, advertising, or tracking cookies, and we do not load
-              third-party tracking scripts. See our{" "}
+              We set one cookie: the authentication session cookie created by Supabase
+              when you sign in. It is strictly necessary to keep you signed in, and no
+              cookie is set at all until you do. We do not use analytics, advertising,
+              or tracking cookies, and we write nothing to your browser&apos;s local
+              storage.
+            </p>
+            <p>
+              Two third-party services load in your browser — the Google Maps
+              JavaScript API (on the signed-in dashboard, for address autocomplete) and
+              CARTO basemap tiles (for the maps on result pages). We verified that
+              neither sets cookies. See our{" "}
               <Link href="/cookie-policy" className="text-[#f97316] underline">
                 Cookie Policy
               </Link>{" "}
-              for detail.
+              for the full detail.
             </p>
           </section>
 
