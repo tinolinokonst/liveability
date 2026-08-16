@@ -3,7 +3,19 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { authCallbackUrl } from '@/lib/site'
 import Link from 'next/link'
+
+// Reasons the /auth/callback route can bounce someone back here. Mapped to
+// readable copy so a failed confirmation link never fails silently.
+const CALLBACK_ERRORS: Record<string, string> = {
+  link_expired:
+    'That confirmation link has expired or was already used. Sign up again below to get a fresh one.',
+  link_invalid:
+    'That confirmation link was invalid. Sign up again below to get a fresh one.',
+  server_error:
+    'We could not complete sign-in because of a server problem. Please try again shortly.',
+}
 
 function AuthForm() {
   const router = useRouter()
@@ -14,7 +26,11 @@ function AuthForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(() => {
+    const reason = searchParams.get('error')
+    if (!reason) return null
+    return CALLBACK_ERRORS[reason] ?? 'We could not complete sign-in. Please try again.'
+  })
   const [message, setMessage] = useState<string | null>(null)
 
   useEffect(() => {
@@ -45,11 +61,18 @@ function AuthForm() {
         setLoading(false)
         return
       }
-      const { error } = await supabase.auth.signUp({ email, password })
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        // Send the confirmation link to the callback route, which exchanges the
+        // one-time code for a session. Without this Supabase falls back to the
+        // site root, where nothing consumes the code.
+        options: { emailRedirectTo: authCallbackUrl() },
+      })
       if (error) {
         setError(error.message)
       } else {
-        setMessage('Check your email to confirm your account, then log in.')
+        setMessage('Check your email to confirm your account — the link will sign you in.')
       }
     }
 
