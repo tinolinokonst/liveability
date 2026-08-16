@@ -1,31 +1,30 @@
 import type { NextConfig } from "next";
 
-// Content-Security-Policy is shipped in Report-Only mode for now.
+// Content-Security-Policy, enforcing.
 //
-// The app loads Leaflet tiles (CARTO), the Google Maps JS SDK, and Supabase over
-// XHR, so a blocking policy risks breaking the map and address autocomplete.
-// Report-Only lets us collect violations without user-facing breakage; once the
-// reports are clean this can be promoted to `Content-Security-Policy`.
-const CSP_REPORT_ONLY = [
+// Every directive is expressed as 'self' plus explicit third-party origins, so
+// the policy is environment-agnostic — it works identically on localhost, a
+// Vercel preview URL, and the production domain, with no host hardcoded.
+//
+// Scope note: only two third parties run in the browser — the Google Maps JS
+// SDK (Places autocomplete, dashboard only) and CARTO basemap tiles. Every data
+// API (geo.admin.ch, Overpass, transport.opendata.ch, Open-Meteo, Rentcast) is
+// called server-side through /api/* routes, so those origins deliberately do
+// NOT appear in connect-src: the browser never contacts them, and listing them
+// would only widen the exfiltration surface an enforcing policy exists to close.
+const CSP = [
   "default-src 'self'",
-  // Google Maps SDK injects inline styles and evaluates its own bundles
+  // Next.js hydration and the Google Maps SDK both need inline + eval
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://maps.gstatic.com",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "font-src 'self' data: https://fonts.gstatic.com",
-  "img-src 'self' data: blob: https://*.basemaps.cartocdn.com https://*.googleapis.com https://*.gstatic.com https://unpkg.com",
-  [
-    "connect-src 'self'",
-    "https://*.supabase.co",
-    "wss://*.supabase.co",
-    "https://maps.googleapis.com",
-    "https://transport.opendata.ch",
-    "https://api3.geo.admin.ch",
-    "https://wms.geo.admin.ch",
-    "https://overpass.osm.ch",
-    "https://overpass-api.de",
-    "https://overpass.kumi.systems",
-    "https://air-quality-api.open-meteo.com",
-  ].join(' '),
+  // Tailwind/framer-motion/Leaflet all inject inline styles
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self' data:",
+  // Leaflet tiles (CARTO) and Google Maps imagery; data:/blob: for inline icons
+  "img-src 'self' data: blob: https://*.basemaps.cartocdn.com https://*.googleapis.com https://*.gstatic.com",
+  // Browser-initiated requests only: our own API routes, Supabase (auth +
+  // database via the browser SDK), and Google Places autocomplete XHR.
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://maps.googleapis.com",
+  "worker-src 'self' blob:",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -55,7 +54,7 @@ const nextConfig: NextConfig = {
           { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
           { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
           { key: 'X-DNS-Prefetch-Control', value: 'off' },
-          { key: 'Content-Security-Policy-Report-Only', value: CSP_REPORT_ONLY },
+          { key: 'Content-Security-Policy', value: CSP },
         ],
       },
       {

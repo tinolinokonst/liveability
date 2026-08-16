@@ -165,15 +165,6 @@ export interface DemographicsResult {
   message?: string
 }
 
-export interface FBICrimeResult {
-  agencyName: string | null
-  violentCrimeRate: number | null
-  propertyCrimeRate: number | null
-  year: number | null
-  available: boolean
-  message?: string
-}
-
 export interface NearestEssentialItem {
   name: string | null
   distanceKm: number
@@ -249,8 +240,6 @@ export interface AddressMetrics {
   sunlight?: SunlightResult
   noise?: NoiseResult
   censusData?: DemographicsResult
-  /** @deprecated US-only FBI crime data; retained so legacy saved addresses still parse */
-  fbiCrime?: FBICrimeResult
   nearestEssentials?: NearestEssentials
   cityAqi?: number
   cityAqiName?: string
