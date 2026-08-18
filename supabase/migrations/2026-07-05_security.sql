@@ -42,6 +42,23 @@ language sql security definer set search_path = public as $$
   delete from public.api_usage where window_start < now() - interval '1 day';
 $$;
 
+-- Postgres grants EXECUTE on new functions to PUBLIC, and PostgREST exposes
+-- public-schema functions to anon/authenticated. Both functions above are
+-- security definer, so leaving that default in place would let anyone holding
+-- the (deliberately public) anon key call them directly: check_rate_limit to
+-- inflate another user's counters or bloat this table, cleanup_api_usage to
+-- wipe it and reset every quota. Only the server-side service-role client is
+-- supposed to reach them, so revoke first, then grant back to that role alone.
+revoke execute on function public.check_rate_limit(uuid, text, integer, integer)
+  from public, anon, authenticated;
+revoke execute on function public.cleanup_api_usage()
+  from public, anon, authenticated;
+
+grant execute on function public.check_rate_limit(uuid, text, integer, integer)
+  to service_role;
+grant execute on function public.cleanup_api_usage()
+  to service_role;
+
 -- ============================================================
 -- 2. Row Level Security on saved_addresses
 -- ============================================================

@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { guardRequest } from '@/lib/apiGuard'
 
 export async function POST(request: NextRequest) {
+  // Two distinct checks. The guard throttles on the cookie session — this is the
+  // only irreversible route, so it should not be callable in a loop. The bearer
+  // token below is what actually authorizes the deletion and names the account.
+  // The client is same-origin (the settings page), so it sends both.
+  const guard = await guardRequest('delete-account', 5, 3600)
+  if ('response' in guard) return guard.response
+
   const authHeader = request.headers.get('authorization')
   const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
 

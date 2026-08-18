@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { guardRequest } from '@/lib/apiGuard'
 import { parseCoords } from '@/lib/coords'
 
-// Typical US range for max annual rooftop sunshine hours, used to scale to a 0-100 score.
-const MIN_HOURS = 1000
-const MAX_HOURS = 2200
+// Swiss range for max annual rooftop sunshine hours, used to scale to a 0-100 score.
+// Sampled from the Google Solar API at the city centres this app covers: Lugano
+// 1001, Basel 1115, Zürich 1179, Geneva 1244, Lausanne 1266, Bern 1273 h/yr.
+// The previous 1000-2200 bounds were a US range and put every Swiss address in
+// the bottom quarter of the scale, so Sunlight read as a weakness nationwide.
+const MIN_HOURS = 950
+const MAX_HOURS = 1500
 
 const UNAVAILABLE = { score: null, hoursPerYear: null, available: false, message: 'Solar data not available for this building' }
 
