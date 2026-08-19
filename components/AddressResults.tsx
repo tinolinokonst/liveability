@@ -933,7 +933,11 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
         </div>
       </div>
 
-      <LocalNews query={metrics.address ?? location.formattedAddress} />
+      {/* Query the commune, not the street address. Searching Google News for
+          "Bahnhofstrasse 1, 8001 Zürich, Switzerland" matched almost nothing
+          local — the panel filled up with national corporate filings. The
+          commune is already resolved from the coordinate by /api/census. */}
+      <LocalNews query={metrics.censusData?.commune ?? metrics.address ?? location.formattedAddress} />
     </div>
   )
 }
