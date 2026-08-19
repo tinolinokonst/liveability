@@ -26,7 +26,6 @@ export default function SettingsPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [userEmail, setUserEmail] = useState<string>('')
-  const [accessToken, setAccessToken] = useState<string>('')
   const [activeSection, setActiveSection] = useState<NavSection>('profile')
 
   // Email change
@@ -53,7 +52,6 @@ export default function SettingsPage() {
         router.replace('/auth')
       } else {
         setUserEmail(data.session.user.email ?? '')
-        setAccessToken(data.session.access_token)
         setLoading(false)
       }
     })
@@ -121,9 +119,20 @@ export default function SettingsPage() {
     setDeleteLoading(true)
     setDeleteMsg(null)
     try {
+      // Read the session at click time rather than at mount: on a tab left open
+      // past the token's lifetime the mount-time value is stale, and getSession
+      // refreshes an expired token instead of handing back the dead one.
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        setDeleteMsg({ ok: false, text: 'Your session has expired. Please sign in again.' })
+        setDeleteLoading(false)
+        return
+      }
+
       const res = await fetch('/api/delete-account', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: { Authorization: `Bearer ${session.access_token}` },
       })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
@@ -131,7 +140,6 @@ export default function SettingsPage() {
         setDeleteLoading(false)
         return
       }
-      const supabase = createClient()
       await supabase.auth.signOut()
       router.replace('/')
     } catch {

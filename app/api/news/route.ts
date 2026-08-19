@@ -4,12 +4,25 @@ import { cleanQueryText, MAX_NEWS_QUERY_LENGTH } from '@/lib/validate'
 
 const TIMEOUT_MS = 10000
 
+// RSS payloads are XML-escaped, so a headline like "Skydio Opens New R&D Office"
+// arrives as "R&amp;D". React escapes on render, so anything left encoded here
+// reaches the user literally. &amp; is decoded last: doing it first would turn a
+// legitimately escaped "&amp;lt;" into "<" on the following pass.
+function decodeEntities(text: string): string {
+  return text
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&')
+}
+
 function extractTag(xml: string, tag: string): string {
   const match = xml.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i'))
   if (!match) return ''
-  return match[1]
-    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/, '$1')
-    .trim()
+  return decodeEntities(
+    match[1].replace(/<!\[CDATA\[([\s\S]*?)\]\]>/, '$1')
+  ).trim()
 }
 
 export async function GET(request: NextRequest) {

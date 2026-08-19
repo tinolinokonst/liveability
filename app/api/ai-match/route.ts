@@ -47,7 +47,6 @@ export async function POST(request: NextRequest) {
 
   // Bound the length and strip control characters before the text reaches the model
   const description = body.description
-    // eslint-disable-next-line no-control-regex
     .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
     .slice(0, MAX_DESCRIPTION_LENGTH)
     .trim()
@@ -126,8 +125,14 @@ Keep your response concise and focused. Don't pad with generic advice.`
             controller.enqueue(encoder.encode(event.delta.text))
           }
         }
-      } finally {
         controller.close()
+      } catch (err) {
+        // The 200 and its headers are already on the wire, so there is no status
+        // code left to signal with. Erroring the stream aborts the response body
+        // mid-flight, which surfaces client-side as a failed read rather than as
+        // a short answer that looks complete.
+        console.error('[ai-match] stream failed mid-response:', err instanceof Error ? err.message : err)
+        controller.error(err)
       }
     },
   })

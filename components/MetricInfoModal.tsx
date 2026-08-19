@@ -76,7 +76,6 @@ interface MetricInfoModalProps {
   metricKey: MetricKey
   value?: string
   score?: number
-  radius?: number
   places?: NearestAmenity[]
   center?: { lat: number; lng: number }
   category?: string
@@ -88,7 +87,7 @@ interface MetricInfoModalProps {
   onClose: () => void
 }
 
-export default function MetricInfoModal({ metricKey, value, score, radius, places, center, category, crimeIncidents, searchRadius, detail, comparison, nearestEssentials, onClose }: MetricInfoModalProps) {
+export default function MetricInfoModal({ metricKey, value, score, places, center, category, crimeIncidents, searchRadius, detail, comparison, nearestEssentials, onClose }: MetricInfoModalProps) {
   const info = METRIC_INFO[metricKey]
 
   // Nearest-outside logic: find closest amenity if none found within the search radius

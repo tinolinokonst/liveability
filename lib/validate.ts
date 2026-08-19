@@ -28,7 +28,6 @@ export function cleanQueryText(
 ): { ok: true; value: string } | { ok: false; error: string } {
   if (raw === null) return { ok: false, error: 'Missing required parameter' }
 
-  // eslint-disable-next-line no-control-regex
   const stripped = raw.replace(/[\x00-\x1F\x7F]/g, '').trim()
 
   if (stripped.length === 0) return { ok: false, error: 'Parameter must not be empty' }

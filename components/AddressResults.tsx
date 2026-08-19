@@ -700,7 +700,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             updated={updated}
             metricKey="green"
             icon={Leaf}
-            radius={radius}
             places={places?.park}
             center={center}
             searchRadius={radius}
@@ -755,7 +754,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
               : 'OpenStreetMap (Overpass)'}
             updated={updated}
             metricKey="transit"
-            radius={radius}
             places={transitStationMarkers(metrics.transitCh) ?? places?.transit}
             center={center}
             searchRadius={800}
@@ -789,7 +787,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             source="OpenStreetMap (Overpass)"
             updated={updated}
             metricKey="parking"
-            radius={400}
             places={places?.parking}
             center={center}
             searchRadius={radius}
@@ -814,7 +811,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             source="OpenStreetMap (Overpass)"
             updated={updated}
             metricKey="grocery"
-            radius={radius}
             places={places?.grocery}
             center={center}
             searchRadius={radius}
@@ -833,7 +829,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             source="OpenStreetMap (Overpass)"
             updated={updated}
             metricKey="dining"
-            radius={radius}
             places={places?.dining}
             center={center}
             searchRadius={radius}
@@ -852,7 +847,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             source="OpenStreetMap (Overpass)"
             updated={updated}
             metricKey="school"
-            radius={radius}
             places={places?.school}
             center={center}
             searchRadius={radius}
@@ -871,7 +865,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             source="OpenStreetMap (Overpass)"
             updated={updated}
             metricKey="healthcare"
-            radius={radius}
             places={places?.healthcare}
             center={center}
             searchRadius={radius}
@@ -890,7 +883,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             source="OpenStreetMap (Overpass)"
             updated={updated}
             metricKey="library"
-            radius={1600}
             places={places?.library}
             center={center}
             searchRadius={radius}
@@ -908,7 +900,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             source="OpenStreetMap (Overpass)"
             updated={updated}
             metricKey="bank"
-            radius={800}
             places={places?.bank}
             center={center}
             searchRadius={radius}
@@ -958,7 +949,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             source="OpenStreetMap (Overpass)"
             updated={updated}
             metricKey="worship"
-            radius={1600}
             places={places?.worship}
             center={center}
             searchRadius={radius}
