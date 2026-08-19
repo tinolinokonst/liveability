@@ -8,6 +8,40 @@ import { fetchNearestEssentials } from './nearest'
 import { fetchTransitCh } from './transitCh'
 import { AddressMetrics, AmenityScores, CrimeResult, DemographicsResult, GeoLocation, NearestEssentials, NoiseResult, SunlightResult, TransitCHResult } from './types'
 
+// Single source of truth for an address's headline score.
+//
+// This used to be computed twice: a nine-metric version here (which is what got
+// persisted to saved_addresses) and an eleven-metric version in AddressResults
+// (which is what the user actually saw). They disagreed — a Zürich address read
+// 88 in one place and 82 in the other, and the number you saved was not the
+// number on screen. The eleven-metric weighting won, because leaving sunlight
+// and noise out of the score while still showing them as metrics was the bug.
+const WEIGHTS = {
+  aqi: 0.18,
+  walkability: 0.18,
+  grocery: 0.08,
+  transit: 0.08,
+  green: 0.08,
+  school: 0.05,
+  healthcare: 0.08,
+  dining: 0.04,
+  safety: 0.10,
+  sunlight: 0.05,
+  noise: 0.04,
+} as const
+
+/**
+ * Weighted mean over whichever metrics resolved, renormalised so a missing
+ * source (sunlight outside Solar API coverage, say) redistributes its weight
+ * rather than dragging the score toward zero.
+ */
+export function compositeScore(parts: Array<[number | null | undefined, number]>): number {
+  const available = parts.filter((p): p is [number, number] => p[0] != null)
+  if (available.length === 0) return 0
+  const totalWeight = available.reduce((sum, [, w]) => sum + w, 0)
+  return Math.round(available.reduce((sum, [v, w]) => sum + v * w, 0) / totalWeight)
+}
+
 export function buildMetrics(
   address: string,
   location: GeoLocation,
@@ -27,17 +61,19 @@ export function buildMetrics(
     ? transitCh.score
     : amenityData.transitScore
 
-  const overallScore = Math.round(
-    aqiData.score * 0.20 +
-    amenityData.walkabilityScore * 0.20 +
-    amenityData.groceryScore * 0.10 +
-    transitScore * 0.10 +
-    amenityData.greenScore * 0.10 +
-    amenityData.schoolScore * 0.05 +
-    amenityData.healthcareScore * 0.10 +
-    amenityData.diningScore * 0.05 +
-    crimeData.safetyScore * 0.10
-  )
+  const overallScore = compositeScore([
+    [aqiData.score, WEIGHTS.aqi],
+    [amenityData.walkabilityScore, WEIGHTS.walkability],
+    [amenityData.groceryScore, WEIGHTS.grocery],
+    [transitScore, WEIGHTS.transit],
+    [amenityData.greenScore, WEIGHTS.green],
+    [amenityData.schoolScore, WEIGHTS.school],
+    [amenityData.healthcareScore, WEIGHTS.healthcare],
+    [amenityData.diningScore, WEIGHTS.dining],
+    [crimeData.safetyScore, WEIGHTS.safety],
+    [sunlightData.available ? sunlightData.score : null, WEIGHTS.sunlight],
+    [noiseData.available ? noiseData.score : null, WEIGHTS.noise],
+  ])
 
   return {
     id: id ?? crypto.randomUUID(),

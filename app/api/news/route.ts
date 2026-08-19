@@ -36,7 +36,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: query.error }, { status: 400 })
   }
 
-  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(`${query.value} Switzerland`)}&hl=en-US&gl=US&ceid=US:en`
+  // "when:30d" bounds the feed to the last month. Without it Google happily
+  // returns whatever ranks best for the query regardless of age — a panel headed
+  // "Local News" was surfacing a four-year-old restaurant listicle.
+  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(`${query.value} Switzerland when:30d`)}&hl=en-US&gl=US&ceid=US:en`
 
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS)

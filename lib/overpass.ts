@@ -1,4 +1,5 @@
 import { AmenityPlaces, AmenityScores, NearestAmenity } from './types'
+import { roundKm } from './format'
 
 const EMPTY_PLACES: AmenityPlaces = {
   grocery: [],
@@ -172,7 +173,7 @@ function nearest(
     if (!best || distanceKm < best.distanceKm) {
       best = {
         name: elementName(e, fallbackName),
-        distanceKm: Math.round(distanceKm * 10) / 10,
+        distanceKm: roundKm(distanceKm),
         lat: elat,
         lng: elon,
         category: kind ? elementCategory(e, kind) : undefined,
@@ -214,7 +215,7 @@ function nearestList(
 
     places.push({
       name: elementName(e, fallbackName),
-      distanceKm: Math.round(distanceKm * 10) / 10,
+      distanceKm: roundKm(distanceKm),
       lat: elat,
       lng: elon,
       category: kind ? elementCategory(e, kind) : undefined,

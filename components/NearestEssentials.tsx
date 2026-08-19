@@ -4,6 +4,7 @@ import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import { Train, Bus, ShoppingCart, Hospital, Pill, GraduationCap, BookOpen, TreePine, Landmark, MapPin, LucideIcon } from 'lucide-react'
 import { AddressMetrics, AmenityPlaces, NearestAmenity, NearestEssentials as NearestEssentialsType } from '@/lib/types'
+import { formatDistance } from '@/lib/format'
 import { MetricKey } from '@/lib/metricInfo'
 
 const MetricInfoModal = dynamic(() => import('./MetricInfoModal'), { ssr: false })
@@ -89,7 +90,7 @@ export default function NearestEssentials({ data, metrics, center }: Props) {
                 {item && (
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-xs font-semibold tabular-nums" style={{ color: '#f97316' }}>
-                      {item.distanceKm}km
+                      {formatDistance(item.distanceKm)}
                     </span>
                     <button
                       onClick={() => openMap(cat.metricKey, cat.placesKey)}

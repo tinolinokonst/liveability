@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { NearestEssentialItem, NearestEssentials } from '@/lib/types'
 import { guardRequest } from '@/lib/apiGuard'
 import { parseCoords } from '@/lib/coords'
+import { roundKm } from '@/lib/format'
 
 const OVERPASS_URLS = [
   'https://overpass.osm.ch/api/interpreter',
@@ -37,7 +38,7 @@ function findNearest(elements: Element[], lat: number, lng: number): NearestEsse
     if (elat === undefined || elon === undefined) continue
     const d = haversineKm(lat, lng, elat, elon)
     if (!best || d < best.distanceKm) {
-      best = { name: e.tags?.name ?? null, distanceKm: Math.round(d * 10) / 10, lat: elat, lng: elon }
+      best = { name: e.tags?.name ?? null, distanceKm: roundKm(d), lat: elat, lng: elon }
     }
   }
   return best

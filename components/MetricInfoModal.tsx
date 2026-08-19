@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import { X } from 'lucide-react'
 import { aqiColor, METRIC_INFO, MetricKey } from '@/lib/metricInfo'
 import { CrimeIncidentLocation, NearestAmenity, NearestEssentialItem, NearestEssentials } from '@/lib/types'
+import { formatDistance } from '@/lib/format'
 
 const MetricInfoMap = dynamic(() => import('./MetricInfoMap'), { ssr: false })
 
@@ -234,7 +235,7 @@ export default function MetricInfoModal({ metricKey, value, score, places, cente
                     {nearestEssential!.name ?? `a ${amenityNoun.replace(/s$/, '')}`}
                   </strong>
                   {', '}
-                  <strong className="text-white">{nearestEssential!.distanceKm}km</strong> away
+                  <strong className="text-white">{formatDistance(nearestEssential!.distanceKm)}</strong> away
                   {searchRadius ? ` (your radius: ${searchRadius < 1000 ? searchRadius + 'm' : searchRadius / 1000 + 'km'})` : ''}.
                 </span>
               </div>

@@ -328,11 +328,10 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
               <p style={{ color: '#a0a0a0' }} className="text-xs mb-1">Results for</p>
               <p className="text-white font-semibold text-sm">{result.location.formattedAddress}</p>
             </div>
+            {/* The headline score lives in the Liveability Score card directly
+                below; repeating it here just gave the reader two numbers to
+                reconcile. */}
             <div className="flex items-center gap-3">
-              <div className="text-right">
-                <p style={{ color: '#a0a0a0' }} className="text-xs">Overall</p>
-                <p className="text-2xl font-bold" style={{ color: '#f97316' }}>{result.overallScore}</p>
-              </div>
               {userId && (
                 <button
                   onClick={handleSave}

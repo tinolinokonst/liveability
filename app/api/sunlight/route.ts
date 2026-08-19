@@ -5,10 +5,15 @@ import { parseCoords } from '@/lib/coords'
 // Swiss range for max annual rooftop sunshine hours, used to scale to a 0-100 score.
 // Sampled from the Google Solar API at the city centres this app covers: Lugano
 // 1001, Basel 1115, Zürich 1179, Geneva 1244, Lausanne 1266, Bern 1273 h/yr.
-// The previous 1000-2200 bounds were a US range and put every Swiss address in
-// the bottom quarter of the scale, so Sunlight read as a weakness nationwide.
+//
+// The original 1000-2200 bounds were a US range that put every Swiss address in
+// the bottom quarter. A first pass at 950-1500 still topped out at 59/100
+// nationally, which is below the 70 that the UI labels "Good" — so no Swiss
+// address could earn a good rating no matter how sunny. The 1350 ceiling maps
+// the real national spread onto the full width of the scale: sunny Bern lands
+// around 81, shaded Lugano around 13.
 const MIN_HOURS = 950
-const MAX_HOURS = 1500
+const MAX_HOURS = 1350
 
 const UNAVAILABLE = { score: null, hoursPerYear: null, available: false, message: 'Solar data not available for this building' }
 

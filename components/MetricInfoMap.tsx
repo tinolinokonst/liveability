@@ -6,6 +6,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Maximize2, Minimize2 } from 'lucide-react'
 import { CrimeIncidentLocation, NearestAmenity } from '@/lib/types'
+import { formatDistance } from '@/lib/format'
 
 export interface LegendItem {
   color: string
@@ -183,7 +184,7 @@ export default function MetricInfoMap({
             <div className="flex flex-col gap-0.5">
               <span className="font-semibold text-white text-xs">{m.name}</span>
               <span className="text-xs" style={{ color: '#a0a0a0' }}>
-                {m.category ? `${m.category} · ` : ''}{m.distanceKm}km away
+                {m.category ? `${m.category} · ` : ''}{formatDistance(m.distanceKm)} away
               </span>
               {m.popupLines?.map((line, j) => (
                 <span key={j} className="text-xs" style={{ color: '#a0a0a0' }}>
@@ -229,7 +230,7 @@ export default function MetricInfoMap({
                 {nearestOutside.name ?? 'Nearest'}
               </span>
               <span className="text-xs" style={{ color: '#a0a0a0' }}>
-                {nearestOutside.distanceKm}km away (outside radius)
+                {formatDistance(nearestOutside.distanceKm)} away (outside radius)
               </span>
             </div>
           </Popup>

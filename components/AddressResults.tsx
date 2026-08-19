@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Wind, Shield, Navigation, ShoppingBag, Sun, Volume2, Users, Leaf, DollarSign, LucideIcon } from 'lucide-react'
 import { AddressMetrics, AmenityPlaces, NearestAmenity, TransitCHResult } from '@/lib/types'
+import { roundKm, formatDistance } from '@/lib/format'
 import { getSwissAverages } from '@/lib/neighborhoods'
 import { formatDepartureTime, formatStationDistance } from '@/lib/transitCh'
 import MetricCard from './MetricCard'
@@ -42,7 +43,7 @@ function fmtScore(score: number | undefined): string {
 
 export function nearestLabel(nearest: NearestAmenity | null | undefined): string | undefined {
   if (!nearest) return undefined
-  return `Nearest: ${nearest.name} — ${nearest.distanceKm}km`
+  return `Nearest: ${nearest.name} — ${formatDistance(nearest.distanceKm)}`
 }
 
 function isAre(count: number): string {
@@ -73,7 +74,7 @@ function placesParagraph(places: NearestAmenity[] | undefined, label: string, ra
   if (!places || places.length === 0) return null
   const radiusStr = radiusLabel(radiusMeters)
   const shown = places.slice(0, 5)
-  const items = shown.map(p => `${p.name} (${p.distanceKm}km)`).join(', ')
+  const items = shown.map(p => `${p.name} (${formatDistance(p.distanceKm)})`).join(', ')
   const more = places.length > 5 ? `, + ${places.length - 5} more within ${radiusStr}` : ''
   return <p>{label} within {radiusStr}: {items}{more}.</p>
 }
@@ -84,7 +85,7 @@ function transitStationMarkers(transit: TransitCHResult | undefined): NearestAme
   if (!transit?.available || transit.stations.length === 0) return null
   return transit.stations.map(s => ({
     name: s.name,
-    distanceKm: Math.round(s.distanceM / 100) / 10,
+    distanceKm: roundKm(s.distanceM / 1000),
     lat: s.lat,
     lng: s.lng,
     category: s.icon ?? 'station',
@@ -116,7 +117,7 @@ function amenityDetail(
     <p>There are no {countPlural} within {radiusStr}.</p>
   ) : (
     <p>
-      The nearest {nearestNoun} is <strong>{nearest.name}, {nearest.distanceKm}km away</strong>. There {isAre(count)}{' '}
+      The nearest {nearestNoun} is <strong>{nearest.name}, {formatDistance(nearest.distanceKm)} away</strong>. There {isAre(count)}{' '}
       <strong>{count} {countNoun}</strong> within {radiusStr}.
     </p>
   )
@@ -290,7 +291,7 @@ export function buildDetail(metricKey: string, metrics: AddressMetrics): React.R
       ) : (
         <p>
           The nearest stop is <strong>{nearest.name}</strong>
-          {nearest.category ? ` (${nearest.category})` : ''}, <strong>{nearest.distanceKm}km away</strong>.{' '}
+          {nearest.category ? ` (${nearest.category})` : ''}, <strong>{formatDistance(nearest.distanceKm)} away</strong>.{' '}
           There {isAre(count)} <strong>{count} transit stop{count === 1 ? '' : 's'}</strong> within {radiusStr}.
         </p>
       )
@@ -301,7 +302,7 @@ export function buildDetail(metricKey: string, metrics: AddressMetrics): React.R
           {stopList.length > 0 && (
             <p>
               Nearby stops: {stopList.map((s, i) => (
-                <span key={i}>{s.name}{s.category ? ` — ${s.category}` : ''} ({s.distanceKm}km){i < stopList.length - 1 ? '; ' : ''}</span>
+                <span key={i}>{s.name}{s.category ? ` — ${s.category}` : ''} ({formatDistance(s.distanceKm)}){i < stopList.length - 1 ? '; ' : ''}</span>
               ))}.
             </p>
           )}
@@ -406,7 +407,7 @@ export function buildDetail(metricKey: string, metrics: AddressMetrics): React.R
           OpenStreetMap, this address has a noise score of <strong>{noise.score}/100 ({noise.level})</strong>.
           {road && (
             <> The nearest classified road is <strong>{road.name}</strong> ({road.classification}),{' '}
-            {road.distanceKm}km away.</>
+            {formatDistance(road.distanceKm)} away.</>
           )}
         </p>
       )
@@ -440,35 +441,9 @@ export function buildDetail(metricKey: string, metrics: AddressMetrics): React.R
 }
 
 // ─── composite score ─────────────────────────────────────────────────────────
-
-function computeCompositeScore(metrics: AddressMetrics): number {
-  const WEIGHTS: Record<string, number> = {
-    aqi: 0.18, walkability: 0.18, grocery: 0.08, transit: 0.08, green: 0.08,
-    school: 0.05, healthcare: 0.08, dining: 0.04, safety: 0.10,
-    sunlight: 0.05, noise: 0.04,
-  }
-
-  const available: Array<[number, number]> = [] // [score, weight]
-  const add = (score: number | undefined | null, key: string) => {
-    if (score != null) available.push([score, WEIGHTS[key]])
-  }
-
-  add(metrics.aqiScore, 'aqi')
-  add(metrics.walkabilityScore, 'walkability')
-  add(metrics.groceryScore, 'grocery')
-  add(metrics.transitScore, 'transit')
-  add(metrics.greenScore, 'green')
-  add(metrics.schoolScore, 'school')
-  add(metrics.healthcareScore, 'healthcare')
-  add(metrics.diningScore, 'dining')
-  add(metrics.safetyScore, 'safety')
-  if (metrics.sunlight?.available) add(metrics.sunlight.score, 'sunlight')
-  if (metrics.noise?.available) add(metrics.noise.score, 'noise')
-
-  if (available.length === 0) return metrics.overallScore ?? 0
-  const totalW = available.reduce((s, [, w]) => s + w, 0)
-  return Math.round(available.reduce((s, [v, w]) => s + v * w, 0) / totalW)
-}
+// The score itself is computed once in lib/metrics.ts and carried on the metrics
+// object, so the headline here, the value persisted to saved_addresses, and the
+// number shown in Compare and Areas are all the same figure.
 
 function scoreLabel(score: number): string {
   if (score >= 80) return 'Excellent'
@@ -600,7 +575,7 @@ function RentCostCard({ center }: { center: { lat: number; lng: number } }) {
 // ─── sub-components ──────────────────────────────────────────────────────────
 
 function CompositeScoreBanner({ metrics }: { metrics: AddressMetrics }) {
-  const score = computeCompositeScore(metrics)
+  const score = metrics.overallScore ?? 0
   const color = scoreColor(score)
   const label = scoreLabel(score)
   const subtitle = compositeSubtitle(metrics)

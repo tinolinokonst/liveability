@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { guardRequest } from '@/lib/apiGuard'
 import { parseCoords } from '@/lib/coords'
+import { roundKm } from '@/lib/format'
 import { wmsPointValue } from '@/lib/geoAdmin'
 
 // Primary source: sonBASE road traffic noise (modeled dB values), published by the
@@ -132,7 +133,7 @@ out geom tags;`
         nearestDistance = minDistanceKm
         nearestRoad = {
           name: way.tags?.name || 'Unnamed road',
-          distanceKm: Math.round(minDistanceKm * 10) / 10,
+          distanceKm: roundKm(minDistanceKm),
           classification: highway!,
         }
       }
