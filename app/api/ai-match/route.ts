@@ -101,7 +101,13 @@ Keep your response concise and focused. Don't pad with generic advice.`
 
   const stream = await client.messages.stream({
     model: 'claude-opus-4-8',
-    max_tokens: 1024,
+    // Adaptive thinking draws from this same budget, so 1024 was not enough for
+    // the three area write-ups plus the summary the prompt asks for: responses
+    // were being cut off mid-word part way through the second area, with no
+    // error — hitting max_tokens is a clean stop, not a stream failure, so
+    // nothing downstream could detect it. Sized for the full response with room
+    // for thinking on top.
+    max_tokens: 4096,
     thinking: { type: 'adaptive' },
     system: systemPrompt,
     messages: [
@@ -125,6 +131,14 @@ Keep your response concise and focused. Don't pad with generic advice.`
             controller.enqueue(encoder.encode(event.delta.text))
           }
         }
+
+        // Running out of budget is a clean stop, not an exception, so it would
+        // otherwise pass for a complete answer while the text ends mid-word.
+        const final = await stream.finalMessage()
+        if (final.stop_reason === 'max_tokens') {
+          console.error('[ai-match] response truncated: hit max_tokens — raise the budget')
+        }
+
         controller.close()
       } catch (err) {
         // The 200 and its headers are already on the wire, so there is no status
