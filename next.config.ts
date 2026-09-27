@@ -32,9 +32,13 @@ const CSP = [
 ].join('; ')
 
 const nextConfig: NextConfig = {
-  // The app never renders next/image, so the /_next/image optimizer endpoint is
-  // pure attack surface (it carried GHSA-2xp9-vwfh-vxw4, an unauthenticated RCE
-  // via AVIF processing). Unoptimized mode stops Next from running it.
+  // The app never renders next/image, so image optimization is unused attack
+  // surface (GHSA-2xp9-vwfh-vxw4 was an RCE in it; the actual fix is the Next.js
+  // upgrade to >=16.3.3). This setting disables Next's built-in optimizer, so
+  // /_next/image 404s when self-hosted with `next start`. It does NOT switch off
+  // Vercel's image service, which still answers /_next/image in production —
+  // limited to resizing files in /public, since no remote image sources are
+  // configured.
   images: { unoptimized: true },
 
   async redirects() {
