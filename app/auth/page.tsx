@@ -8,21 +8,26 @@ import Link from 'next/link'
 
 // Reasons the /auth/callback route can bounce someone back here. Mapped to
 // readable copy so a failed confirmation link never fails silently.
+// Shared by confirmation and password-reset links, so the copy stays neutral.
 const CALLBACK_ERRORS: Record<string, string> = {
   link_expired:
-    'That confirmation link has expired or was already used. Sign up again below to get a fresh one.',
+    'That email link has expired or was already used. Request a fresh one below.',
   link_invalid:
-    'That confirmation link was invalid. Sign up again below to get a fresh one.',
+    'That email link was invalid. Request a fresh one below.',
   server_error:
     'We could not complete sign-in because of a server problem. Please try again shortly.',
+}
+
+type Mode = 'login' | 'signup' | 'forgot'
+
+function initialMode(param: string | null): Mode {
+  return param === 'signup' || param === 'forgot' ? param : 'login'
 }
 
 function AuthForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [mode, setMode] = useState<'login' | 'signup'>(
-    searchParams.get('mode') === 'signup' ? 'signup' : 'login'
-  )
+  const [mode, setMode] = useState<Mode>(() => initialMode(searchParams.get('mode')))
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -48,7 +53,20 @@ function AuthForm() {
 
     const supabase = createClient()
 
-    if (mode === 'login') {
+    if (mode === 'forgot') {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        // The callback exchanges the recovery code for a session, then forwards
+        // to /auth/reset where the new password is set.
+        redirectTo: authCallbackUrl('/auth/reset'),
+      })
+      if (error) {
+        setError(error.message)
+      } else {
+        // Same message whether or not the address has an account, so this form
+        // can't be used to discover which emails are registered.
+        setMessage('If an account exists for that email, a password reset link is on its way. Open it in this browser.')
+      }
+    } else if (mode === 'login') {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) {
         setError(error.message)
@@ -103,24 +121,33 @@ function AuthForm() {
           style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
         >
           {/* Mode toggle */}
-          <div
-            className="flex p-1 rounded-xl mb-6"
-            style={{ backgroundColor: '#0f0f0f' }}
-          >
-            {(['login', 'signup'] as const).map(m => (
-              <button
-                key={m}
-                onClick={() => { setMode(m); setError(null); setMessage(null) }}
-                className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all"
-                style={{
-                  backgroundColor: mode === m ? '#f97316' : 'transparent',
-                  color: mode === m ? 'white' : '#a0a0a0',
-                }}
-              >
-                {m === 'login' ? 'Log in' : 'Sign up'}
-              </button>
-            ))}
-          </div>
+          {mode === 'forgot' ? (
+            <div className="mb-6">
+              <h1 className="text-white font-bold">Reset your password</h1>
+              <p className="text-xs mt-1" style={{ color: '#a0a0a0' }}>
+                Enter your account email and we&apos;ll send you a link to set a new password.
+              </p>
+            </div>
+          ) : (
+            <div
+              className="flex p-1 rounded-xl mb-6"
+              style={{ backgroundColor: '#0f0f0f' }}
+            >
+              {(['login', 'signup'] as const).map(m => (
+                <button
+                  key={m}
+                  onClick={() => { setMode(m); setError(null); setMessage(null) }}
+                  className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all"
+                  style={{
+                    backgroundColor: mode === m ? '#f97316' : 'transparent',
+                    color: mode === m ? 'white' : '#a0a0a0',
+                  }}
+                >
+                  {m === 'login' ? 'Log in' : 'Sign up'}
+                </button>
+              ))}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
@@ -138,21 +165,35 @@ function AuthForm() {
               />
             </div>
 
-            <div>
-              <label className="text-xs font-medium mb-1.5 block" style={{ color: '#a0a0a0' }}>
-                Password
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-                placeholder="••••••••"
-                minLength={8}
-                className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-[#a0a0a0] outline-none focus:ring-2 focus:ring-[#f97316] transition-all"
-                style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}
-              />
-            </div>
+            {mode !== 'forgot' && (
+              <div>
+                <div className="flex items-baseline justify-between mb-1.5">
+                  <label className="text-xs font-medium" style={{ color: '#a0a0a0' }}>
+                    Password
+                  </label>
+                  {mode === 'login' && (
+                    <button
+                      type="button"
+                      onClick={() => { setMode('forgot'); setError(null); setMessage(null) }}
+                      className="text-xs hover:underline"
+                      style={{ color: '#f97316' }}
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                  minLength={8}
+                  className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-[#a0a0a0] outline-none focus:ring-2 focus:ring-[#f97316] transition-all"
+                  style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}
+                />
+              </div>
+            )}
 
             {error && (
               <div
@@ -178,8 +219,21 @@ function AuthForm() {
               className="w-full py-3 rounded-xl font-bold text-white text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-1"
               style={{ backgroundColor: '#f97316' }}
             >
-              {loading ? '...' : mode === 'login' ? 'Log in' : 'Create account'}
+              {loading
+                ? '...'
+                : mode === 'login' ? 'Log in' : mode === 'signup' ? 'Create account' : 'Send reset link'}
             </button>
+
+            {mode === 'forgot' && (
+              <button
+                type="button"
+                onClick={() => { setMode('login'); setError(null); setMessage(null) }}
+                className="text-xs self-center hover:underline"
+                style={{ color: '#a0a0a0' }}
+              >
+                Back to log in
+              </button>
+            )}
           </form>
         </div>
 

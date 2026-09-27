@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { MATCHABLE_AREAS, areaDisplayName } from '@/lib/neighborhoods'
+import { MATCHABLE_AREAS, SWISS_DISTRICTS, areaDisplayName } from '@/lib/neighborhoods'
 import { guardRequest } from '@/lib/apiGuard'
 import { readJsonBody, MAX_DESCRIPTION_LENGTH } from '@/lib/validate'
 
@@ -24,6 +24,22 @@ const AREA_SUMMARY = MATCHABLE_AREAS.map(n => ({
   avgRent: n.rent,
   highlights: n.notes,
 }))
+
+function joinList(items: string[]): string {
+  if (items.length <= 1) return items.join('')
+  if (items.length === 2) return `${items[0]} and ${items[1]}`
+  return `${items.slice(0, -1).join(', ')}, and ${items[items.length - 1]}`
+}
+
+// Describe the coverage from the data itself. This used to be hardcoded prose
+// that went stale as soon as Lausanne and Bern got districts — the model was
+// told about 3 district cities and 9 whole cities when there were 5 and 7.
+const CITIES_WITH_DISTRICTS = [...new Set(SWISS_DISTRICTS.map(d => d.parent as string))]
+const WHOLE_CITIES = MATCHABLE_AREAS.filter(a => !a.parent).map(a => a.name)
+const COVERAGE_SENTENCE =
+  `The ${MATCHABLE_AREAS.length} areas covered are the official city districts of ` +
+  `${joinList(CITIES_WITH_DISTRICTS)} (${SWISS_DISTRICTS.length} districts in total), ` +
+  `plus ${WHOLE_CITIES.length} other Swiss cities as whole areas: ${joinList(WHOLE_CITIES)}.`
 
 export async function POST(request: NextRequest) {
   const guard = await guardRequest('ai-match', 10, 3600)
@@ -58,7 +74,7 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  const systemPrompt = `You are a Switzerland relocation expert helping someone find their ideal area to live in. The ${MATCHABLE_AREAS.length} areas covered are the official city districts of Zürich (Stadtkreise), Geneva (quartiers), and Basel (quarters), plus nine other major Swiss cities as whole areas.
+  const systemPrompt = `You are a Switzerland relocation expert helping someone find their ideal area to live in. ${COVERAGE_SENTENCE}
 You have data for each area with scores (0-100) for walkability, air quality, green space, grocery access, transit, safety, education, healthcare, dining, and quietness, plus average rent in CHF.
 
 Area data:

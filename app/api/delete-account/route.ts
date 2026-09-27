@@ -46,6 +46,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to delete user data' }, { status: 500 })
   }
 
+  // Delete the profile row, which holds the user's email. Done explicitly rather
+  // than relying on an ON DELETE CASCADE from auth.users: that table was created
+  // in the dashboard, so a cascade can't be verified from this repo, and a missing
+  // one would leave the email behind after "delete my account".
+  const { error: deleteProfileError } = await adminClient
+    .from('profiles')
+    .delete()
+    .eq('id', user.id)
+
+  if (deleteProfileError) {
+    console.error('Failed to delete profile:', deleteProfileError)
+    return NextResponse.json({ error: 'Failed to delete user data' }, { status: 500 })
+  }
+
   // Delete the auth user
   const { error: deleteUserError } = await adminClient.auth.admin.deleteUser(user.id)
   if (deleteUserError) {

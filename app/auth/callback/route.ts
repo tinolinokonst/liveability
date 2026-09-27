@@ -1,19 +1,21 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse, type NextRequest } from 'next/server'
+import { safeNextPath } from '@/lib/site'
 
 /**
- * Supabase email-confirmation / magic-link callback.
+ * Supabase email-confirmation / magic-link / password-recovery callback.
  *
  * Supabase sends the user here with a one-time `code`. That code must be
  * exchanged for a session server-side — without this step the link lands on the
  * app with a `?code=` in the URL that nobody consumes, and the user is never
  * signed in.
  *
- * On success the session cookies are written and the user goes to /dashboard.
- * On failure we bounce to /auth with a short reason slug, which the auth page
- * turns into a readable message. We deliberately pass a fixed slug rather than
- * reflecting the upstream error text back into the URL.
+ * On success the session cookies are written and the user goes to `next` if it
+ * is a safe same-site path (password recovery uses /auth/reset), otherwise
+ * /dashboard. On failure we bounce to /auth with a short reason slug, which the
+ * auth page turns into a readable message. We deliberately pass a fixed slug
+ * rather than reflecting the upstream error text back into the URL.
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl
@@ -70,5 +72,7 @@ export async function GET(request: NextRequest) {
     return failure('link_expired')
   }
 
-  return NextResponse.redirect(new URL('/dashboard', request.url))
+  // Only ever a same-site path — never an attacker-supplied external URL
+  const next = safeNextPath(searchParams.get('next')) ?? '/dashboard'
+  return NextResponse.redirect(new URL(next, request.url))
 }

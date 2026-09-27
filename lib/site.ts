@@ -24,9 +24,37 @@ export function getAuthRedirectBase(): string {
   return SITE_URL
 }
 
-/** Full URL Supabase should send auth emails back to. */
-export function authCallbackUrl(): string {
-  return `${getAuthRedirectBase()}/auth/callback`
+/**
+ * Full URL Supabase should send auth emails back to. `next` is where the
+ * callback forwards once the code is exchanged (e.g. /auth/reset for password
+ * recovery); omitted, the callback defaults to /dashboard.
+ */
+export function authCallbackUrl(next?: string): string {
+  const base = `${getAuthRedirectBase()}/auth/callback`
+  return next ? `${base}?next=${encodeURIComponent(next)}` : base
+}
+
+/**
+ * Returns `raw` only if it is a same-site relative path, otherwise null.
+ *
+ * The callback reads `next` from the query string, so without this anyone could
+ * craft a real Liveability link that bounces a user to an arbitrary site after
+ * sign-in (an open redirect). Rejected: absolute URLs, protocol-relative "//x",
+ * and "/\x" — browsers normalise the backslash, so "/\evil.com" is treated as
+ * "//evil.com". As a final guard the path is resolved against a dummy origin and
+ * must still land on that origin.
+ */
+export function safeNextPath(raw: string | null): string | null {
+  if (!raw || !raw.startsWith('/')) return null
+  if (raw.startsWith('//') || raw.startsWith('/\\')) return null
+  if (/[\x00-\x1F\x7F]/.test(raw)) return null
+  try {
+    const probe = new URL(raw, 'https://same-origin.invalid')
+    if (probe.origin !== 'https://same-origin.invalid') return null
+    return probe.pathname + probe.search + probe.hash
+  } catch {
+    return null
+  }
 }
 
 /**

@@ -32,6 +32,11 @@ const CSP = [
 ].join('; ')
 
 const nextConfig: NextConfig = {
+  // The app never renders next/image, so the /_next/image optimizer endpoint is
+  // pure attack surface (it carried GHSA-2xp9-vwfh-vxw4, an unauthenticated RCE
+  // via AVIF processing). Unoptimized mode stops Next from running it.
+  images: { unoptimized: true },
+
   async redirects() {
     // The legal pages briefly existed at two URLs each. These are the retired
     // duplicates; 308 so search engines and any existing links consolidate onto
