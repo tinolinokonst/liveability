@@ -378,7 +378,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
               <div
                 key={n.name}
                 onClick={() => handleSelectNeighborhood(n)}
-                className="rounded-xl p-4 flex gap-4 items-start cursor-pointer transition-colors hover:border-[#f97316]"
+                className="rounded-xl p-3.5 sm:p-4 flex gap-3 sm:gap-4 items-start cursor-pointer transition-colors hover:border-[#f97316]"
                 style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
               >
                 <div
@@ -594,7 +594,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
             <div
               key={n.name}
               onClick={() => handleSelectNeighborhood(n)}
-              className="rounded-xl p-4 flex gap-4 items-start cursor-pointer transition-colors hover:border-[#f97316]"
+              className="rounded-xl p-3.5 sm:p-4 flex gap-3 sm:gap-4 items-start cursor-pointer transition-colors hover:border-[#f97316]"
               style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
             >
               <div

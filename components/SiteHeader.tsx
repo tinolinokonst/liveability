@@ -40,6 +40,9 @@ export default function SiteHeader() {
         borderBottom: scrolled ? '1px solid #2a2a2a' : '1px solid transparent',
         backdropFilter: scrolled ? 'blur(10px)' : 'none',
       }}
+      // initial={false}: start at the resting padding instead of animating up
+      // from 0 on every page load, which made the header jump
+      initial={false}
       animate={{ paddingTop: scrolled ? 12 : 20, paddingBottom: scrolled ? 12 : 20 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
     >
@@ -48,10 +51,12 @@ export default function SiteHeader() {
           Liveability
         </Link>
 
-        <div className="flex items-center gap-3">
+        {/* On phones "How It Works" is dropped (it's in the footer) and padding
+            tightens, so the actions fit on one line instead of wrapping */}
+        <div className="flex items-center gap-1 sm:gap-3 whitespace-nowrap">
           <Link
             href="/how-it-works"
-            className="text-sm px-4 py-2 rounded-lg font-medium transition-colors hover:text-white"
+            className="hidden sm:block text-sm px-4 py-2 rounded-lg font-medium transition-colors hover:text-white"
             style={{ color: '#a0a0a0' }}
           >
             How It Works
@@ -60,7 +65,7 @@ export default function SiteHeader() {
           {loading ? null : userEmail ? (
             <Link
               href="/dashboard"
-              className="text-sm px-4 py-2 rounded-lg font-semibold text-white transition-all hover:opacity-90"
+              className="text-sm px-3 sm:px-4 py-2 rounded-lg font-semibold text-white transition-all hover:opacity-90"
               style={{ backgroundColor: '#f97316' }}
             >
               Dashboard
@@ -69,14 +74,14 @@ export default function SiteHeader() {
             <>
               <Link
                 href="/auth"
-                className="text-sm px-4 py-2 rounded-lg font-medium transition-colors hover:text-white"
+                className="text-sm px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors hover:text-white"
                 style={{ color: '#a0a0a0' }}
               >
                 Log in
               </Link>
               <Link
                 href="/auth?mode=signup"
-                className="text-sm px-4 py-2 rounded-lg font-semibold text-white transition-all hover:opacity-90"
+                className="text-sm px-3 sm:px-4 py-2 rounded-lg font-semibold text-white transition-all hover:opacity-90"
                 style={{ backgroundColor: '#f97316' }}
               >
                 Get started

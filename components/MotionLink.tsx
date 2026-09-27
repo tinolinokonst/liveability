@@ -19,7 +19,10 @@ export default function MotionLink({ href, className, style, children }: MotionL
       transition={{ duration: 0.2, ease: 'easeOut' }}
       className="inline-block"
     >
-      <Link href={href} className={className} style={style}>
+      {/* block, not the default inline: vertical padding on an inline <a>
+          paints outside the wrapper's box, so stacked buttons overlapped.
+          h-full keeps side-by-side buttons equal height in a stretched row. */}
+      <Link href={href} className={`block h-full ${className ?? ''}`} style={style}>
         {children}
       </Link>
     </motion.div>

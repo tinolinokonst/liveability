@@ -128,14 +128,17 @@ export default function FeedbackButton({ userId, page }: Props) {
         </div>
       )}
 
+      {/* Icon-only on phones, where a labelled pill covered dashboard content */}
       <button
         onClick={() => setOpen(o => !o)}
         aria-expanded={open}
-        className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition-colors shadow-lg"
+        aria-label="Feedback"
+        title="Feedback"
+        className="flex items-center gap-1.5 p-3 sm:px-4 sm:py-2 rounded-full text-xs font-semibold transition-colors shadow-lg"
         style={{ backgroundColor: '#1a1a1a', color: '#a0a0a0', border: '1px solid #2a2a2a' }}
       >
-        <MessageSquare size={13} />
-        Feedback
+        <MessageSquare size={15} className="sm:w-[13px] sm:h-[13px]" />
+        <span className="hidden sm:inline">Feedback</span>
       </button>
     </div>
   )

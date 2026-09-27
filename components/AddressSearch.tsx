@@ -239,8 +239,10 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
           <ArrowLeft size={14} /> Back to AI Match results
         </button>
       )}
-      <form onSubmit={handleSearch} className="flex gap-3 items-start">
-        <div className="flex-1 flex flex-col gap-1">
+      {/* Phones: full-width input, then the button row beneath it. Side by side
+          at 375px left the input too narrow to show more than a few words. */}
+      <form onSubmit={handleSearch} className="flex flex-wrap sm:flex-nowrap gap-3 items-start">
+        <div className="basis-full sm:basis-auto sm:flex-1 min-w-0 flex flex-col gap-1">
           <input
             ref={inputRef}
             type="text"
@@ -250,7 +252,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
               setValidationError(false)
               autocompleteSelectedRef.current = false
             }}
-            placeholder="Enter a Swiss address, e.g. Bahnhofstrasse 1, Zürich..."
+            placeholder="e.g. Bahnhofstrasse 1, Zürich"
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
@@ -273,7 +275,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
               setValidationError(true)
             }
           }}
-          className="px-5 py-3 rounded-xl font-semibold text-sm text-white transition-all disabled:cursor-not-allowed"
+          className="flex-1 sm:flex-none px-5 py-3 rounded-xl font-semibold text-sm text-white transition-all disabled:cursor-not-allowed"
           style={{
             backgroundColor: '#f97316',
             opacity: loading ? 0.5 : (!isValidAddress(query) && !autocompleteSelectedRef.current ? 0.65 : 1),
@@ -283,7 +285,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
         </button>
         {compareCount > 0 && (
           <div
-            className="px-4 py-3 rounded-xl text-sm font-semibold flex items-center"
+            className="px-4 py-3 rounded-xl text-sm font-semibold flex items-center whitespace-nowrap"
             style={{ backgroundColor: '#2a2a2a', color: '#f97316', border: '1px solid #3a3a3a' }}
           >
             Compare ({compareCount})
