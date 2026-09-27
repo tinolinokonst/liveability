@@ -14,7 +14,7 @@ export default function PrivacyPage() {
       <SiteHeader />
       <div className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="text-3xl font-bold tracking-tight text-white">Privacy Policy</h1>
-        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: August 13, 2026</p>
+        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: September 27, 2026</p>
 
         <div className="mt-10 space-y-10 text-base leading-relaxed text-[#a0a0a0]">
           <p>
@@ -45,6 +45,19 @@ export default function PrivacyPage() {
               account. We also record basic server logs (request timestamps, IP
               addresses) as part of normal hosting operations via Vercel.
             </p>
+            <p>
+              If you send feedback from the dashboard, we store your message, the part
+              of the dashboard you sent it from, the time, and your account ID so we can
+              follow up. Only we can read it — it is not visible to other users, and you
+              cannot edit it after sending.
+            </p>
+            <p>
+              We use Vercel Web Analytics to count page views in aggregate. It records
+              the page visited, the referring site, and your country, browser, and
+              device type. It sets no cookies, writes nothing to your browser, and is
+              not linked to your account; Vercel identifies a visit using a hash of the
+              request that is discarded within 24 hours.
+            </p>
           </section>
 
           <section className="space-y-3">
@@ -74,7 +87,8 @@ export default function PrivacyPage() {
               <li>Provide and operate the Service, including generating scores</li>
               <li>Authenticate your account and keep it secure</li>
               <li>Apply per-account rate limits so the Service stays available</li>
-              <li>Respond to your questions or requests</li>
+              <li>Understand, in aggregate, which pages are used, to improve them</li>
+              <li>Read the feedback you send, and respond to your questions or requests</li>
             </ul>
           </section>
 
@@ -83,7 +97,11 @@ export default function PrivacyPage() {
             <ul className="list-disc space-y-1 pl-5">
               <li>We do not sell your personal information.</li>
               <li>We do not run ads or share data with ad networks.</li>
-              <li>We do not use analytics or behavioural tracking tools.</li>
+              <li>
+                We do not track you across sites or build a behavioural profile of you.
+                Our only analytics is the cookieless, aggregate page-view counting
+                described above.
+              </li>
               <li>
                 We do not store the full details of every address you search — only
                 addresses you explicitly save.
@@ -126,7 +144,7 @@ export default function PrivacyPage() {
             <h2 className="text-lg font-semibold text-white">How we share information</h2>
             <p>
               We do not sell your personal information. We rely on service providers
-              to operate the Service — Vercel for hosting, Supabase for authentication
+              to operate the Service — Vercel for hosting and analytics, Supabase for authentication
               and database, and Anthropic for the AI Match feature — and they may
               process information on our behalf. We may also disclose information
               where required by law, to enforce our terms, or to protect the rights
@@ -138,7 +156,8 @@ export default function PrivacyPage() {
             <h2 className="text-lg font-semibold text-white">Your choices and rights</h2>
             <p>
               You can delete your account at any time from the Settings page, which
-              removes your saved addresses and account data. You can also request
+              removes your saved addresses, any feedback you sent, and your account
+              data. You can also request
               access to, correction of, or deletion of your personal information by
               contacting us. You can control cookies through your browser settings,
               though you will not be able to stay signed in without the session

@@ -16,7 +16,7 @@ export default function CookiePolicyPage() {
       <SiteHeader />
       <div className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="text-3xl font-bold tracking-tight text-white">Cookie Policy</h1>
-        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: August 13, 2026</p>
+        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: September 27, 2026</p>
 
         <div className="mt-10 space-y-10 text-base leading-relaxed text-[#a0a0a0]">
           <p>
@@ -141,6 +141,14 @@ export default function CookiePolicyPage() {
               <li>Cross-site tracking or device fingerprinting</li>
               <li>Preference cookies</li>
             </ul>
+            <p>
+              We do count page views with Vercel Web Analytics, served from our own domain.
+              It sets no cookies and writes nothing to your browser&apos;s storage; see the{" "}
+              <Link href="/privacy" className="text-[#f97316] underline">
+                Privacy Policy
+              </Link>{" "}
+              for what it records.
+            </p>
             <p>
               Because we set no non-essential cookies, there is no cookie banner and nothing
               to opt out of.

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import TransitionWrapper from "@/components/TransitionWrapper";
 import FooterWrapper from "@/components/FooterWrapper";
@@ -53,6 +54,14 @@ export default function RootLayout({
           <TransitionWrapper>{children}</TransitionWrapper>
         </main>
         <FooterWrapper />
+        {/* Production loads the script from same-origin /_vercel/insights, which
+            the CSP already allows. In development the package instead pulls a
+            debug script from va.vercel-scripts.com — blocked by the CSP, and it
+            tracks nothing in dev anyway — so it is only rendered in production.
+            Page views alone use no cookies or storage, as the privacy and cookie
+            policies state; calling va identify/group or enableCookie would write
+            to the browser and make those policies false. */}
+        {process.env.NODE_ENV === "production" && <Analytics />}
       </body>
     </html>
   );

@@ -10,6 +10,7 @@ import NeighborhoodFinder from '@/components/NeighborhoodFinder'
 import SavedAddresses from '@/components/SavedAddresses'
 import AiMatch from '@/components/AiMatch'
 import AppHeader from '@/components/AppHeader'
+import FeedbackButton from '@/components/FeedbackButton'
 import { AddressMetrics, AiMatchListingsState } from '@/lib/types'
 
 type Tab = 'search' | 'neighborhoods' | 'saved' | 'ai-match'
@@ -258,6 +259,8 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      {userId && <FeedbackButton userId={userId} page={`/dashboard?tab=${tab}`} />}
     </div>
   )
 }
