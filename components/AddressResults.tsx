@@ -10,6 +10,7 @@ import MetricCard from './MetricCard'
 import InfoCard from './InfoCard'
 import LocalNews from './LocalNews'
 import NearestEssentials from './NearestEssentials'
+import { MonthlyBudgetCard } from './MonthlyBudget'
 
 interface AddressResultsProps {
   metrics: AddressMetrics
@@ -633,6 +634,9 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
     <div className="flex flex-col gap-5">
       {/* Composite score banner */}
       <CompositeScoreBanner metrics={metrics} />
+
+      {/* Monthly Budget: household inputs live in HouseholdContext, never in metrics */}
+      <MonthlyBudgetCard metrics={metrics} />
 
       {/* Cost of Living */}
       <RentCostCard center={center} />

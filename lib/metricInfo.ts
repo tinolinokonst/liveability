@@ -17,6 +17,7 @@ export type MetricKey =
   | 'sunlight'
   | 'noise'
   | 'census'
+  | 'budget'
 
 // AQI category colors (US EPA category names)
 export function aqiColor(category: string): string {
@@ -37,6 +38,8 @@ export interface MetricInfo {
   source: string
   sourceUrl: string
   placesKey?: keyof AmenityPlaces
+  /** Several sources, listed in the modal footer instead of source/sourceUrl */
+  sources?: Array<{ label: string; url?: string }>
 }
 
 export const METRIC_INFO: Record<MetricKey, MetricInfo> = {
@@ -161,5 +164,19 @@ export const METRIC_INFO: Record<MetricKey, MetricInfo> = {
       "The Swiss commune (Gemeinde) this address falls within — name, canton, and BFS commune number — resolved from the swissBOUNDARIES3D dataset. Commune-level statistics (population, median age, income) from the Swiss Federal Statistical Office are coming soon. Source: Federal Office of Topography swisstopo. This is informational context only — it is not scored or factored into the overall liveability score.",
     source: 'Federal Office of Topography swisstopo',
     sourceUrl: 'https://www.swisstopo.admin.ch/en/landscape-model-swissboundaries3d',
+  },
+  budget: {
+    label: 'Monthly Budget',
+    description:
+      "What an employed household has left each month after the employee share of social contributions (AHV/IV/EO and ALV), income tax (federal, cantonal and communal), mandatory basic health insurance and an area-level rent estimate. Tax comes from the Federal Tax Administration's calculator for this commune; health insurance is the regional average premium. Pension contributions, individual deductions and your actual insurer are not included.",
+    source: 'Swiss Federal Tax Administration (ESTV)',
+    sourceUrl: 'https://swisstaxcalculator.estv.admin.ch/',
+    sources: [
+      { label: 'Income tax: Swiss Federal Tax Administration (ESTV) tax calculator', url: 'https://swisstaxcalculator.estv.admin.ch/' },
+      { label: 'Health insurance: Federal Office of Public Health (FOPH) premium data', url: 'https://opendata.swiss/de/dataset/health-insurance-premiums' },
+      { label: 'Social contribution rates: Informationsstelle AHV/IV', url: 'https://www.ahv-iv.ch/de/Merkbl%C3%A4tter/Beitr%C3%A4ge-AHV-IV-EO-ALV' },
+      { label: 'Commune: Federal Office of Topography swisstopo', url: 'https://www.swisstopo.admin.ch/en/landscape-model-swissboundaries3d' },
+      { label: 'Rent: Liveability area-level estimate (typical 1–2 bedroom rent)' },
+    ],
   },
 }

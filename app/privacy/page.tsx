@@ -14,7 +14,7 @@ export default function PrivacyPage() {
       <SiteHeader />
       <div className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="text-3xl font-bold tracking-tight text-white">Privacy Policy</h1>
-        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: September 27, 2026</p>
+        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: September 29, 2026</p>
 
         <div className="mt-10 space-y-10 text-base leading-relaxed text-[#a0a0a0]">
           <p>
@@ -52,6 +52,17 @@ export default function PrivacyPage() {
               cannot edit it after sending.
             </p>
             <p>
+              If you enter your household income, marital status and household size for
+              the Monthly Budget, they stay in your browser tab (session storage, deleted
+              when you close the tab). We never save them to our database or with your
+              saved addresses, and never log them. To calculate income tax, your income
+              rounded to the nearest CHF 5,000 is sent — with the commune, marital status
+              and number of children, but nothing that identifies you — to the Swiss
+              Federal Tax Administration&apos;s public tax calculator. Its answer is cached
+              for up to 30 days so others in the same bracket and commune get it without
+              a new request; that cache holds no account or other personal link.
+            </p>
+            <p>
               We use Vercel Web Analytics to count page views in aggregate. It records
               the page visited, the referring site, and your country, browser, and
               device type. It sets no cookies, writes nothing to your browser, and is
@@ -67,7 +78,8 @@ export default function PrivacyPage() {
               when you sign in. It is strictly necessary to keep you signed in, and no
               cookie is set at all until you do. We do not use analytics, advertising,
               or tracking cookies, and we write nothing to your browser&apos;s local
-              storage.
+              storage. The only other thing kept in your browser is the Monthly Budget
+              household you enter, in the tab&apos;s session storage.
             </p>
             <p>
               Two third-party services load in your browser — the Google Maps
@@ -137,6 +149,13 @@ export default function PrivacyPage() {
               what you are comfortable sharing — avoid including sensitive personal
               details. We do not attach your name or email to that request, and the
               text is not used to train models.
+            </p>
+            <p>
+              If you have entered a Monthly Budget household, AI Match also sends the
+              budget estimates derived from it for each area (monthly tax, health
+              insurance, social contributions, rent and what is left over) so it can
+              answer questions about tax and take-home pay. Your income itself is not
+              included in that request.
             </p>
           </section>
 

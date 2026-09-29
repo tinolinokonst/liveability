@@ -6,6 +6,7 @@ import { AddressMetrics, NearestAmenity } from '@/lib/types'
 import { MetricKey } from '@/lib/metricInfo'
 import MetricInfoModal from './MetricInfoModal'
 import { buildDetail, buildComparison } from './AddressResults'
+import { BudgetComparison } from './MonthlyBudget'
 
 const ACCENT_COLORS = ['#f97316', '#3b82f6', '#a855f7']
 
@@ -84,7 +85,7 @@ export default function AddressCompare({ addresses, onRemove }: AddressComparePr
   return (
     <div className="flex flex-col gap-6">
       {/* Address headers */}
-      <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${addresses.length}, 1fr)` }}>
+      <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${addresses.length}, minmax(0, 1fr))` }}>
         {addresses.map((addr, i) => (
           <div
             key={addr.id}
@@ -109,6 +110,9 @@ export default function AddressCompare({ addresses, onRemove }: AddressComparePr
           </div>
         ))}
       </div>
+
+      {/* The headline insight: what each address leaves in your pocket */}
+      <BudgetComparison addresses={addresses} accents={ACCENT_COLORS} />
 
       <p className="text-xs -mt-3" style={{ color: '#a0a0a0' }}>
         Click any score cell to open the full metric detail and map for that address.
@@ -173,7 +177,7 @@ export default function AddressCompare({ addresses, onRemove }: AddressComparePr
       </div>
 
       {/* Summary cards */}
-      <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${addresses.length}, 1fr)` }}>
+      <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${addresses.length}, minmax(0, 1fr))` }}>
         {addresses.map((addr, i) => {
           const wins = METRICS.filter(m => {
             const values = addresses.map(a => a[m.key] as number)

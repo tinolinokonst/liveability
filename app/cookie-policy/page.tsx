@@ -16,13 +16,14 @@ export default function CookiePolicyPage() {
       <SiteHeader />
       <div className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="text-3xl font-bold tracking-tight text-white">Cookie Policy</h1>
-        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: September 27, 2026</p>
+        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: September 29, 2026</p>
 
         <div className="mt-10 space-y-10 text-base leading-relaxed text-[#a0a0a0]">
           <p>
             Liveability sets <span className="text-white">one cookie</span>, and only after
             you sign in. It keeps you logged in. We use no analytics, advertising, or
-            tracking cookies, and we store nothing in your browser&apos;s local storage.
+            tracking cookies. The only thing kept in your browser besides it is the
+            household you enter for the Monthly Budget, in this tab&apos;s session storage.
             This policy sits alongside our{" "}
             <Link href="/privacy" className="text-[#f97316] underline">
               Privacy Policy
@@ -77,10 +78,15 @@ export default function CookiePolicyPage() {
                   Local storage and session storage
                 </p>
                 <p className="text-sm">
-                  Not used. Liveability writes nothing to either. Anything you do in a
-                  session — your metric weightings, comparison list, and AI Match results —
-                  is held in the page&apos;s memory only and is gone when you reload or
-                  close the tab.
+                  Local storage is not used. Session storage holds one entry,{" "}
+                  <code className="text-[#f97316]">liveability:household</code>: the income,
+                  marital status and household size you enter for the Monthly Budget, so it
+                  survives switching tabs and reloading. Your browser deletes it when you
+                  close the tab, it is never sent to our database, and it is strictly
+                  necessary for a feature you use, so no consent is required. Everything
+                  else you do in a session — your metric weightings, comparison list, and
+                  AI Match results — is held in the page&apos;s memory only and is gone when
+                  you reload or close the tab.
                 </p>
               </div>
             </div>

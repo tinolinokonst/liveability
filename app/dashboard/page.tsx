@@ -11,11 +11,12 @@ import SavedAddresses from '@/components/SavedAddresses'
 import AiMatch from '@/components/AiMatch'
 import AppHeader from '@/components/AppHeader'
 import FeedbackButton from '@/components/FeedbackButton'
+import { HouseholdProvider } from '@/components/HouseholdContext'
 import { AddressMetrics, AiMatchListingsState } from '@/lib/types'
 
 type Tab = 'search' | 'neighborhoods' | 'saved' | 'ai-match'
 
-export default function Dashboard() {
+function Dashboard() {
   const router = useRouter()
   const [userId, setUserId] = useState<string | null>(null)
   const [tab, setTab] = useState<Tab>('search')
@@ -262,5 +263,14 @@ export default function Dashboard() {
 
       {userId && <FeedbackButton userId={userId} page={`/dashboard?tab=${tab}`} />}
     </div>
+  )
+}
+
+// Household budget inputs are shared by every tab (results, Compare, AI Match)
+export default function DashboardPage() {
+  return (
+    <HouseholdProvider>
+      <Dashboard />
+    </HouseholdProvider>
   )
 }

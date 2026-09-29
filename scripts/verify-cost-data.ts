@@ -12,6 +12,9 @@
 import { estimateIncomeTax, estvLocation, incomeBracket, TAX_YEAR, TaxInput } from '../lib/tax'
 import { estimateHealthPremiums, Household } from '../lib/healthPremiums'
 import { employeeSocialContributions } from '../lib/socialContributions'
+import { areaMonthlyBudgets, computeMonthlyBudget, HouseholdInput } from '../lib/budget'
+import { findCommune } from '../lib/geoAdmin'
+import { MATCHABLE_AREAS, areaBfsNumber, areaDisplayName, haversineKm, nearestMatchableArea } from '../lib/neighborhoods'
 
 const ESTV = 'https://swisstaxcalculator.estv.admin.ch/delegate/ost-integration/v1/lg-proxy/operation/c3b67379_ESTV'
 const ZURICH = 261
@@ -98,6 +101,67 @@ async function main() {
     check(`CHF ${salary.toLocaleString('de-CH')}: AHV/IV/EO`, Math.abs(ours.ahvIvEo - estv.ahvIvEo) <= 1, `ours ${ours.ahvIvEo}  ESTV ${estv.ahvIvEo}`)
     check(`CHF ${salary.toLocaleString('de-CH')}: ALV (ceiling 148,200)`, Math.abs(ours.alv - estv.alv) <= 1, `ours ${ours.alv}  ESTV ${estv.alv}`)
   }
+
+  // Same path as /api/budget: coordinate → commune (geo.admin) → area rent → budget
+  console.log('\n=== Monthly budget, end to end (real addresses)')
+  const ADDRESSES = {
+    zurich: { label: 'Bahnhofstrasse 1, 8001 Zürich', lat: 47.3667, lng: 8.5390, bfs: ZURICH },
+    zug: { label: 'Bahnhofplatz, 6300 Zug', lat: 47.1737, lng: 8.5153, bfs: ZUG },
+  }
+  const BUDGET_CASES: Array<{ label: string; at: keyof typeof ADDRESSES; household: HouseholdInput }> = [
+    { label: 'Single, CHF 100k, Zürich', at: 'zurich', household: { grossIncome: 100_000, status: 'single', adults: 1, children: 0 } },
+    { label: 'Married, 2 kids, CHF 180k, Zürich', at: 'zurich', household: { grossIncome: 180_000, status: 'married', adults: 2, children: 2 } },
+    { label: 'Married, 2 kids, CHF 180k, Zug', at: 'zug', household: { grossIncome: 180_000, status: 'married', adults: 2, children: 2 } },
+  ]
+  const left: Record<string, number> = {}
+  for (const c of BUDGET_CASES) {
+    const a = ADDRESSES[c.at]
+    const commune = await findCommune(a.lat, a.lng)
+    check(`${a.label} → BFS ${a.bfs}`, commune?.bfsNumber === a.bfs, `${commune?.commune} (${commune?.bfsNumber})`)
+    const area = nearestMatchableArea(a.lat, a.lng)
+    const r = await computeMonthlyBudget({
+      bfsNumber: commune!.bfsNumber,
+      household: c.household,
+      rent: { monthly: area.rent, area: areaDisplayName(area), distanceKm: haversineKm(a.lat, a.lng, area.lat, area.lng) },
+    })
+    if (!r.ok) { check(c.label, false, r.reason); continue }
+    const b = r.budget
+    console.log(`\n${c.label}`)
+    console.log(`  Gross monthly income        ${chf(b.grossMonthly)}`)
+    console.log(`  − Social contributions      ${chf(b.social.monthly)}`)
+    console.log(`  − Income tax (${b.tax.taxYear})         ${chf(b.tax.monthly)}   (${chf(b.tax.annual)}/yr)`)
+    console.log(`  − Health insurance (${b.health.premiumYear})   ${chf(b.health.monthly)}`)
+    console.log(`  − Rent estimate             ${chf(b.rent.monthly)}   (${b.rent.area}, ${b.rent.distanceKm} km${b.rent.outsideCoverage ? ' — OUTSIDE rent coverage' : ''})`)
+    console.log(`  = Left each month           ${chf(b.leftMonthly)}`)
+    const parts = b.grossMonthly - b.social.monthly - b.tax.monthly - b.health.monthly - b.rent.monthly
+    check('lines add up to the total (±2 rounding)', Math.abs(parts - b.leftMonthly) <= 2, `${parts} vs ${b.leftMonthly}`)
+    const annualTax = (await estimateIncomeTax({ bfsNumber: a.bfs, grossIncome: c.household.grossIncome, status: c.household.status, children: c.household.children }))
+    check('tax matches the verified ESTV figure', annualTax.ok && annualTax.estimate.totalAnnual === b.tax.annual, `${b.tax.annual}`)
+    left[c.label] = b.leftMonthly
+  }
+  const diff = left['Married, 2 kids, CHF 180k, Zug'] - left['Married, 2 kids, CHF 180k, Zürich']
+  console.log(`\nHeadline (married, 2 kids, CHF 180k): ${chf(Math.round(diff / 10) * 10)}/month more left over in Zug than in Zürich`)
+
+  console.log('\n=== Area → commune mapping used by AI Match')
+  let areaMismatches = 0
+  for (const n of MATCHABLE_AREAS) {
+    const c = await findCommune(n.lat, n.lng)
+    if (c?.bfsNumber !== areaBfsNumber(n)) { areaMismatches++; console.log(`  ${areaDisplayName(n)}: expected ${areaBfsNumber(n)}, got ${c?.bfsNumber}`) }
+  }
+  check(`all ${MATCHABLE_AREAS.length} area centers in their commune`, areaMismatches === 0, `${areaMismatches} mismatches`)
+
+  // The per-area figures AI Match gives the model
+  console.log('\n=== AI Match area budgets (married, 2 kids, CHF 180k)')
+  const areaBudgets = await areaMonthlyBudgets({ grossIncome: 180_000, status: 'married', adults: 2, children: 2 })
+  check(`budget for all ${MATCHABLE_AREAS.length} areas`, areaBudgets.size === MATCHABLE_AREAS.length, `${areaBudgets.size}`)
+  const kreis1 = MATCHABLE_AREAS.find(n => n.name.startsWith('Kreis 1 '))!
+  check('Kreis 1 matches the address-level figure', areaBudgets.get(kreis1)?.leftOver === left['Married, 2 kids, CHF 180k, Zürich'],
+    `${areaBudgets.get(kreis1)?.leftOver} vs ${left['Married, 2 kids, CHF 180k, Zürich']}`)
+  const ranked = [...areaBudgets.entries()].sort((a, b) => b[1].leftOver - a[1].leftOver)
+  console.log('  Most left over:  ' + ranked.slice(0, 3).map(([n, b]) => `${areaDisplayName(n)} ${chf(b.leftOver)}`).join('; '))
+  console.log('  Least left over: ' + ranked.slice(-3).map(([n, b]) => `${areaDisplayName(n)} ${chf(b.leftOver)}`).join('; '))
+  const lowestTax = [...areaBudgets.entries()].sort((a, b) => a[1].incomeTaxPerYear - b[1].incomeTaxPerYear)[0]
+  console.log(`  Lowest tax:      ${areaDisplayName(lowestTax[0])} ${chf(lowestTax[1].incomeTaxPerYear)}/yr`)
 
   console.log('\n=== Edge cases')
   check('unknown BFS → unknown_commune', (await estimateIncomeTax({ bfsNumber: 99999, grossIncome: 1, status: 'single', children: 0 })).ok === false, '')

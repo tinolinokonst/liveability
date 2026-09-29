@@ -518,12 +518,25 @@ export function hasDistricts(cityName: string): boolean {
   return CITIES_WITH_DISTRICTS.has(cityName)
 }
 
+// BFS commune number of each city. Every district center lies inside its
+// parent city's commune (checked against swissBOUNDARIES3D for all areas), so
+// districts share the parent's number. Used for commune-level tax and health
+// premium figures; scripts/verify-cost-data.ts re-checks it.
+const CITY_BFS: Record<string, number> = {
+  'Zürich': 261, 'Geneva': 6621, 'Basel': 2701, 'Lausanne': 5586, 'Bern': 351, 'Winterthur': 230,
+  'Lucerne': 1061, 'St. Gallen': 3203, 'Lugano': 5192, 'Biel/Bienne': 371, 'Thun': 942, 'Fribourg': 2196,
+}
+
+export function areaBfsNumber(n: Neighborhood): number {
+  return CITY_BFS[n.parent ?? n.name]
+}
+
 /** Display name including the parent city for districts, e.g. "Kreis 1 (Altstadt), Zürich" */
 export function areaDisplayName(n: Neighborhood): string {
   return n.parent ? `${n.name}, ${n.parent}` : n.name
 }
 
-function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371
   const dLat = (lat2 - lat1) * Math.PI / 180
   const dLng = (lng2 - lng1) * Math.PI / 180

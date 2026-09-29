@@ -244,18 +244,35 @@ export default function MetricInfoModal({ metricKey, value, score, places, cente
         )}
 
         <div className="pt-3 flex flex-col gap-1" style={{ borderTop: '1px solid #2a2a2a' }}>
-          <p style={{ color: '#a0a0a0' }} className="text-xs">
-            Source:{' '}
-            <a
-              href={info.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline"
-              style={{ color: '#f97316' }}
-            >
-              {info.source}
-            </a>
-          </p>
+          {info.sources ? (
+            <>
+              <p style={{ color: '#a0a0a0' }} className="text-xs">Sources:</p>
+              <ul className="flex flex-col gap-1 text-xs" style={{ color: '#a0a0a0' }}>
+                {info.sources.map(s => (
+                  <li key={s.label}>
+                    {s.url ? (
+                      <a href={s.url} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: '#f97316' }}>
+                        {s.label}
+                      </a>
+                    ) : s.label}
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <p style={{ color: '#a0a0a0' }} className="text-xs">
+              Source:{' '}
+              <a
+                href={info.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+                style={{ color: '#f97316' }}
+              >
+                {info.source}
+              </a>
+            </p>
+          )}
         </div>
       </div>
     </div>

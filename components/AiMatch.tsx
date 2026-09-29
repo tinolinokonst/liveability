@@ -1,9 +1,11 @@
 "use client"
 
 import { useState, useEffect, useRef } from 'react'
-import { Sparkles, Send, RotateCcw, Database, Home, ExternalLink, ArrowRight, Loader2 } from 'lucide-react'
+import { Sparkles, Send, RotateCcw, Database, Home, ExternalLink, ArrowRight, Loader2, Wallet, ChevronDown } from 'lucide-react'
 import { MATCHABLE_AREAS, areaDisplayName } from '@/lib/neighborhoods'
 import { AiMatchListingsState, AiRentListing } from '@/lib/types'
+import { useHousehold } from './HouseholdContext'
+import { HouseholdForm, formatChf } from './MonthlyBudget'
 
 export type { AiMatchListingsState, AiRentListing }
 
@@ -89,6 +91,8 @@ export default function AiMatch({
   const [loading, setLoading] = useState(false)
   const [statusIdx, setStatusIdx] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const { household } = useHousehold()
+  const [showHousehold, setShowHousehold] = useState(false)
   const responseRef = useRef<HTMLDivElement>(null)
   const listingsFetchedRef = useRef(false)
 
@@ -158,7 +162,18 @@ export default function AiMatch({
       const res = await fetch('/api/ai-match', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description: description.trim() }),
+        // Household only when an income is entered; it is used for this answer and not stored
+        body: JSON.stringify({
+          description: description.trim(),
+          ...(household.grossIncome && {
+            household: {
+              grossIncome: household.grossIncome,
+              status: household.status,
+              adults: household.adults,
+              children: household.children,
+            },
+          }),
+        }),
       })
 
       if (!res.ok) {
@@ -419,6 +434,30 @@ export default function AiMatch({
       )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <div className="rounded-xl" style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}>
+          <button
+            type="button"
+            onClick={() => setShowHousehold(s => !s)}
+            aria-expanded={showHousehold}
+            className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left"
+          >
+            <span className="flex items-center gap-2 min-w-0">
+              <Wallet size={14} style={{ color: '#f97316' }} className="shrink-0" />
+              <span className="text-sm font-semibold text-white shrink-0">Household budget</span>
+              <span className="text-xs truncate" style={{ color: '#6b6b6b' }}>
+                {household.grossIncome
+                  ? `${formatChf(household.grossIncome)}/yr · ${household.status} · ${household.adults + household.children} ${household.adults + household.children === 1 ? 'person' : 'people'}`
+                  : 'optional — ask about tax or what’s left over'}
+              </span>
+            </span>
+            <ChevronDown size={16} className={`shrink-0 transition-transform ${showHousehold ? 'rotate-180' : ''}`} style={{ color: '#a0a0a0' }} />
+          </button>
+          {showHousehold && (
+            <div className="px-4 pb-4">
+              <HouseholdForm />
+            </div>
+          )}
+        </div>
         <textarea
           value={description}
           onChange={e => onDescriptionChange(e.target.value)}
