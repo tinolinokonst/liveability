@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import TransitionWrapper from "@/components/TransitionWrapper";
@@ -42,11 +43,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Render every page per request: the CSP nonce (proxy.ts) is applied during
+  // server rendering, and a page prerendered at build time would ship scripts
+  // without it, which the policy then blocks.
+  await connection();
+
   return (
     <html lang="en">
       <body className="flex min-h-screen flex-col">
@@ -54,10 +60,11 @@ export default function RootLayout({
           <TransitionWrapper>{children}</TransitionWrapper>
         </main>
         <FooterWrapper />
-        {/* Production loads the script from same-origin /_vercel/insights, which
-            the CSP already allows. In development the package instead pulls a
-            debug script from va.vercel-scripts.com — blocked by the CSP, and it
-            tracks nothing in dev anyway — so it is only rendered in production.
+        {/* Production loads the script from same-origin /_vercel/insights; it is
+            created by the bundled component, so the CSP's 'strict-dynamic'
+            admits it. In development the package instead pulls a debug script
+            from va.vercel-scripts.com and tracks nothing, so it is only
+            rendered in production.
             Page views alone use no cookies or storage, as the privacy and cookie
             policies state; calling va identify/group or enableCookie would write
             to the browser and make those policies false. */}

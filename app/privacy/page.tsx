@@ -14,7 +14,7 @@ export default function PrivacyPage() {
       <SiteHeader />
       <div className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="text-3xl font-bold tracking-tight text-white">Privacy Policy</h1>
-        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: September 29, 2026</p>
+        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 5, 2026</p>
 
         <div className="mt-10 space-y-10 text-base leading-relaxed text-[#a0a0a0]">
           <p>
@@ -84,8 +84,8 @@ export default function PrivacyPage() {
             <p>
               Two third-party services load in your browser — the Google Maps
               JavaScript API (on the signed-in dashboard, for address autocomplete) and
-              CARTO basemap tiles (for the maps on result pages). We verified that
-              neither sets cookies. See our{" "}
+              map tiles from the Swiss Federal Office of Topography (swisstopo) for the
+              maps on result pages. We verified that neither sets cookies. See our{" "}
               <Link href="/cookie-policy" className="text-[#f97316] underline">
                 Cookie Policy
               </Link>{" "}

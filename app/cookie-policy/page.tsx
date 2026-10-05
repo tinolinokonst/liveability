@@ -16,7 +16,7 @@ export default function CookiePolicyPage() {
       <SiteHeader />
       <div className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="text-3xl font-bold tracking-tight text-white">Cookie Policy</h1>
-        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: September 29, 2026</p>
+        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 5, 2026</p>
 
         <div className="mt-10 space-y-10 text-base leading-relaxed text-[#a0a0a0]">
           <p>
@@ -117,22 +117,23 @@ export default function CookiePolicyPage() {
                 .
               </li>
               <li>
-                <span className="text-white">CARTO basemap tiles</span> — the map images on
-                result pages, requested from <code>basemaps.cartocdn.com</code>. Tile
-                requests set no cookies. See{" "}
+                <span className="text-white">swisstopo map tiles</span> — the map images on
+                result pages, requested from <code>wmts.geo.admin.ch</code>, the Swiss
+                Federal Office of Topography&apos;s public map service. Tile requests set no
+                cookies. See the{" "}
                 <a
-                  href="https://carto.com/privacy/"
+                  href="https://www.geo.admin.ch/en/general-terms-of-use-fsdi"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[#f97316] underline"
                 >
-                  CARTO&apos;s privacy policy
+                  geo.admin.ch terms of use
                 </a>
                 .
               </li>
             </ul>
             <p>
-              Maps are rendered with Leaflet using CARTO tiles — we do not embed a Google
+              Maps are rendered with Leaflet using swisstopo tiles — we do not embed a Google
               map, so your browser makes no requests to <code>google.com</code>.
             </p>
           </section>

@@ -51,9 +51,18 @@ const POLYGON_STYLE: Record<string, { fillOpacity: number; opacity: number }> = 
   '#8b5cf6': { fillOpacity: 0.20, opacity: 0.6 },
 }
 
-const DARK_TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-const DARK_TILE_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+// swisstopo national map, grey edition, from the federal WMTS in Web Mercator.
+// Free and keyless; fair use is up to ~20,000 users/day (geo.admin.ch general
+// terms of use). Darkened in globals.css on the tile pane only, so markers,
+// polygons and circles keep their true colours. Native detail ends at z18;
+// Leaflet upscales beyond that.
+const TILE_URL = 'https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-grau/default/current/3857/{z}/{x}/{y}.jpeg'
+const SWISSTOPO_ATTRIBUTION =
+  '&copy; <a href="https://www.swisstopo.admin.ch/" target="_blank" rel="noopener noreferrer">swisstopo</a>'
+// Amenity markers and park polygons come from OpenStreetMap, whose licence
+// requires credit wherever its data is shown
+const OSM_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors'
 
 function MapScrollController({ enabled }: { enabled: boolean }) {
   const map = useMap()
@@ -151,8 +160,10 @@ export default function MetricInfoMap({
   const mapChildren = (
     <>
       <TileLayer
-        url={DARK_TILE_URL}
-        attribution={DARK_TILE_ATTRIBUTION}
+        url={TILE_URL}
+        attribution={points.length > 0 || nearestOutside ? `${SWISSTOPO_ATTRIBUTION} | ${OSM_ATTRIBUTION}` : SWISSTOPO_ATTRIBUTION}
+        maxNativeZoom={18}
+        maxZoom={19}
         keepBuffer={4}
         updateWhenIdle={true}
         updateWhenZooming={false}
@@ -304,6 +315,7 @@ export default function MetricInfoMap({
           bounds={bounds.length > 1 ? bounds : undefined}
           boundsOptions={{ padding: [30, 30] }}
           style={{ height: '100%', width: '100%' }}
+          className="lv-map"
           scrollWheelZoom={false}
           minZoom={10}
           maxZoom={19}

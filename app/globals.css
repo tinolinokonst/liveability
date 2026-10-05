@@ -103,6 +103,28 @@ input[type="range"]::-moz-range-thumb {
   display: none;
 }
 
+/* Dark basemap: the swisstopo grey map is black-on-white, so invert it and
+   compress the range into dark greys. Applied to the tile pane ONLY — markers,
+   polygons, circles and popups live in other panes and keep their true colours. */
+.lv-map.leaflet-container {
+  background-color: #1a1a1a;
+}
+
+.lv-map .leaflet-tile-pane {
+  filter: invert(1) contrast(0.35) brightness(0.45);
+}
+
+/* Three classes deep: leaflet.css loads after this file and sets the white
+   background at two-class specificity */
+.lv-map.leaflet-container .leaflet-control-attribution {
+  background-color: rgba(15, 15, 15, 0.8);
+  color: #a0a0a0;
+}
+
+.lv-map.leaflet-container .leaflet-control-attribution a {
+  color: #e5e5e5;
+}
+
 /* Leaflet popups for dark theme */
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip {
