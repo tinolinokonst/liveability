@@ -17,6 +17,7 @@ import { nearestArea } from '@/lib/neighborhoods'
 import { saveAddress } from '@/lib/savedAddresses'
 import { AddressMetrics, AmenityScores, CrimeResult } from '@/lib/types'
 import AddressResults from './AddressResults'
+import ResultsHeader from './ResultsHeader'
 
 interface AddressSearchProps {
   onAdd?: (metrics: AddressMetrics) => void
@@ -54,7 +55,6 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
   const [aqiData, setAqiData] = useState<AQIResult | null>(null)
   const [crimeData, setCrimeData] = useState<CrimeResult | null>(null)
   const [radius, setRadius] = useState(800)
-  const [fetchedAt, setFetchedAt] = useState<Date | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
@@ -146,7 +146,6 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
       setAqiData(aqi)
       setAmenityData(amenity)
       setCrimeData(crime)
-      setFetchedAt(new Date())
       const baseResult = buildMetrics(address.trim(), location, aqi, amenity, crime, sunlight, noise, census, nearest, transitCh)
       setResult(cityAqiResult != null ? { ...baseResult, cityAqi: cityAqiResult.aqi, cityAqiName: referenceCity.name } : baseResult)
     } catch (err) {
@@ -177,7 +176,6 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
       .then(amenity => {
         if (cancelled) return
         setAmenityData(amenity)
-        setFetchedAt(new Date())
         setResult(prev => {
           if (!prev) return null
           const updated = buildMetrics(
@@ -223,10 +221,6 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
       setSaving(false)
     }
   }
-
-  const updatedLabel = fetchedAt
-    ? `Updated ${Math.max(0, Math.round((Date.now() - fetchedAt.getTime()) / 1000)) < 60 ? 'just now' : 'recently'}`
-    : undefined
 
   return (
     <div className="flex flex-col gap-6">
@@ -325,15 +319,12 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
 
       {result && amenityData && (
         <div className="flex flex-col gap-4">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p style={{ color: '#a0a0a0' }} className="text-xs mb-1">Results for</p>
-              <p className="text-white font-semibold text-sm">{result.location.formattedAddress}</p>
-            </div>
-            {/* The headline score lives in the Liveability Score card directly
-                below; repeating it here just gave the reader two numbers to
-                reconcile. */}
-            <div className="flex items-center gap-3">
+          {/* The headline score lives in the Liveability Score card directly
+              below; repeating it here just gave the reader two numbers to
+              reconcile. */}
+          <ResultsHeader
+            title={result.location.formattedAddress}
+            actions={<>
               {userId && (
                 <button
                   onClick={handleSave}
@@ -353,11 +344,11 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
                   + Add to comparison
                 </button>
               )}
-            </div>
-          </div>
+            </>}
+          />
 
           {/* Amenity radius selector */}
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             <span style={{ color: '#a0a0a0' }} className="text-xs font-medium uppercase tracking-wider">
               Amenity radius
             </span>
@@ -380,7 +371,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
             {radiusLoading && <span style={{ color: '#a0a0a0' }} className="text-xs">Updating...</span>}
           </div>
 
-          <AddressResults metrics={result} updated={updatedLabel} />
+          <AddressResults metrics={result} />
         </div>
       )}
     </div>

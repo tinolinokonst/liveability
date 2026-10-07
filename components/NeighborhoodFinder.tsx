@@ -7,6 +7,7 @@ import { fetchFullMetrics } from '@/lib/metrics'
 import { fetchSavedAddresses, saveAddress } from '@/lib/savedAddresses'
 import LocalNews from './LocalNews'
 import AddressResults from './AddressResults'
+import ResultsHeader from './ResultsHeader'
 import { SWISS_AREAS, ALL_AREAS, getDistricts, hasDistricts, nearestNeighborhood } from '@/lib/neighborhoods'
 
 const NEIGHBORHOOD_NAME_SET = new Set(ALL_AREAS.map(n => n.name))
@@ -285,12 +286,9 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
 
         {metrics && (
           <>
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p style={{ color: '#a0a0a0' }} className="text-xs mb-1">Results for</p>
-                <p className="text-white font-semibold text-sm">{selectedName} (area center)</p>
-              </div>
-              <div className="flex items-center gap-3">
+            <ResultsHeader
+              title={`${selectedName} (area center)`}
+              actions={<>
                 <div className="text-right">
                   <p style={{ color: '#a0a0a0' }} className="text-xs">Overall</p>
                   <p className="text-2xl font-bold" style={{ color: '#f97316' }}>{metrics.overallScore}</p>
@@ -305,8 +303,8 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
                     {saved ? <>Saved <Check size={14} /></> : saving ? 'Saving...' : 'Save this area'}
                   </button>
                 )}
-              </div>
-            </div>
+              </>}
+            />
 
             <AddressResults metrics={metrics} />
 

@@ -11,6 +11,7 @@ import { fetchFullMetrics } from '@/lib/metrics'
 import { AddressMetrics, SavedAddress } from '@/lib/types'
 import { ALL_AREAS, nearestNeighborhood } from '@/lib/neighborhoods'
 import AddressResults from './AddressResults'
+import ResultsHeader from './ResultsHeader'
 
 const NEIGHBORHOOD_NAMES = new Set(ALL_AREAS.map(n => n.name))
 
@@ -125,8 +126,8 @@ export default function SavedAddresses({ onAdd, compareCount = 0, onViewNeighbor
           </div>
         )}
 
-        <div className="flex items-start justify-between gap-4">
-          <div>
+        <ResultsHeader
+          above={
             <button
               onClick={() => setSelectedId(null)}
               className="text-xs mb-2 transition-colors flex items-center gap-1"
@@ -134,13 +135,14 @@ export default function SavedAddresses({ onAdd, compareCount = 0, onViewNeighbor
             >
               <ArrowLeft size={14} /> Back to saved addresses
             </button>
-            <p style={{ color: '#a0a0a0' }} className="text-xs mb-1">Results for</p>
-            <p className="text-white font-semibold text-sm">{selected.metrics.location?.formattedAddress ?? selected.address}</p>
+          }
+          title={selected.metrics.location?.formattedAddress ?? selected.address}
+          below={<>
             <p style={{ color: '#a0a0a0' }} className="text-xs mt-1">
               Saved on {new Date(selected.created_at).toLocaleDateString()}
             </p>
             {hood && (
-              <div className="flex items-center gap-1.5 mt-1.5">
+              <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
                 <MapPin size={12} style={{ color: '#a0a0a0' }} />
                 <span className="text-xs" style={{ color: '#a0a0a0' }}>Located in</span>
                 {onViewNeighborhood ? (
@@ -166,8 +168,8 @@ export default function SavedAddresses({ onAdd, compareCount = 0, onViewNeighbor
                 Data outdated — click &quot;Refresh data&quot; to load new metrics
               </p>
             )}
-          </div>
-          <div className="flex items-center gap-3">
+          </>}
+          actions={<>
             <div className="text-right">
               <p style={{ color: '#a0a0a0' }} className="text-xs">Overall</p>
               <p className="text-2xl font-bold" style={{ color: '#f97316' }}>{selected.metrics.overallScore ?? '—'}</p>
@@ -188,8 +190,8 @@ export default function SavedAddresses({ onAdd, compareCount = 0, onViewNeighbor
             >
               {removingId === selected.id ? 'Removing...' : 'Remove'}
             </button>
-          </div>
-        </div>
+          </>}
+        />
 
         <AddressResults metrics={selected.metrics} />
       </div>

@@ -134,15 +134,17 @@ export default function AddressCompare({ addresses, onRemove }: AddressComparePr
                 backgroundColor: mi % 2 === 0 ? '#1a1a1a' : '#141414',
               }}
             >
-              {/* Metric label */}
-              <div className="py-3 px-4 w-36 shrink-0">
+              {/* Metric label. Narrower on phones: with three addresses a
+                  144px label column left the cells less room than their
+                  content, and the third column was clipped by the card. */}
+              <div className="py-3 px-3 sm:px-4 w-24 sm:w-36 shrink-0">
                 <span className="text-xs font-medium" style={{ color: '#a0a0a0' }}>
                   {metric.label}
                 </span>
               </div>
 
               {/* Per-address cells */}
-              <div className="flex flex-1" style={{ borderLeft: '1px solid #2a2a2a' }}>
+              <div className="flex flex-1 min-w-0" style={{ borderLeft: '1px solid #2a2a2a' }}>
                 {addresses.map((addr, i) => {
                   const val = addr[metric.key] as number
                   const isWinner = val === best
@@ -152,7 +154,7 @@ export default function AddressCompare({ addresses, onRemove }: AddressComparePr
                     <div
                       key={addr.id}
                       onClick={clickable ? () => setOpenModal({ metricKey: metric.metricKey!, addr }) : undefined}
-                      className={`flex-1 py-3 px-4 flex items-center gap-2 transition-colors ${clickable ? 'cursor-pointer hover:bg-[rgba(249,115,22,0.06)]' : ''}`}
+                      className={`flex-1 min-w-0 py-3 px-2 sm:px-4 flex items-center gap-1.5 sm:gap-2 transition-colors ${clickable ? 'cursor-pointer hover:bg-[rgba(249,115,22,0.06)]' : ''}`}
                       style={{ borderRight: i < addresses.length - 1 ? '1px solid #2a2a2a' : undefined }}
                       role={clickable ? 'button' : undefined}
                       title={clickable ? `View ${metric.label} details for Address ${String.fromCharCode(65 + i)}` : undefined}
@@ -160,13 +162,13 @@ export default function AddressCompare({ addresses, onRemove }: AddressComparePr
                       <span className="text-sm font-bold" style={{ color: isWinner ? '#f97316' : 'white' }}>
                         {val}
                       </span>
-                      <div className="flex-1 h-1 rounded-full" style={{ backgroundColor: '#2a2a2a' }}>
+                      <div className="flex-1 min-w-0 h-1 rounded-full" style={{ backgroundColor: '#2a2a2a' }}>
                         <div
                           className="h-full rounded-full"
                           style={{ width: `${val}%`, backgroundColor: color }}
                         />
                       </div>
-                      {isWinner && <Star size={12} fill="#f97316" style={{ color: '#f97316' }} />}
+                      {isWinner && <Star size={12} fill="#f97316" className="shrink-0" style={{ color: '#f97316' }} />}
                     </div>
                   )
                 })}

@@ -10,13 +10,12 @@ interface InfoCardProps {
   value: string
   description?: string
   source?: string
-  updated?: string
   metricKey?: MetricKey
   detail?: React.ReactNode
   icon?: LucideIcon
 }
 
-export default function InfoCard({ label, value, description, source, updated, metricKey, detail, icon: Icon }: InfoCardProps) {
+export default function InfoCard({ label, value, description, source, metricKey, detail, icon: Icon }: InfoCardProps) {
   const [showInfo, setShowInfo] = useState(false)
   const clickable = !!metricKey
 
@@ -29,9 +28,9 @@ export default function InfoCard({ label, value, description, source, updated, m
         role={clickable ? 'button' : undefined}
         tabIndex={clickable ? 0 : undefined}
       >
-        <div className="flex items-center justify-between">
-          <span style={{ color: '#a0a0a0' }} className="text-xs font-medium uppercase tracking-wider flex items-center gap-1.5">
-            {Icon && <Icon size={14} />}
+        <div className="flex items-center justify-between gap-2">
+          <span style={{ color: '#a0a0a0' }} className="min-w-0 break-words text-xs font-medium uppercase tracking-wider flex items-center gap-1.5">
+            {Icon && <Icon size={14} className="shrink-0" />}
             {label}
           </span>
         </div>
@@ -44,12 +43,12 @@ export default function InfoCard({ label, value, description, source, updated, m
           </p>
         )}
 
-        {(source || updated) && (
-          <p style={{ color: '#a0a0a0' }} className="text-xs flex items-center gap-1 -mb-1">
-            <Info size={12} />
-            {source && <span>Source: {source}</span>}
-            {source && updated && <span>·</span>}
-            {updated && <span>{updated}</span>}
+        {/* Cards sit in a two-column grid at 375px, so this line has ~130px:
+            the text must be allowed to shrink and wrap beside the icon. */}
+        {source && (
+          <p style={{ color: '#a0a0a0' }} className="text-xs flex items-start gap-1 -mb-1">
+            <Info size={12} className="shrink-0 mt-px" />
+            <span className="min-w-0 break-words">Source: {source}</span>
           </p>
         )}
       </div>

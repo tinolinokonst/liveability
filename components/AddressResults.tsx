@@ -14,7 +14,6 @@ import { MonthlyBudgetCard } from './MonthlyBudget'
 
 interface AddressResultsProps {
   metrics: AddressMetrics
-  updated?: string
 }
 
 const NA = 'Data not available - refresh to update'
@@ -612,7 +611,7 @@ function SectionHeader({ icon: Icon, label }: { icon: LucideIcon; label: string 
 
 // ─── main component ──────────────────────────────────────────────────────────
 
-export default function AddressResults({ metrics, updated }: AddressResultsProps) {
+export default function AddressResults({ metrics }: AddressResultsProps) {
   const radius = metrics.radius ?? 800
   const places = metrics.places ?? EMPTY_PLACES
   const location = metrics.location ?? { lat: 0, lng: 0, formattedAddress: metrics.address ?? '' }
@@ -660,7 +659,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             score={metrics.aqiScore ?? 0}
             description={metrics.aqiCategory ?? NA}
             source={metrics.aqiSource ?? 'Open-Meteo Air Quality API'}
-            updated={updated}
             metricKey="aqi"
             center={center}
             category={metrics.aqiCategory}
@@ -676,7 +674,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
               <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestPark)}</p>
             )}
             source="OpenStreetMap (Overpass)"
-            updated={updated}
             metricKey="green"
             icon={Leaf}
             places={places?.park}
@@ -692,7 +689,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             score={metrics.sunlight?.score ?? 0}
             description="Estimated annual rooftop sunshine"
             source="Google Solar API"
-            updated={updated}
             metricKey="sunlight"
             icon={Sun}
             detail={buildDetail('sunlight', metrics)}
@@ -707,7 +703,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             source={metrics.noise?.source?.includes('sonBASE')
               ? 'Swiss Federal Office for the Environment (sonBASE)'
               : 'OpenStreetMap road proximity (estimated)'}
-            updated={updated}
             metricKey="noise"
             icon={Volume2}
             detail={buildDetail('noise', metrics)}
@@ -731,7 +726,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             source={metrics.transitCh?.available
               ? 'transport.opendata.ch / Swiss public transport'
               : 'OpenStreetMap (Overpass)'}
-            updated={updated}
             metricKey="transit"
             places={transitStationMarkers(metrics.transitCh) ?? places?.transit}
             center={center}
@@ -746,7 +740,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             score={metrics.walkabilityScore ?? 0}
             description="Based on nearby amenities"
             source="OpenStreetMap (Overpass)"
-            updated={updated}
             metricKey="walkability"
             center={center}
             places={combinedWalkabilityPlaces(places).slice(0, 8)}
@@ -764,7 +757,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
               <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestParking)}</p>
             )}
             source="OpenStreetMap (Overpass)"
-            updated={updated}
             metricKey="parking"
             places={places?.parking}
             center={center}
@@ -788,7 +780,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
               <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestGrocery)}</p>
             )}
             source="OpenStreetMap (Overpass)"
-            updated={updated}
             metricKey="grocery"
             places={places?.grocery}
             center={center}
@@ -806,7 +797,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
               <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestDining)}</p>
             )}
             source="OpenStreetMap (Overpass)"
-            updated={updated}
             metricKey="dining"
             places={places?.dining}
             center={center}
@@ -824,7 +814,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
               <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestSchool)}</p>
             )}
             source="OpenStreetMap (Overpass)"
-            updated={updated}
             metricKey="school"
             places={places?.school}
             center={center}
@@ -842,7 +831,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
               <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestHealthcare)}</p>
             )}
             source="OpenStreetMap (Overpass)"
-            updated={updated}
             metricKey="healthcare"
             places={places?.healthcare}
             center={center}
@@ -860,7 +848,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
               <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestLibrary)}</p>
             )}
             source="OpenStreetMap (Overpass)"
-            updated={updated}
             metricKey="library"
             places={places?.library}
             center={center}
@@ -877,7 +864,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
               <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestBank)}</p>
             )}
             source="OpenStreetMap (Overpass)"
-            updated={updated}
             metricKey="bank"
             places={places?.bank}
             center={center}
@@ -900,7 +886,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             score={metrics.safetyScore ?? 0}
             description={metrics.safetyNote || ((metrics.crimeTopTypes ?? []).length ? `Top: ${(metrics.crimeTopTypes ?? []).join(', ')}` : 'Within 1km, last 12 months')}
             source="Swiss Federal Statistical Office (Police Crime Statistics)"
-            updated={updated}
             metricKey="safety"
             center={center}
             crimeIncidents={metrics.crimeIncidents}
@@ -912,7 +897,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
             value={communityValue}
             description={communityDesc}
             source="Federal Office of Topography swisstopo"
-            updated={updated}
             metricKey="census"
             icon={Users}
             detail={buildDetail('census', metrics)}
@@ -926,7 +910,6 @@ export default function AddressResults({ metrics, updated }: AddressResultsProps
               <p style={{ color: '#a0a0a0' }} className="text-xs">{nearestLabel(metrics.nearestWorship)}</p>
             )}
             source="OpenStreetMap (Overpass)"
-            updated={updated}
             metricKey="worship"
             places={places?.worship}
             center={center}

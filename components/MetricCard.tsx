@@ -12,7 +12,6 @@ interface MetricCardProps {
   score: number
   description?: string
   source?: string
-  updated?: string
   extra?: React.ReactNode
   metricKey?: MetricKey
   places?: NearestAmenity[]
@@ -38,7 +37,7 @@ function qualityLabel(score: number): string {
   return 'Poor'
 }
 
-export default function MetricCard({ label, value, score, description, source, updated, extra, metricKey, places, center, category, crimeIncidents, searchRadius, detail, comparison, nearestEssentials, icon: Icon }: MetricCardProps) {
+export default function MetricCard({ label, value, score, description, source, extra, metricKey, places, center, category, crimeIncidents, searchRadius, detail, comparison, nearestEssentials, icon: Icon }: MetricCardProps) {
   const [showInfo, setShowInfo] = useState(false)
   const color = qualityColor(score)
   const quality = qualityLabel(score)
@@ -53,13 +52,13 @@ export default function MetricCard({ label, value, score, description, source, u
         role={clickable ? 'button' : undefined}
         tabIndex={clickable ? 0 : undefined}
       >
-        <div className="flex items-center justify-between">
-          <span style={{ color: '#a0a0a0' }} className="text-xs font-medium uppercase tracking-wider flex items-center gap-1.5">
-            {Icon && <Icon size={14} />}
+        <div className="flex items-center justify-between gap-2">
+          <span style={{ color: '#a0a0a0' }} className="min-w-0 break-words text-xs font-medium uppercase tracking-wider flex items-center gap-1.5">
+            {Icon && <Icon size={14} className="shrink-0" />}
             {label}
           </span>
           <span
-            className="text-xs font-semibold px-2 py-0.5 rounded-full"
+            className="shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full"
             style={{ color, backgroundColor: `${color}1a` }}
           >
             {quality}
@@ -83,12 +82,12 @@ export default function MetricCard({ label, value, score, description, source, u
           />
         </div>
 
-        {(source || updated) && (
-          <p style={{ color: '#a0a0a0' }} className="text-xs flex items-center gap-1 -mb-1">
-            <Info size={12} />
-            {source && <span>Source: {source}</span>}
-            {source && updated && <span>·</span>}
-            {updated && <span>{updated}</span>}
+        {/* Cards sit in a two-column grid at 375px, so this line has ~130px:
+            the text must be allowed to shrink and wrap beside the icon. */}
+        {source && (
+          <p style={{ color: '#a0a0a0' }} className="text-xs flex items-start gap-1 -mb-1">
+            <Info size={12} className="shrink-0 mt-px" />
+            <span className="min-w-0 break-words">Source: {source}</span>
           </p>
         )}
       </div>
