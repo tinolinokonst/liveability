@@ -1,4 +1,5 @@
-import { cookies } from 'next/headers'
+import { createHmac } from 'node:crypto'
+import { cookies, headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
@@ -6,7 +7,7 @@ import type { User } from '@supabase/supabase-js'
 
 let adminClient: SupabaseClient | null = null
 
-function getAdminClient(): SupabaseClient | null {
+export function getAdminClient(): SupabaseClient | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!url || !serviceKey) return null
@@ -98,6 +99,43 @@ async function checkRateLimit(
   return data === true
 }
 
+const RATE_LIMITED = () =>
+  NextResponse.json({ error: 'Rate limit exceeded. Please try again later.' }, { status: 429 })
+
+/**
+ * Stable per-IP key in UUID form, so anonymous callers share the api_usage
+ * table and check_rate_limit RPC with signed-in users. HMAC'd with a server
+ * secret rather than plain-hashed: the IPv4 space is small enough that an
+ * unkeyed hash stored in the table could be reversed by brute force.
+ */
+async function ipRateLimitKey(): Promise<string> {
+  const h = await headers()
+  // On Vercel the platform sets x-forwarded-for itself (client values are
+  // overwritten), so its first entry is the real client IP.
+  const ip =
+    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    h.get('x-real-ip')?.trim() ||
+    'unknown'
+  const hex = createHmac('sha256', process.env.SUPABASE_SERVICE_ROLE_KEY ?? 'liveability-rate-limit')
+    .update(`ip:${ip}`)
+    .digest('hex')
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`
+}
+
+/**
+ * Rate-limit guard for public routes that don't require sign-in, keyed on the
+ * caller's IP instead of their account. Returns null when allowed, or a 429
+ * response the route should return immediately.
+ */
+export async function guardAnonymousRequest(
+  route: string,
+  limit: number,
+  windowSeconds: number
+): Promise<NextResponse | null> {
+  const allowed = await checkRateLimit(await ipRateLimitKey(), route, limit, windowSeconds)
+  return allowed ? null : RATE_LIMITED()
+}
+
 /**
  * Auth + rate-limit guard for API routes.
  * Returns { user } on success, or a NextResponse (401/429) the route should return immediately.
@@ -114,12 +152,7 @@ export async function guardRequest(
 
   const allowed = await checkRateLimit(user.id, route, limit, windowSeconds)
   if (!allowed) {
-    return {
-      response: NextResponse.json(
-        { error: 'Rate limit exceeded. Please try again later.' },
-        { status: 429 }
-      ),
-    }
+    return { response: RATE_LIMITED() }
   }
 
   return { user }

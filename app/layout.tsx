@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
+import { headers } from "next/headers";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import TransitionWrapper from "@/components/TransitionWrapper";
 import FooterWrapper from "@/components/FooterWrapper";
+import { VisitorCountryProvider } from "@/components/VisitorCountry";
 
 import { SITE_URL } from "@/lib/site";
 
@@ -53,11 +55,22 @@ export default async function RootLayout({
   // without it, which the policy then blocks.
   await connection();
 
+  // Set by Vercel's edge from the client IP (a client-sent value is
+  // overwritten), so it can't be spoofed in production. Absent locally;
+  // DEV_VISITOR_COUNTRY stands in for it under `next dev` to test the US
+  // waitlist banner.
+  const rawCountry =
+    (await headers()).get("x-vercel-ip-country") ??
+    (process.env.NODE_ENV === "development" ? process.env.DEV_VISITOR_COUNTRY : undefined);
+  const country = rawCountry && /^[A-Za-z]{2}$/.test(rawCountry) ? rawCountry.toUpperCase() : null;
+
   return (
     <html lang="en">
       <body className="flex min-h-screen flex-col">
         <main className="flex-1">
-          <TransitionWrapper>{children}</TransitionWrapper>
+          <VisitorCountryProvider country={country}>
+            <TransitionWrapper>{children}</TransitionWrapper>
+          </VisitorCountryProvider>
         </main>
         <FooterWrapper />
         {/* Production loads the script from same-origin /_vercel/insights; it is

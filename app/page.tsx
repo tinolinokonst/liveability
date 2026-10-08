@@ -12,6 +12,7 @@ import SiteHeader from '@/components/SiteHeader'
 import BackgroundDecor from '@/components/BackgroundDecor'
 import Reveal from '@/components/Reveal'
 import MotionLink from '@/components/MotionLink'
+import UsWaitlistBanner from '@/components/UsWaitlistBanner'
 
 const FEATURES = [
   { icon: Wind,          label: 'Air Quality',          desc: 'BAFU air pollution modeling at your address' },
@@ -46,6 +47,11 @@ export default function Home() {
     <div style={{ backgroundColor: '#0f0f0f', minHeight: '100vh' }} className="relative">
       <BackgroundDecor />
       <SiteHeader />
+
+      {/* Non-Swiss visitors only; renders nothing otherwise */}
+      <div className="max-w-5xl mx-auto px-6 pt-6 empty:hidden">
+        <UsWaitlistBanner className="max-w-2xl" />
+      </div>
 
       {/* Hero */}
       <section className="max-w-5xl mx-auto px-6 pt-12 sm:pt-20 pb-20 sm:pb-32">

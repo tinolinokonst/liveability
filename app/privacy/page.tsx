@@ -14,7 +14,7 @@ export default function PrivacyPage() {
       <SiteHeader />
       <div className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="text-3xl font-bold tracking-tight text-white">Privacy Policy</h1>
-        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 5, 2026</p>
+        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 8, 2026</p>
 
         <div className="mt-10 space-y-10 text-base leading-relaxed text-[#a0a0a0]">
           <p>
@@ -63,11 +63,23 @@ export default function PrivacyPage() {
               a new request; that cache holds no account or other personal link.
             </p>
             <p>
+              If you join the US launch waitlist, we store your email address, the US
+              city and state you are moving to, anything you write under &ldquo;What
+              matters most to you?&rdquo;, the time, and the country your request came
+              from (taken from your IP address by our host, Vercel). You do not need an
+              account to join. We use your email for one purpose only: to tell you when
+              Liveability launches in the US. It is never shared with anyone, never
+              added to other mailing lists, and is readable only by us. To be removed,
+              email us at the address below and we will delete your entry.
+            </p>
+            <p>
               We use Vercel Web Analytics to count page views in aggregate. It records
               the page visited, the referring site, and your country, browser, and
               device type. It sets no cookies, writes nothing to your browser, and is
               not linked to your account; Vercel identifies a visit using a hash of the
-              request that is discarded within 24 hours.
+              request that is discarded within 24 hours. When someone joins the US
+              waitlist we also count that signup with the city and state chosen — never
+              the email address.
             </p>
           </section>
 
@@ -78,8 +90,9 @@ export default function PrivacyPage() {
               when you sign in. It is strictly necessary to keep you signed in, and no
               cookie is set at all until you do. We do not use analytics, advertising,
               or tracking cookies, and we write nothing to your browser&apos;s local
-              storage. The only other thing kept in your browser is the Monthly Budget
-              household you enter, in the tab&apos;s session storage.
+              storage. The only other things kept in your browser are the Monthly Budget
+              household you enter and, if you dismiss the US waitlist banner, a flag
+              to keep it hidden — both in the tab&apos;s session storage.
             </p>
             <p>
               Two third-party services load in your browser — the Google Maps
@@ -98,9 +111,11 @@ export default function PrivacyPage() {
             <ul className="list-disc space-y-1 pl-5">
               <li>Provide and operate the Service, including generating scores</li>
               <li>Authenticate your account and keep it secure</li>
-              <li>Apply per-account rate limits so the Service stays available</li>
+              <li>Apply per-account rate limits so the Service stays available (and, for
+                the account-free US waitlist, a per-IP limit stored only as a keyed hash)</li>
               <li>Understand, in aggregate, which pages are used, to improve them</li>
               <li>Read the feedback you send, and respond to your questions or requests</li>
+              <li>Email you once about the US launch, if you joined the waitlist</li>
             </ul>
           </section>
 
@@ -176,7 +191,8 @@ export default function PrivacyPage() {
             <p>
               You can delete your account at any time from the Settings page, which
               removes your saved addresses, any feedback you sent, and your account
-              data. You can also request
+              data. To leave the US waitlist, email us and we will delete your entry.
+              You can also request
               access to, correction of, or deletion of your personal information by
               contacting us. You can control cookies through your browser settings,
               though you will not be able to stay signed in without the session

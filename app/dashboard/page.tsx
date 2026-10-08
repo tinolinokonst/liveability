@@ -11,6 +11,7 @@ import SavedAddresses from '@/components/SavedAddresses'
 import AiMatch from '@/components/AiMatch'
 import AppHeader from '@/components/AppHeader'
 import FeedbackButton from '@/components/FeedbackButton'
+import UsWaitlistBanner from '@/components/UsWaitlistBanner'
 import { HouseholdProvider } from '@/components/HouseholdContext'
 import { AddressMetrics, AiMatchListingsState } from '@/lib/types'
 
@@ -119,6 +120,9 @@ function Dashboard() {
             Currently covering Switzerland
           </p>
         </div>
+
+        {/* Non-Swiss visitors only; renders nothing otherwise */}
+        <UsWaitlistBanner className="mb-8" />
 
         {/* Tabs */}
         <div
