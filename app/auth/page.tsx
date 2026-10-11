@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { authCallbackUrl } from '@/lib/site'
+import { capture } from '@/lib/analytics'
 import Link from 'next/link'
 
 // Reasons the /auth/callback route can bounce someone back here. Mapped to
@@ -90,6 +91,7 @@ function AuthForm() {
       if (error) {
         setError(error.message)
       } else {
+        capture('signup_completed')
         setMessage('Check your email to confirm your account — the link will sign you in.')
       }
     }

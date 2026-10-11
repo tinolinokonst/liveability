@@ -6,6 +6,7 @@ import { X } from 'lucide-react'
 import { aqiColor, METRIC_INFO, MetricKey } from '@/lib/metricInfo'
 import { CrimeIncidentLocation, NearestAmenity, NearestEssentialItem, NearestEssentials } from '@/lib/types'
 import { formatDistance } from '@/lib/format'
+import { capture, SENSITIVE_TEXT } from '@/lib/analytics'
 
 const MetricInfoMap = dynamic(() => import('./MetricInfoMap'), { ssr: false })
 
@@ -101,6 +102,10 @@ export default function MetricInfoModal({ metricKey, value, score, places, cente
   const amenityNoun = AMENITY_NOUN[metricKey] ?? info.label.toLowerCase()
 
   useEffect(() => {
+    capture('metric_opened', { metric: metricKey })
+  }, [metricKey])
+
+  useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose()
     }
@@ -118,7 +123,8 @@ export default function MetricInfoModal({ metricKey, value, score, places, cente
         role="dialog"
         aria-modal="true"
         onClick={e => e.stopPropagation()}
-        className="w-full max-w-md rounded-2xl p-6 flex flex-col gap-4 max-h-[85vh] overflow-y-auto"
+        // The budget breakdown is all income-derived: mask its text in session replays
+        className={`w-full max-w-md rounded-2xl p-6 flex flex-col gap-4 max-h-[85vh] overflow-y-auto ${metricKey === 'budget' ? SENSITIVE_TEXT : ''}`}
         style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
       >
         <div className="flex items-start justify-between gap-3">

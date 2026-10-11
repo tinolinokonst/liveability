@@ -101,8 +101,8 @@ export default function CookiePolicyPage() {
           <section className="space-y-3">
             <h2 className="text-lg font-semibold text-white">Third-party content</h2>
             <p>
-              Two third-party services load in your browser. We checked both: neither sets
-              any cookie.
+              Three third-party services load in your browser. We checked all three: none
+              sets any cookie or writes to your browser&apos;s storage.
             </p>
             <ul className="list-disc space-y-2 pl-5">
               <li>
@@ -136,6 +136,17 @@ export default function CookiePolicyPage() {
                 </a>
                 .
               </li>
+              <li>
+                <span className="text-white">PostHog (EU cloud)</span> — product analytics
+                and session replays, used to improve the product. It runs in cookieless mode:
+                its identifiers live only in the page&apos;s memory and are gone when you
+                reload or close the tab. It sends data to <code>eu.i.posthog.com</code> in
+                the EU. If your browser sends Do Not Track, PostHog records nothing. See the{" "}
+                <Link href="/privacy" className="text-[#f97316] underline">
+                  Privacy Policy
+                </Link>{" "}
+                for what it records and what it never sees.
+              </li>
             </ul>
             <p>
               Maps are rendered with Leaflet using swisstopo tiles — we do not embed a Google
@@ -148,7 +159,7 @@ export default function CookiePolicyPage() {
             <h2 className="text-lg font-semibold text-white">What we do not use</h2>
             <p>Being specific rather than hiding behind boilerplate — none of these exist:</p>
             <ul className="list-disc space-y-1 pl-5">
-              <li>Analytics cookies or products such as Google Analytics</li>
+              <li>Analytics cookies, or products such as Google Analytics</li>
               <li>Advertising, retargeting, or social media pixels</li>
               <li>Cross-site tracking or device fingerprinting</li>
               <li>Preference cookies</li>
@@ -162,8 +173,10 @@ export default function CookiePolicyPage() {
               for what it records.
             </p>
             <p>
-              Because we set no non-essential cookies, there is no cookie banner and nothing
-              to opt out of.
+              We also use PostHog, described above, without cookies or browser storage.
+              Because we set no non-essential cookies and store nothing non-essential in your
+              browser, there is no cookie banner. To opt out of PostHog, turn on Do Not
+              Track in your browser.
             </p>
           </section>
 

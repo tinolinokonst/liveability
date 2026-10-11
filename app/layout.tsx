@@ -6,6 +6,7 @@ import "./globals.css";
 import TransitionWrapper from "@/components/TransitionWrapper";
 import FooterWrapper from "@/components/FooterWrapper";
 import { VisitorCountryProvider } from "@/components/VisitorCountry";
+import AnalyticsIdentity from "@/components/AnalyticsIdentity";
 
 import { SITE_URL } from "@/lib/site";
 
@@ -73,6 +74,8 @@ export default async function RootLayout({
           </VisitorCountryProvider>
         </main>
         <FooterWrapper />
+        {/* PostHog itself starts in instrumentation-client.ts */}
+        <AnalyticsIdentity />
         {/* Production loads the script from same-origin /_vercel/insights; it is
             created by the bundled component, so the CSP's 'strict-dynamic'
             admits it. In development the package instead pulls a debug script

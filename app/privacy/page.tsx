@@ -81,6 +81,31 @@ export default function PrivacyPage() {
               waitlist we also count that signup with the city and state chosen — never
               the email address.
             </p>
+            <p>
+              To improve the product we use{" "}
+              <a
+                href="https://posthog.com/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#f97316] underline"
+              >
+                PostHog
+              </a>
+              , hosted in its EU cloud (Frankfurt). It records which pages you visit and a
+              fixed set of product events — for example that a search finished, a metric
+              was opened, the amenity radius changed, an address was saved, or a comparison
+              was viewed. Those events carry no personal data: never the address you
+              searched, your email, or any income or household value. If you are signed
+              in, events are linked to your account&apos;s internal ID (not your email) so we
+              can see how one person moves through the product. PostHog also records
+              session replays — a reconstruction of how the page changed while you used
+              it. In replays every text field is masked, the income field is not recorded
+              at all, the text of the Monthly Budget and of AI Match answers is masked, and
+              request contents are not captured, so your income is never captured in any
+              form. PostHog runs cookieless: it sets no cookies and writes nothing to your
+              browser&apos;s storage, so a new visit starts anonymous. If your browser
+              sends Do Not Track, PostHog records nothing.
+            </p>
           </section>
 
           <section className="space-y-3">
@@ -114,6 +139,10 @@ export default function PrivacyPage() {
               <li>Apply per-account rate limits so the Service stays available (and, for
                 the account-free US waitlist, a per-IP limit stored only as a keyed hash)</li>
               <li>Understand, in aggregate, which pages are used, to improve them</li>
+              <li>
+                Study how people use the product, through PostHog events and session
+                replays, to find and fix what is confusing
+              </li>
               <li>Read the feedback you send, and respond to your questions or requests</li>
               <li>Email you once about the US launch, if you joined the waitlist</li>
             </ul>
@@ -125,9 +154,9 @@ export default function PrivacyPage() {
               <li>We do not sell your personal information.</li>
               <li>We do not run ads or share data with ad networks.</li>
               <li>
-                We do not track you across sites or build a behavioural profile of you.
-                Our only analytics is the cookieless, aggregate page-view counting
-                described above.
+                We do not track you across sites, and our analytics is used only to
+                improve the product — never for advertising or profiling. Both Vercel
+                Web Analytics and PostHog run without cookies, as described above.
               </li>
               <li>
                 We do not store the full details of every address you search — only
@@ -179,7 +208,8 @@ export default function PrivacyPage() {
             <p>
               We do not sell your personal information. We rely on service providers
               to operate the Service — Vercel for hosting and analytics, Supabase for authentication
-              and database, and Anthropic for the AI Match feature — and they may
+              and database, PostHog (EU) for product analytics and session replays, and
+              Anthropic for the AI Match feature — and they may
               process information on our behalf. We may also disclose information
               where required by law, to enforce our terms, or to protect the rights
               and safety of our users or the public.
@@ -207,7 +237,9 @@ export default function PrivacyPage() {
             <h2 className="text-lg font-semibold text-white">Data retention and security</h2>
             <p>
               We retain personal information only as long as needed to provide the
-              Service or as required by law. Saved addresses are readable only by the
+              Service or as required by law. PostHog events and session replays are kept
+              according to our PostHog plan&apos;s retention period and then deleted, and
+              you can ask us to delete those linked to your account. Saved addresses are readable only by the
               account that created them, enforced at the database level. We rely on
               reputable providers to store data securely, but no method of
               transmission or storage is completely secure, and we cannot guarantee

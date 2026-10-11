@@ -6,6 +6,7 @@ import type { MonthlyBudget } from '@/lib/budget'
 import { AddressMetrics } from '@/lib/types'
 import { useHousehold, Household } from './HouseholdContext'
 import MetricInfoModal from './MetricInfoModal'
+import { SENSITIVE_BLOCK, SENSITIVE_TEXT } from '@/lib/analytics'
 
 export const INCOME_NOTE = 'Your income is used only to calculate this estimate and is never stored.'
 const EXCLUDED_NOTE = 'Estimate — pension contributions, deductions and your actual insurer not included.'
@@ -166,7 +167,9 @@ export function HouseholdForm({ onEdit }: { onEdit?: () => void } = {}) {
     <div className="flex flex-col gap-3">
       <label className="flex flex-col gap-1.5">
         <span className="text-xs" style={{ color: '#a0a0a0' }}>Gross annual household income</span>
-        <div className="flex items-center rounded-xl px-3 focus-within:ring-2 focus-within:ring-[#f97316]" style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}>
+        {/* Blocked from session replay outright (not just masked), so not even
+            the number of digits typed is recorded */}
+        <div className={`flex items-center rounded-xl px-3 focus-within:ring-2 focus-within:ring-[#f97316] ${SENSITIVE_BLOCK}`} style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}>
           <span className="text-sm shrink-0" style={{ color: '#a0a0a0' }}>CHF</span>
           <input
             type="text"
@@ -290,7 +293,8 @@ export function MonthlyBudgetCard({ metrics }: { metrics: AddressMetrics }) {
   const hasIncome = !!household.grossIncome
 
   return (
-    <div className="rounded-2xl p-4 sm:p-5 flex flex-col gap-3" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
+    // Every figure here is income-derived: masked in session replays
+    <div className={`rounded-2xl p-4 sm:p-5 flex flex-col gap-3 ${SENSITIVE_TEXT}`} style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs font-medium uppercase tracking-wider flex items-center gap-1.5" style={{ color: '#a0a0a0' }}>
           <Wallet size={14} />
@@ -418,7 +422,8 @@ export function BudgetComparison({ addresses, accents }: { addresses: AddressMet
     : null
 
   return (
-    <div className="rounded-xl p-4 flex flex-col gap-3" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
+    // Every figure here is income-derived: masked in session replays
+    <div className={`rounded-xl p-4 flex flex-col gap-3 ${SENSITIVE_TEXT}`} style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs font-medium uppercase tracking-wider flex items-center gap-1.5" style={{ color: '#a0a0a0' }}>
           <Wallet size={14} /> Monthly Budget

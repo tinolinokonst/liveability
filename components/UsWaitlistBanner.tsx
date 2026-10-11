@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { track } from '@vercel/analytics'
 import { Check, MapPin, X } from 'lucide-react'
 import { useVisitorCountry } from '@/components/VisitorCountry'
+import { capture } from '@/lib/analytics'
 import {
   EMAIL_PATTERN,
   MAX_CITY_LENGTH,
@@ -82,6 +83,7 @@ export default function UsWaitlistBanner({ className = '' }: { className?: strin
       }
       // City and state only — the email never goes to analytics
       track('waitlist_signup', { city: city.trim(), state })
+      capture('waitlist_signup', { city: city.trim(), state })
       rememberDismissed()
       setStatus('sent')
     } catch {

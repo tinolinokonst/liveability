@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Star, X } from 'lucide-react'
 import { AddressMetrics, NearestAmenity } from '@/lib/types'
 import { MetricKey } from '@/lib/metricInfo'
 import MetricInfoModal from './MetricInfoModal'
 import { buildDetail, buildComparison } from './AddressResults'
 import { BudgetComparison } from './MonthlyBudget'
+import { capture } from '@/lib/analytics'
 
 const ACCENT_COLORS = ['#f97316', '#3b82f6', '#a855f7']
 
@@ -73,6 +74,11 @@ function getPlacesForMetric(metricKey: MetricKey, addr: AddressMetrics): Nearest
 
 export default function AddressCompare({ addresses, onRemove }: AddressCompareProps) {
   const [openModal, setOpenModal] = useState<OpenModal | null>(null)
+
+  // Once per comparison size, from the point a side-by-side view exists
+  useEffect(() => {
+    if (addresses.length >= 2) capture('comparison_viewed', { count: addresses.length })
+  }, [addresses.length])
 
   if (addresses.length < 2) {
     return (

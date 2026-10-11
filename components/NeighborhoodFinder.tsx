@@ -5,6 +5,7 @@ import { ArrowLeft, Bookmark, Check, MapPin } from 'lucide-react'
 import { Neighborhood, WeightConfig, Profile, PROFILE_WEIGHTS, AddressMetrics, SavedAddress } from '@/lib/types'
 import { fetchFullMetrics } from '@/lib/metrics'
 import { fetchSavedAddresses, saveAddress } from '@/lib/savedAddresses'
+import { capture } from '@/lib/analytics'
 import LocalNews from './LocalNews'
 import AddressResults from './AddressResults'
 import ResultsHeader from './ResultsHeader'
@@ -218,6 +219,7 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
     try {
       await saveAddress(userId, metrics)
       setSaved(true)
+      capture('address_saved')
     } catch (err) {
       setMetricsError(err instanceof Error ? err.message : 'Failed to save area')
     } finally {

@@ -7,6 +7,7 @@ import 'leaflet/dist/leaflet.css'
 import { Maximize2, Minimize2 } from 'lucide-react'
 import { CrimeIncidentLocation, NearestAmenity } from '@/lib/types'
 import { formatDistance } from '@/lib/format'
+import { capture } from '@/lib/analytics'
 
 export interface LegendItem {
   color: string
@@ -326,7 +327,10 @@ export default function MetricInfoMap({
         </MapContainer>
 
         <button
-          onClick={() => setFullscreen(fs => !fs)}
+          onClick={() => {
+            if (!fullscreen) capture('map_fullscreen_opened')
+            setFullscreen(!fullscreen)
+          }}
           aria-label={fullscreen ? 'Exit fullscreen' : 'Expand map'}
           className="absolute z-[1000] rounded-lg p-1.5 transition-colors"
           style={{

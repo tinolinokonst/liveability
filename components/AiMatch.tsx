@@ -6,6 +6,7 @@ import { MATCHABLE_AREAS, areaDisplayName } from '@/lib/neighborhoods'
 import { AiMatchListingsState, AiRentListing } from '@/lib/types'
 import { useHousehold } from './HouseholdContext'
 import { HouseholdForm, formatChf } from './MonthlyBudget'
+import { capture, SENSITIVE_TEXT } from '@/lib/analytics'
 
 export type { AiMatchListingsState, AiRentListing }
 
@@ -152,6 +153,7 @@ export default function AiMatch({
     e.preventDefault()
     if (!description.trim() || loading) return
 
+    capture('ai_match_submitted')
     setLoading(true)
     onResponseChange('')
     setError(null)
@@ -282,8 +284,10 @@ export default function AiMatch({
               AI Match Results
             </span>
           </div>
+          {/* Masked in session replays: with a household set, the answer can
+              quote tax and take-home figures derived from the income */}
           <div
-            className="text-sm leading-relaxed"
+            className={`text-sm leading-relaxed ${SENSITIVE_TEXT}`}
             style={{ color: '#a0a0a0' }}
             dangerouslySetInnerHTML={{ __html: renderMarkdown(response) }}
           />
@@ -297,10 +301,13 @@ export default function AiMatch({
                     View full details
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {knownNeighborhoods.map(name => (
+                    {knownNeighborhoods.map((name, i) => (
                       <button
                         key={name}
-                        onClick={() => onViewNeighborhood(name)}
+                        onClick={() => {
+                          capture('ai_match_result_clicked', { rank: i + 1 })
+                          onViewNeighborhood(name)
+                        }}
                         className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all"
                         style={{ backgroundColor: '#1a1a1a', color: '#f97316', border: '1px solid #f9731633' }}
                         onMouseEnter={e => {
@@ -444,7 +451,7 @@ export default function AiMatch({
             <span className="flex items-center gap-2 min-w-0">
               <Wallet size={14} style={{ color: '#f97316' }} className="shrink-0" />
               <span className="text-sm font-semibold text-white shrink-0">Household budget</span>
-              <span className="text-xs truncate" style={{ color: '#6b6b6b' }}>
+              <span className={`text-xs truncate ${SENSITIVE_TEXT}`} style={{ color: '#6b6b6b' }}>
                 {household.grossIncome
                   ? `${formatChf(household.grossIncome)}/yr · ${household.status} · ${household.adults + household.children} ${household.adults + household.children === 1 ? 'person' : 'people'}`
                   : 'optional — ask about tax or what’s left over'}

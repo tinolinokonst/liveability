@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { ArrowLeft, Check } from 'lucide-react'
 import { geocodeAddress } from '@/lib/geocoding'
+import { capture } from '@/lib/analytics'
 import { fetchAmenityScores } from '@/lib/overpass'
 import { buildMetrics } from '@/lib/metrics'
 import { fetchAQI, AQIResult } from '@/lib/airquality'
@@ -107,11 +108,17 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialAddress])
 
+  // The query itself is never sent to analytics
+  function failValidation() {
+    setValidationError(true)
+    capture('search_validation_failed')
+  }
+
   async function runSearch(address: string, bypass = false) {
     const trimmed = address.trim()
     if (!trimmed) return
     if (!bypass && !isValidAddress(trimmed)) {
-      setValidationError(true)
+      failValidation()
       return
     }
 
@@ -148,6 +155,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
       setCrimeData(crime)
       const baseResult = buildMetrics(address.trim(), location, aqi, amenity, crime, sunlight, noise, census, nearest, transitCh)
       setResult(cityAqiResult != null ? { ...baseResult, cityAqi: cityAqiResult.aqi, cityAqiName: referenceCity.name } : baseResult)
+      capture('address_search_completed')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
     } finally {
@@ -159,7 +167,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
     e.preventDefault()
     const bypass = autocompleteSelectedRef.current
     if (!bypass && !isValidAddress(query)) {
-      setValidationError(true)
+      failValidation()
       return
     }
     await runSearch(query, bypass)
@@ -215,6 +223,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
     try {
       await saveAddress(userId, result)
       setSaved(true)
+      capture('address_saved')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save address')
     } finally {
@@ -266,7 +275,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
           onClick={(e) => {
             if (!autocompleteSelectedRef.current && !isValidAddress(query)) {
               e.preventDefault()
-              setValidationError(true)
+              failValidation()
             }
           }}
           className="flex-1 sm:flex-none px-5 py-3 rounded-xl font-semibold text-sm text-white transition-all disabled:cursor-not-allowed"
@@ -356,7 +365,11 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
               {RADIUS_OPTIONS.map(opt => (
                 <button
                   key={opt.meters}
-                  onClick={() => setRadius(opt.meters)}
+                  onClick={() => {
+                    if (opt.meters === radius) return
+                    setRadius(opt.meters)
+                    capture('radius_changed', { radius: opt.meters })
+                  }}
                   disabled={radiusLoading}
                   className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50"
                   style={{

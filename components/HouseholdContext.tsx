@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 import type { MaritalStatus } from '@/lib/tax'
+import { capture } from '@/lib/analytics'
 
 // Household inputs for the Monthly Budget. Held in React state and mirrored to
 // sessionStorage (this tab only, gone when it closes) — never sent to Supabase
@@ -49,6 +50,9 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => { setState(readStored()) }, [])
 
   function setHousehold(update: Partial<Household>) {
+    // Counted once each time an income goes from empty to entered; the value
+    // itself never leaves the browser through analytics
+    if (!household.grossIncome && update.grossIncome) capture('budget_income_entered')
     setState(prev => {
       const next = { ...prev, ...update }
       try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next)) } catch { /* storage blocked: state still works */ }
