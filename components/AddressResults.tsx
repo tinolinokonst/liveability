@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { Wind, Shield, Navigation, ShoppingBag, Sun, Volume2, Users, Leaf, DollarSign, LucideIcon } from 'lucide-react'
+import { Wind, Shield, Navigation, ShoppingBag, Sun, Volume2, Users, Leaf, DollarSign, TriangleAlert, LucideIcon } from 'lucide-react'
 import { AddressMetrics, AmenityPlaces, NearestAmenity, TransitCHResult } from '@/lib/types'
 import { roundKm, formatDistance } from '@/lib/format'
 import { getSwissAverages } from '@/lib/neighborhoods'
@@ -11,6 +11,8 @@ import InfoCard from './InfoCard'
 import LocalNews from './LocalNews'
 import NearestEssentials from './NearestEssentials'
 import { MonthlyBudgetCard } from './MonthlyBudget'
+import RiskCards from './RiskCards'
+import { contaminationPenalty, hazardPenalty } from '@/lib/risks'
 
 interface AddressResultsProps {
   metrics: AddressMetrics
@@ -488,6 +490,11 @@ function compositeSubtitle(metrics: AddressMetrics): string {
   if (worst.label !== best.label && worst.score < 60) {
     parts.push(`${lowLabel(worst.score)} ${worst.label}`)
   }
+  // Say why the score is lower than the metrics suggest
+  const hazard = hazardPenalty(metrics.risks?.hazards)
+  const contamination = contaminationPenalty(metrics.risks?.contamination)
+  if (hazard) parts.push(`−${hazard} natural hazard`)
+  if (contamination) parts.push(`−${contamination} contaminated site`)
   return parts.join(' · ')
 }
 
@@ -709,6 +716,14 @@ export default function AddressResults({ metrics }: AddressResultsProps) {
           />
         </div>
       </div>
+
+      {/* Risks: address searches only — area results and older saved addresses have none */}
+      {metrics.risks && (
+        <div className="flex flex-col gap-3">
+          <SectionHeader icon={TriangleAlert} label="Risks" />
+          <RiskCards risks={metrics.risks} center={center} />
+        </div>
+      )}
 
       {/* Getting Around */}
       <div className="flex flex-col gap-3">

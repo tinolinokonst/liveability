@@ -6,7 +6,8 @@ import { fetchNoiseEstimate } from './noise'
 import { fetchCensus } from './census'
 import { fetchNearestEssentials } from './nearest'
 import { fetchTransitCh } from './transitCh'
-import { AddressMetrics, AmenityScores, CrimeResult, DemographicsResult, GeoLocation, NearestEssentials, NoiseResult, SunlightResult, TransitCHResult } from './types'
+import { fetchRisks, riskPenalty } from './risks'
+import { AddressMetrics, AmenityScores, CrimeResult, DemographicsResult, GeoLocation, NearestEssentials, NoiseResult, RisksResult, SunlightResult, TransitCHResult } from './types'
 
 // Single source of truth for an address's headline score.
 //
@@ -53,7 +54,8 @@ export function buildMetrics(
   censusData: DemographicsResult,
   nearestEssentials: NearestEssentials,
   transitCh?: TransitCHResult,
-  id?: string
+  id?: string,
+  risks?: RisksResult
 ): AddressMetrics {
   // Prefer the live Swiss public transport score (distance + departure frequency)
   // over the OSM stop-count score when available
@@ -61,7 +63,7 @@ export function buildMetrics(
     ? transitCh.score
     : amenityData.transitScore
 
-  const overallScore = compositeScore([
+  const baseScore = compositeScore([
     [aqiData.score, WEIGHTS.aqi],
     [amenityData.walkabilityScore, WEIGHTS.walkability],
     [amenityData.groceryScore, WEIGHTS.grocery],
@@ -74,6 +76,9 @@ export function buildMetrics(
     [sunlightData.available ? sunlightData.score : null, WEIGHTS.sunlight],
     [noiseData.available ? noiseData.score : null, WEIGHTS.noise],
   ])
+  // Risks are penalties only, applied after the weighted mean (see lib/risks.ts):
+  // a hazard zone or contaminated site lowers the score, missing data never does
+  const overallScore = Math.max(0, baseScore - riskPenalty(risks))
 
   return {
     id: id ?? crypto.randomUUID(),
@@ -130,6 +135,7 @@ export function buildMetrics(
     censusData,
     nearestEssentials,
     transitCh,
+    risks,
   }
 }
 
@@ -137,9 +143,11 @@ export async function fetchFullMetrics(
   address: string,
   location: GeoLocation,
   radius: number = 800,
-  id?: string
+  id?: string,
+  /** Address-level risks; off for areas, where a single centre point would mislead */
+  includeRisks = false
 ): Promise<AddressMetrics> {
-  const [aqi, amenity, crime, sunlight, noise, census, nearest, transitCh] = await Promise.all([
+  const [aqi, amenity, crime, sunlight, noise, census, nearest, transitCh, risks] = await Promise.all([
     fetchAQI(location.lat, location.lng),
     fetchAmenityScores(location.lat, location.lng, radius),
     fetchCrimeScore(location.lat, location.lng),
@@ -148,7 +156,8 @@ export async function fetchFullMetrics(
     fetchCensus(location.lat, location.lng),
     fetchNearestEssentials(location.lat, location.lng),
     fetchTransitCh(location.lat, location.lng),
+    includeRisks ? fetchRisks(location.lat, location.lng) : Promise.resolve(undefined),
   ])
 
-  return buildMetrics(address, location, aqi, amenity, crime, sunlight, noise, census, nearest, transitCh, id)
+  return buildMetrics(address, location, aqi, amenity, crime, sunlight, noise, census, nearest, transitCh, id, risks)
 }

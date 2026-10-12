@@ -15,12 +15,13 @@
 // carry a nonce. Inline styles cannot execute script, so this is the accepted
 // trade-off.
 //
-// Scope note: only three third parties run in the browser — the Google Maps JS
-// SDK (Places autocomplete, dashboard only), swisstopo map tiles, and PostHog
+// Scope note: only four third parties run in the browser — the Google Maps JS
+// SDK (Places autocomplete, dashboard only), swisstopo map tiles, cantonal
+// hazard-map tiles from geodienste.ch (img-src only), and PostHog
 // (EU cloud, product analytics + session replay; see lib/analytics.ts). The
 // replay recorder is bundled, so PostHog needs connect-src for ingestion and
 // its asset host only as a fallback for remotely enabled extensions. Every data
-// API (geo.admin.ch, Overpass, transport.opendata.ch, Open-Meteo, ESTV) is
+// API (geo.admin.ch, geodienste.ch hazard/cadastre queries, Overpass, transport.opendata.ch, Open-Meteo, ESTV) is
 // called server-side through /api/* routes, so those origins deliberately do
 // NOT appear in connect-src: the browser never contacts them, and listing them
 // would only widen the exfiltration surface the policy exists to close.
@@ -45,8 +46,9 @@ export function buildCsp(nonce: string, opts: { allowEval: boolean }): string {
     "font-src 'self' data:",
     // Leaflet tiles (swisstopo WMTS) and Google Maps imagery; data:/blob: for
     // inline icons. Tiles load as <img>, so swisstopo needs img-src only — it
-    // is deliberately absent from connect-src.
-    "img-src 'self' data: blob: https://wmts.geo.admin.ch https://*.googleapis.com https://*.gstatic.com",
+    // is deliberately absent from connect-src. geodienste.ch serves the cantonal
+    // hazard-map overlay in the Risks modal, also as <img> tiles.
+    "img-src 'self' data: blob: https://wmts.geo.admin.ch https://geodienste.ch https://*.googleapis.com https://*.gstatic.com",
     // Browser-initiated requests only: our own API routes, Supabase (auth +
     // database via the browser SDK), Google Places autocomplete XHR, and
     // PostHog EU ingestion (events, replay snapshots, remote config).

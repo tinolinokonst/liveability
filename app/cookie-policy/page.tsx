@@ -16,7 +16,7 @@ export default function CookiePolicyPage() {
       <SiteHeader />
       <div className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="text-3xl font-bold tracking-tight text-white">Cookie Policy</h1>
-        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 8, 2026</p>
+        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 12, 2026</p>
 
         <div className="mt-10 space-y-10 text-base leading-relaxed text-[#a0a0a0]">
           <p>
@@ -101,7 +101,7 @@ export default function CookiePolicyPage() {
           <section className="space-y-3">
             <h2 className="text-lg font-semibold text-white">Third-party content</h2>
             <p>
-              Three third-party services load in your browser. We checked all three: none
+              Four third-party services load in your browser. We checked all four: none
               sets any cookie or writes to your browser&apos;s storage.
             </p>
             <ul className="list-disc space-y-2 pl-5">
@@ -135,6 +135,12 @@ export default function CookiePolicyPage() {
                   geo.admin.ch terms of use
                 </a>
                 .
+              </li>
+              <li>
+                <span className="text-white">Cantonal hazard maps</span> — when you open
+                the Natural Hazards card, the canton&apos;s official hazard map is shown over
+                the map, as images requested from <code>geodienste.ch</code>, the cantons&apos;
+                shared geodata platform. Those requests set no cookies.
               </li>
               <li>
                 <span className="text-white">PostHog (EU cloud)</span> — product analytics

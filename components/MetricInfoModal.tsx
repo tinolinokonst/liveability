@@ -86,11 +86,16 @@ interface MetricInfoModalProps {
   detail?: React.ReactNode
   comparison?: React.ReactNode
   nearestEssentials?: NearestEssentials
+  /** A map built by the caller, for metrics the cases below don't cover */
+  map?: React.ReactNode
+  /** Replaces the metric's default sources, e.g. per-canton attribution */
+  sources?: Array<{ label: string; url?: string }>
   onClose: () => void
 }
 
-export default function MetricInfoModal({ metricKey, value, score, places, center, category, crimeIncidents, searchRadius, detail, comparison, nearestEssentials, onClose }: MetricInfoModalProps) {
+export default function MetricInfoModal({ metricKey, value, score, places, center, category, crimeIncidents, searchRadius, detail, comparison, nearestEssentials, map, sources: sourcesOverride, onClose }: MetricInfoModalProps) {
   const info = METRIC_INFO[metricKey]
+  const sources = sourcesOverride ?? info.sources
 
   // Nearest-outside logic: find closest amenity if none found within the search radius
   const isAmenityMetric = !!(info.placesKey || metricKey === 'walkability')
@@ -152,6 +157,9 @@ export default function MetricInfoModal({ metricKey, value, score, places, cente
         </div>
 
         {comparison}
+
+        {/* shrink-0: the dialog is a scrolling flex column, which would otherwise squash the map */}
+        {map && <div className="shrink-0">{map}</div>}
 
         {center && metricKey === 'aqi' && (
           <MetricInfoMap
@@ -250,11 +258,11 @@ export default function MetricInfoModal({ metricKey, value, score, places, cente
         )}
 
         <div className="pt-3 flex flex-col gap-1" style={{ borderTop: '1px solid #2a2a2a' }}>
-          {info.sources ? (
+          {sources ? (
             <>
               <p style={{ color: '#a0a0a0' }} className="text-xs">Sources:</p>
               <ul className="flex flex-col gap-1 text-xs" style={{ color: '#a0a0a0' }}>
-                {info.sources.map(s => (
+                {sources.map(s => (
                   <li key={s.label}>
                     {s.url ? (
                       <a href={s.url} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: '#f97316' }}>

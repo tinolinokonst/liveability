@@ -123,6 +123,22 @@ async function ipRateLimitKey(): Promise<string> {
 }
 
 /**
+ * Draw from a budget shared by every caller and server instance — for
+ * upstream services whose fair-use limit applies to us as a whole (e.g.
+ * geodienste.ch: 10 requests/minute per service). Returns false when the
+ * budget for the current window is spent.
+ */
+export async function consumeSharedQuota(
+  name: string,
+  limit: number,
+  windowSeconds: number
+): Promise<boolean> {
+  const hex = createHmac('sha256', 'liveability-shared-quota').update(name).digest('hex')
+  const key = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`
+  return checkRateLimit(key, `quota:${name}`, limit, windowSeconds)
+}
+
+/**
  * Rate-limit guard for public routes that don't require sign-in, keyed on the
  * caller's IP instead of their account. Returns null when allowed, or a 429
  * response the route should return immediately.

@@ -18,6 +18,8 @@ export type MetricKey =
   | 'noise'
   | 'census'
   | 'budget'
+  | 'hazards'
+  | 'contamination'
 
 // AQI category colors (US EPA category names)
 export function aqiColor(category: string): string {
@@ -164,6 +166,20 @@ export const METRIC_INFO: Record<MetricKey, MetricInfo> = {
       "The Swiss commune (Gemeinde) this address falls within — name, canton, and BFS commune number — resolved from the swissBOUNDARIES3D dataset. Commune-level statistics (population, median age, income) from the Swiss Federal Statistical Office are coming soon. Source: Federal Office of Topography swisstopo. This is informational context only — it is not scored or factored into the overall liveability score.",
     source: 'Federal Office of Topography swisstopo',
     sourceUrl: 'https://www.swisstopo.admin.ch/en/landscape-model-swissboundaries3d',
+  },
+  hazards: {
+    label: 'Natural Hazards',
+    description:
+      "Whether this address lies in a hazard zone on the canton's official hazard map (Gefahrenkarte) for floods, landslides, rockfall and avalanches. Zones follow the Swiss scheme: red (high), blue (medium), yellow (low) and yellow-white hatched (residual hazard from rare extreme events). Hazard maps cover settled areas; outside the area a canton has assessed, there is no statement either way. A hazard zone lowers the overall score (high −15, medium −8, low −3); no data never changes it.",
+    source: 'Cantonal hazard maps via geodienste.ch',
+    sourceUrl: 'https://geodienste.ch/services/gefahrenkarten',
+  },
+  contamination: {
+    label: 'Contaminated Sites',
+    description:
+      "Whether this address, or any site within 100 m, is registered in the cadastre of contaminated sites (Kataster der belasteten Standorte): former landfills, industrial sites, accident sites and shooting ranges with polluted ground. Includes the canton's cadastre and the federal cadastres for railway, airfield and military land. A registered site at the address lowers the overall score (up to −10 if it requires remediation), and one within 100 m that requires action lowers it slightly; no data never changes it.",
+    source: 'Cantonal cadastres via geodienste.ch',
+    sourceUrl: 'https://geodienste.ch/services/kataster_belasteter_standorte',
   },
   budget: {
     label: 'Monthly Budget',

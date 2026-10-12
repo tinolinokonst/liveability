@@ -14,7 +14,7 @@ export default function PrivacyPage() {
       <SiteHeader />
       <div className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="text-3xl font-bold tracking-tight text-white">Privacy Policy</h1>
-        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 8, 2026</p>
+        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 12, 2026</p>
 
         <div className="mt-10 space-y-10 text-base leading-relaxed text-[#a0a0a0]">
           <p>
@@ -178,6 +178,14 @@ export default function PrivacyPage() {
               <li>transport.opendata.ch — public transport stations and departures</li>
               <li>OpenStreetMap — nearby amenities</li>
               <li>Google Maps Platform — geocoding and rooftop sunlight modelling</li>
+              <li>
+                geodienste.ch (the cantons&apos; shared geodata platform) — cantonal hazard
+                maps and cadastres of contaminated sites, for the Risks section
+              </li>
+              <li>
+                geo.admin.ch — the federal cadastres of contaminated sites for railway,
+                civil airfield and military land
+              </li>
             </ul>
             <p>
               These queries are about locations, not about you personally. Each

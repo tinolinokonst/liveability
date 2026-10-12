@@ -84,7 +84,9 @@ export default function SavedAddresses({ onAdd, compareCount = 0, onViewNeighbor
     try {
       const radius = saved.metrics.radius ?? 800
       const location = { lat: saved.lat, lng: saved.lng, formattedAddress: saved.address }
-      const metrics = await fetchFullMetrics(saved.address, location, radius, saved.metrics.id)
+      // Saved areas share this list; only entries saved from an address search
+      // carry risks, and a refresh keeps it that way
+      const metrics = await fetchFullMetrics(saved.address, location, radius, saved.metrics.id, saved.metrics.risks !== undefined)
       await updateSavedAddressMetrics(saved.id, metrics)
       setAddresses(prev => prev.map(a => (a.id === saved.id ? { ...a, metrics } : a)))
     } catch (err) {

@@ -1,7 +1,7 @@
 "use client"
 
 import { ReactNode, useState, useEffect } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, Circle, Polygon, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, WMSTileLayer, Pane, Marker, Popup, Circle, Polygon, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Maximize2, Minimize2 } from 'lucide-react'
@@ -20,6 +20,16 @@ export interface ContextCircle {
   radiusMeters: number
   label: string
   color?: string
+}
+
+/** An official map rendered by a WMS (e.g. a cantonal hazard map), drawn over the base map */
+export interface WmsOverlay {
+  url: string
+  layers: string
+  attribution: string
+  /** Only tiles inside [[south, west], [north, east]] are requested */
+  bounds: [[number, number], [number, number]]
+  opacity?: number
 }
 
 interface NearestOutside {
@@ -42,6 +52,9 @@ interface MetricInfoMapProps {
   nearestOutside?: NearestOutside
   legend?: LegendItem[]
   height?: number
+  wmsOverlay?: WmsOverlay
+  /** Markers default to OpenStreetMap amenities; set false when they come from elsewhere */
+  markersFromOsm?: boolean
 }
 
 const POLYGON_STYLE: Record<string, { fillOpacity: number; opacity: number }> = {
@@ -133,6 +146,8 @@ export default function MetricInfoMap({
   nearestOutside,
   legend,
   height = 380,
+  wmsOverlay,
+  markersFromOsm = true,
 }: MetricInfoMapProps) {
   const [fullscreen, setFullscreen] = useState(false)
 
@@ -162,13 +177,31 @@ export default function MetricInfoMap({
     <>
       <TileLayer
         url={TILE_URL}
-        attribution={points.length > 0 || nearestOutside ? `${SWISSTOPO_ATTRIBUTION} | ${OSM_ATTRIBUTION}` : SWISSTOPO_ATTRIBUTION}
+        attribution={markersFromOsm && (points.length > 0 || nearestOutside) ? `${SWISSTOPO_ATTRIBUTION} | ${OSM_ATTRIBUTION}` : SWISSTOPO_ATTRIBUTION}
         maxNativeZoom={18}
         maxZoom={19}
         keepBuffer={4}
         updateWhenIdle={true}
         updateWhenZooming={false}
       />
+
+      {/* Own pane, above the base map: the dark-mode filter in globals.css is
+          scoped to the tile pane and would invert the official colours */}
+      {wmsOverlay && (
+        <Pane name="wms-overlay" style={{ zIndex: 350 }}>
+          <WMSTileLayer
+            url={wmsOverlay.url}
+            params={{ layers: wmsOverlay.layers, format: 'image/png', transparent: true, version: '1.3.0' }}
+            attribution={wmsOverlay.attribution}
+            bounds={wmsOverlay.bounds}
+            opacity={wmsOverlay.opacity ?? 0.6}
+            // Larger tiles mean fewer requests (geodienste.ch fair use: 10/min)
+            tileSize={512}
+            updateWhenIdle={true}
+            updateWhenZooming={false}
+          />
+        </Pane>
+      )}
 
       {contextCircle && (
         <Circle

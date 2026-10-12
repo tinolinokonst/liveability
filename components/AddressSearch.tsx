@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { ArrowLeft, Check } from 'lucide-react'
 import { geocodeAddress } from '@/lib/geocoding'
 import { capture } from '@/lib/analytics'
+import { fetchRisks } from '@/lib/risks'
 import { fetchAmenityScores } from '@/lib/overpass'
 import { buildMetrics } from '@/lib/metrics'
 import { fetchAQI, AQIResult } from '@/lib/airquality'
@@ -138,7 +139,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
       // Compare the searched address against the nearest major Swiss city center
       const referenceCity = nearestArea(location.lat, location.lng)
 
-      const [aqi, cityAqiResult, amenity, crime, sunlight, noise, census, nearest, transitCh] = await Promise.all([
+      const [aqi, cityAqiResult, amenity, crime, sunlight, noise, census, nearest, transitCh, risks] = await Promise.all([
         fetchAQI(location.lat, location.lng),
         fetchAQI(referenceCity.lat, referenceCity.lng).catch(() => null),
         fetchAmenityScores(location.lat, location.lng, radius),
@@ -148,12 +149,13 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
         fetchCensus(location.lat, location.lng),
         fetchNearestEssentials(location.lat, location.lng),
         fetchTransitCh(location.lat, location.lng),
+        fetchRisks(location.lat, location.lng),
       ])
 
       setAqiData(aqi)
       setAmenityData(amenity)
       setCrimeData(crime)
-      const baseResult = buildMetrics(address.trim(), location, aqi, amenity, crime, sunlight, noise, census, nearest, transitCh)
+      const baseResult = buildMetrics(address.trim(), location, aqi, amenity, crime, sunlight, noise, census, nearest, transitCh, undefined, risks)
       setResult(cityAqiResult != null ? { ...baseResult, cityAqi: cityAqiResult.aqi, cityAqiName: referenceCity.name } : baseResult)
       capture('address_search_completed')
     } catch (err) {
@@ -197,7 +199,8 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
             prev.censusData ?? { medianHouseholdIncome: null, totalPopulation: null, available: false },
             prev.nearestEssentials ?? { trainStation: null, busStop: null, grocery: null, hospital: null, pharmacy: null, school: null, library: null, park: null, bank: null, dining: null, worship: null, parking: null, searchRadiusKm: 15 },
             prev.transitCh,
-            prev.id
+            prev.id,
+            prev.risks
           )
           return { ...updated, cityAqi: prev.cityAqi, cityAqiName: prev.cityAqiName }
         })

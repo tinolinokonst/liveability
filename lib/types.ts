@@ -188,6 +188,88 @@ export interface NearestEssentials {
   searchRadiusKm: number
 }
 
+// ─── Risks (cantonal hazard maps + contaminated-site cadastres) ─────────────
+
+/** Swiss hazard-map zones: white, yellow-white hatched, yellow, blue, red */
+export type HazardZone = 'none' | 'residual' | 'low' | 'medium' | 'high'
+/** Reported level. Residual (yellow-white) counts as 'none'; see zone for which. */
+export type HazardLevel = 'none' | 'low' | 'medium' | 'high'
+export type HazardType = 'flood' | 'landslide' | 'rockfall' | 'avalanche'
+
+export interface HazardProcess {
+  type: HazardType
+  /** 'not_mapped': the canton did not assess this process at this location */
+  zone: HazardZone | 'not_mapped'
+}
+
+/** Attribution for one canton's data, shown in the card's modal */
+export interface RiskSourceCredit {
+  label: string
+  url: string
+}
+
+export type RiskStatus =
+  | 'ok'
+  | 'not_mapped'          // hazards only: outside the canton's surveyed area
+  | 'unavailable_canton'  // canton's terms don't allow us to use it
+  | 'error'               // upstream failure or fair-use limit; retry later
+
+export interface HazardResult {
+  status: RiskStatus
+  canton?: string
+  cantonName?: string
+  /** Worst level across the processes; null unless status is 'ok' */
+  level: HazardLevel | null
+  /** Worst zone, so a 'none' level can still say "residual hazard" */
+  zone: HazardZone | null
+  processes: HazardProcess[]
+  credits: RiskSourceCredit[]
+  message?: string
+}
+
+export type ContaminatedSiteType = 'landfill' | 'industrial' | 'accident' | 'shooting_range' | 'other'
+export type ContaminatedSiteStatus =
+  | 'remediation_needed'
+  | 'monitoring_needed'
+  | 'investigation_needed'
+  | 'not_yet_assessed'
+  | 'no_action_needed'
+  | 'no_harm_expected'
+  | 'other'
+
+export interface ContaminatedSite {
+  id: string
+  type: ContaminatedSiteType
+  /** Official German wording, shown alongside the English summary */
+  typeLabel: string
+  status: ContaminatedSiteStatus
+  statusLabel: string
+  /** Metres from the address; 0 when the address lies on the site */
+  distanceM: number
+  onSite: boolean
+  /** Canton code, or the federal office for federal cadastres */
+  authority: string
+  lat: number
+  lng: number
+  /** Outline in [lat, lng], absent for sites registered as points */
+  polygon?: [number, number][]
+}
+
+export interface ContaminationResult {
+  status: RiskStatus
+  canton?: string
+  cantonName?: string
+  sites: ContaminatedSite[]
+  radiusM: number
+  credits: RiskSourceCredit[]
+  message?: string
+}
+
+export interface RisksResult {
+  hazards: HazardResult
+  contamination: ContaminationResult
+}
+
 export interface AddressMetrics {
   id: string
   address: string
@@ -245,6 +327,8 @@ export interface AddressMetrics {
   cityAqiName?: string
   aqiSource?: string
   transitCh?: TransitCHResult
+  /** Address searches only (not area results); absent on older saved addresses */
+  risks?: RisksResult
 }
 
 export interface SavedAddress {
