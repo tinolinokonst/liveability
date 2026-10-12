@@ -339,6 +339,9 @@ export interface SavedAddress {
   lng: number
   metrics: AddressMetrics
   created_at: string
+  /** Construction watch (migration 2026-10-12); absent until it's applied */
+  watch_enabled?: boolean
+  last_notified_at?: string | null
 }
 
 export interface Neighborhood {

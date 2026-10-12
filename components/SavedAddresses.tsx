@@ -12,6 +12,7 @@ import { AddressMetrics, SavedAddress } from '@/lib/types'
 import { ALL_AREAS, nearestNeighborhood } from '@/lib/neighborhoods'
 import AddressResults from './AddressResults'
 import ResultsHeader from './ResultsHeader'
+import { PermitsNearby, WatchToggle } from './PermitWatch'
 
 const NEIGHBORHOOD_NAMES = new Set(ALL_AREAS.map(n => n.name))
 
@@ -94,6 +95,10 @@ export default function SavedAddresses({ onAdd, compareCount = 0, onViewNeighbor
     } finally {
       setRefreshingId(null)
     }
+  }
+
+  function setWatchLocal(id: string, enabled: boolean) {
+    setAddresses(prev => prev.map(a => (a.id === id ? { ...a, watch_enabled: enabled } : a)))
   }
 
   async function handleRemove(id: string) {
@@ -195,6 +200,14 @@ export default function SavedAddresses({ onAdd, compareCount = 0, onViewNeighbor
           </>}
         />
 
+        {/* Construction watch: street addresses only — 300 m around an area's centre means nothing */}
+        {!NEIGHBORHOOD_NAMES.has(selected.address) && (
+          <>
+            <WatchToggle saved={selected} onChange={enabled => setWatchLocal(selected.id, enabled)} />
+            <PermitsNearby saved={selected} />
+          </>
+        )}
+
         <AddressResults metrics={selected.metrics} />
       </div>
     )
@@ -283,6 +296,8 @@ export default function SavedAddresses({ onAdd, compareCount = 0, onViewNeighbor
                   Data outdated — refresh to load new metrics
                 </p>
               )}
+
+              {!isNeighborhood && <WatchToggle saved={saved} onChange={enabled => setWatchLocal(saved.id, enabled)} />}
 
               <div className="flex items-center gap-2 mt-1">
                 <button

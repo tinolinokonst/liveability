@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
         // Authenticated areas and the API surface: nothing here is useful to a
         // crawler, and API responses are per-user.
-        disallow: ['/dashboard', '/settings', '/api', '/auth'],
+        disallow: ['/dashboard', '/settings', '/api', '/auth', '/watch'],
       },
     ],
     sitemap: new URL('/sitemap.xml', SITE_URL).toString(),

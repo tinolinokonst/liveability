@@ -46,6 +46,22 @@ export default function PrivacyPage() {
               addresses) as part of normal hosting operations via Vercel.
             </p>
             <p>
+              If you turn on <strong className="text-white">construction watch</strong> for a
+              saved address, we store that the watch is on, when we last emailed you about
+              it, and a random token used only for its unsubscribe link. Once a day we check
+              building-permit notices published in the cantonal official gazettes, and if one
+              is within 300 m of a watched address we email you once about it at your
+              account email address — what was filed, how far away, and a link to the
+              official notice. We record which permits we have emailed you about so you never
+              get the same one twice. The permit details we keep are only the project type,
+              the address of the works, the publication date and the link to the notice; the
+              notices name the applicants, but we never store or show those names. Permit
+              records are deleted after about a year, when the gazettes take the notices
+              down. We use your email for these alerts only — no newsletters, nothing
+              shared. Every alert has a one-click link to stop watching that address, and you
+              can switch any watch off in your saved addresses at any time.
+            </p>
+            <p>
               If you send feedback from the dashboard, we store your message, the part
               of the dashboard you sent it from, the time, and your account ID so we can
               follow up. Only we can read it — it is not visible to other users, and you
@@ -145,6 +161,7 @@ export default function PrivacyPage() {
               </li>
               <li>Read the feedback you send, and respond to your questions or requests</li>
               <li>Email you once about the US launch, if you joined the waitlist</li>
+              <li>Email you about new building permits near addresses you chose to watch</li>
             </ul>
           </section>
 
@@ -184,7 +201,13 @@ export default function PrivacyPage() {
               </li>
               <li>
                 geo.admin.ch — the federal cadastres of contaminated sites for railway,
-                civil airfield and military land
+                civil airfield and military land, and swisstopo&apos;s address search to
+                place building-permit notices on the map
+              </li>
+              <li>
+                amtsblattportal.ch (operated by SECO) — building-permit notices from the
+                cantonal official gazettes, for construction watch. We only read from it;
+                nothing about you is sent.
               </li>
             </ul>
             <p>
@@ -216,8 +239,9 @@ export default function PrivacyPage() {
             <p>
               We do not sell your personal information. We rely on service providers
               to operate the Service — Vercel for hosting and analytics, Supabase for authentication
-              and database, PostHog (EU) for product analytics and session replays, and
-              Anthropic for the AI Match feature — and they may
+              and database, PostHog (EU) for product analytics and session replays,
+              Resend for sending construction-watch emails (it receives your email address
+              and the alert&apos;s content), and Anthropic for the AI Match feature — and they may
               process information on our behalf. We may also disclose information
               where required by law, to enforce our terms, or to protect the rights
               and safety of our users or the public.
@@ -229,7 +253,9 @@ export default function PrivacyPage() {
             <p>
               You can delete your account at any time from the Settings page, which
               removes your saved addresses, any feedback you sent, and your account
-              data. To leave the US waitlist, email us and we will delete your entry.
+              data, including your construction watches and the record of alerts we sent
+              you. To stop a single watch, use the link in any alert or the switch on
+              the saved address. To leave the US waitlist, email us and we will delete your entry.
               You can also request
               access to, correction of, or deletion of your personal information by
               contacting us. You can control cookies through your browser settings,
