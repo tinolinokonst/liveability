@@ -22,6 +22,14 @@ export type MetricKey =
   | 'hazards'
   | 'contamination'
   | 'radon'
+  | 'usAqi'
+  | 'weather'
+  | 'usNoise'
+  | 'usSunlight'
+  | 'flood'
+  | 'nri'
+  | 'wildfire'
+  | 'epaSites'
 
 // AQI category colors (US EPA category names)
 export function aqiColor(category: string): string {
@@ -202,6 +210,85 @@ export const METRIC_INFO: Record<MetricKey, MetricInfo> = {
       { label: 'Social contribution rates: Informationsstelle AHV/IV', url: 'https://www.ahv-iv.ch/de/Merkbl%C3%A4tter/Beitr%C3%A4ge-AHV-IV-EO-ALV' },
       { label: 'Commune: Federal Office of Topography swisstopo', url: 'https://www.swisstopo.admin.ch/en/landscape-model-swissboundaries3d' },
       { label: 'Rent: Liveability area-level estimate (typical 1–2 bedroom rent)' },
+    ],
+  },
+  // ─── United States ────────────────────────────────────────────────────────
+  usAqi: {
+    label: 'Air Quality (AQI)',
+    description:
+      "The current US EPA Air Quality Index from AirNow: the NowCast AQI at the closest monitor for each pollutant, and the highest of them (that is how the AQI is defined). AirNow data are preliminary and unvalidated. For context, the validated annual statistics from the nearest EPA AQS monitors are compared with the national air quality standards.",
+    source: 'AirNow (US EPA and partners) · EPA Air Quality System',
+    sourceUrl: 'https://www.airnow.gov/',
+    sources: [
+      { label: 'AirNow — current observations (US EPA and state, local and tribal agencies)', url: 'https://www.airnow.gov/' },
+      { label: 'EPA Air Quality System (AQS) — annual summary data', url: 'https://www.epa.gov/aqs' },
+    ],
+  },
+  weather: {
+    label: 'Weather Alerts & Heat',
+    description:
+      "Active watches, warnings and advisories from the National Weather Service for this exact location, and NWS HeatRisk: a 0–4 scale of how dangerous forecast heat is for health over the next seven days, based on how unusual the heat is for this place and time of year.",
+    source: 'National Weather Service',
+    sourceUrl: 'https://www.weather.gov/',
+    sources: [
+      { label: 'National Weather Service API — active alerts and forecast grid', url: 'https://www.weather.gov/documentation/services-web-api' },
+      { label: 'NWS HeatRisk', url: 'https://www.wpc.ncep.noaa.gov/heatrisk/' },
+    ],
+  },
+  usNoise: {
+    label: 'Transportation Noise',
+    description:
+      "Modeled noise from road, rail and aviation for an average day in 2020 (24-hour LAeq), from the BTS National Transportation Noise Map, in the map's 5–10 dB bands. Levels under 45 dBA aren't mapped. BTS notes the map shows potential exposure for tracking trends, not measured noise at a specific building.",
+    source: 'US DOT Bureau of Transportation Statistics',
+    sourceUrl: 'https://www.bts.gov/geospatial/national-transportation-noise-map',
+  },
+  usSunlight: {
+    label: 'Sunlight',
+    description:
+      "Long-term average solar irradiance for the ~4 km area around this address from the National Solar Radiation Database, in kWh/m² per day — the same number as daily 'peak sun hours'. It describes the area's climate, not this building's shading. The score spans the US range, from about 3.4 in Seattle to 5.8 in the desert Southwest.",
+    source: 'National Laboratory of the Rockies (NLR, formerly NREL)',
+    sourceUrl: 'https://developer.nlr.gov/docs/solar/solar-resource-v1/',
+  },
+  flood: {
+    label: 'Flood Zone',
+    description:
+      "The FEMA flood zone at this point on the effective Flood Insurance Rate Map, from the National Flood Hazard Layer.",
+    source: 'FEMA National Flood Hazard Layer',
+    sourceUrl: 'https://www.fema.gov/flood-maps/national-flood-hazard-layer',
+    sources: [
+      { label: 'FEMA National Flood Hazard Layer', url: 'https://www.fema.gov/flood-maps/national-flood-hazard-layer' },
+      { label: 'FEMA Flood Map Service Center (official maps)', url: 'https://msc.fema.gov/portal/home' },
+    ],
+  },
+  nri: {
+    label: 'National Risk Index',
+    description:
+      "FEMA's National Risk Index rates communities for 18 natural hazards, combining expected annual losses with social vulnerability and community resilience. Ratings are relative to all US census tracts (or counties).",
+    source: 'FEMA National Risk Index',
+    sourceUrl: 'https://hazards.fema.gov/nri/',
+  },
+  wildfire: {
+    label: 'Wildfire',
+    description:
+      "Wildfire likelihood: the modeled annual probability that a wildfire burns this ~30 m location, from the USDA Forest Service's Wildfire Risk to Communities. FEMA's National Risk Index wildfire rating for the census tract is shown for context.",
+    source: 'USDA Forest Service, Wildfire Risk to Communities',
+    sourceUrl: 'https://wildfirerisk.org/',
+    sources: [
+      { label: 'USDA Forest Service — Wildfire Risk to Communities', url: 'https://wildfirerisk.org/' },
+      { label: 'FEMA National Risk Index — wildfire', url: 'https://hazards.fema.gov/nri/wildfire' },
+    ],
+  },
+  epaSites: {
+    label: 'EPA-Listed Sites',
+    description:
+      "Superfund sites, brownfield properties and Toxics Release Inventory facilities registered within 1 mile, from EPA's Facility Registry Service (Envirofacts) — the US counterpart of a contaminated-site register.",
+    source: 'US EPA Facility Registry Service (Envirofacts)',
+    sourceUrl: 'https://www.epa.gov/frs',
+    sources: [
+      { label: 'US EPA Facility Registry Service (Envirofacts)', url: 'https://www.epa.gov/frs' },
+      { label: 'EPA Superfund: National Priorities List', url: 'https://www.epa.gov/superfund/superfund-national-priorities-list-npl' },
+      { label: 'EPA Toxics Release Inventory', url: 'https://www.epa.gov/toxics-release-inventory-tri-program' },
+      { label: 'EPA Brownfields (ACRES)', url: 'https://www.epa.gov/brownfields' },
     ],
   },
 }

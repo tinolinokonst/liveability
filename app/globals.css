@@ -114,6 +114,11 @@ input[type="range"]::-moz-range-thumb {
   filter: invert(1) contrast(0.35) brightness(0.45);
 }
 
+/* The USGS topo base map (US addresses) is in colour: grey it first */
+.lv-map.lv-map-us .leaflet-tile-pane {
+  filter: grayscale(1) invert(1) contrast(0.35) brightness(0.45);
+}
+
 /* Three classes deep: leaflet.css loads after this file and sets the white
    background at two-class specificity */
 .lv-map.leaflet-container .leaflet-control-attribution {

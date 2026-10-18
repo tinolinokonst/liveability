@@ -26,11 +26,11 @@
 // NOT appear in connect-src: the browser never contacts them, and listing them
 // would only widen the exfiltration surface the policy exists to close.
 //
-// US providers follow the same rule: the Census Geocoder and every keyed US
-// API (Census, AirNow, AQS, data.gov, HUD, FCC, MobilityDatabase) are called
-// from /api/* routes with server-only keys, so they need no CSP entry. Only a
-// US origin the BROWSER loads directly (map tiles, an embedded widget) gets
-// added here — to img-src/connect-src as appropriate — in the session that adds it.
+// US providers follow the same rule: the Census Geocoder and every US data
+// API (Census, AirNow, AQS, NWS, BTS noise tiles, NLR, FEMA, USFS, EPA, HUD,
+// FCC, MobilityDatabase) are called from /api/* routes, keyed ones with
+// server-only keys, so they need no connect-src entry. The only US origin the
+// BROWSER loads is the USGS base map (img-src).
 
 // PostHog EU cloud only — a US-region key would be blocked by the policy
 const POSTHOG_INGEST = 'https://eu.i.posthog.com'
@@ -54,7 +54,8 @@ export function buildCsp(nonce: string, opts: { allowEval: boolean }): string {
     // inline icons. Tiles load as <img>, so swisstopo needs img-src only — it
     // is deliberately absent from connect-src. geodienste.ch serves the cantonal
     // hazard-map overlay in the Risks modal, also as <img> tiles.
-    "img-src 'self' data: blob: https://wmts.geo.admin.ch https://geodienste.ch https://*.googleapis.com https://*.gstatic.com",
+    // US addresses use the USGS National Map base map, also <img> tiles.
+    "img-src 'self' data: blob: https://wmts.geo.admin.ch https://geodienste.ch https://basemap.nationalmap.gov https://*.googleapis.com https://*.gstatic.com",
     // Browser-initiated requests only: our own API routes, Supabase (auth +
     // database via the browser SDK), Google Places autocomplete XHR, and
     // PostHog EU ingestion (events, replay snapshots, remote config).

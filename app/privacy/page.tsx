@@ -14,7 +14,7 @@ export default function PrivacyPage() {
       <SiteHeader />
       <div className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="text-3xl font-bold tracking-tight text-white">Privacy Policy</h1>
-        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 12, 2026</p>
+        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 18, 2026</p>
 
         <div className="mt-10 space-y-10 text-base leading-relaxed text-[#a0a0a0]">
           <p>
@@ -136,10 +136,11 @@ export default function PrivacyPage() {
               to keep it hidden — both in the tab&apos;s session storage.
             </p>
             <p>
-              Two third-party services load in your browser — the Google Maps
-              JavaScript API (on the signed-in dashboard, for address autocomplete) and
+              Three third-party services load in your browser — the Google Maps
+              JavaScript API (on the signed-in dashboard, for address autocomplete),
               map tiles from the Swiss Federal Office of Topography (swisstopo) for the
-              maps on result pages. We verified that neither sets cookies. See our{" "}
+              maps on Swiss result pages, and map tiles from the USGS National Map for
+              maps of US addresses. We verified that none of them sets cookies. See our{" "}
               <Link href="/cookie-policy" className="text-[#f97316] underline">
                 Cookie Policy
               </Link>{" "}
@@ -208,6 +209,14 @@ export default function PrivacyPage() {
                 amtsblattportal.ch (operated by SECO) — building-permit notices from the
                 cantonal official gazettes, for construction watch. We only read from it;
                 nothing about you is sent.
+              </li>
+              <li>
+                For US addresses: the US Census Bureau (census geographies), AirNow and the
+                EPA Air Quality System (air quality), the National Weather Service (alerts
+                and heat), the Bureau of Transportation Statistics (noise), the National
+                Laboratory of the Rockies (sunlight), FEMA (flood zones and the National
+                Risk Index), the USDA Forest Service (wildfire likelihood), and the EPA
+                Facility Registry Service (Superfund, brownfield and toxic-release sites)
               </li>
             </ul>
             <p>

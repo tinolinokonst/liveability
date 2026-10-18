@@ -41,14 +41,14 @@ const OVERLAY_HALF_LNG = 0.008
 const MUTED = '#a0a0a0'
 const NEUTRAL = '#6b6b6b'
 
-function NoteBox() {
+export function NoteBox({ text = RISK_NOTE }: { text?: string }) {
   return (
     <div
       className="rounded-xl px-3 py-2.5 text-xs leading-relaxed flex gap-2"
       style={{ backgroundColor: '#f973161a', border: '1px solid #f9731633', color: '#f97316' }}
     >
       <TriangleAlert size={14} className="shrink-0 mt-0.5" />
-      <span>{RISK_NOTE}</span>
+      <span>{text}</span>
     </div>
   )
 }
@@ -63,7 +63,7 @@ function PenaltyLine({ penalty }: { penalty: number }) {
   )
 }
 
-interface CardShellProps {
+export interface CardShellProps {
   icon: typeof Mountain
   label: string
   value: string
@@ -74,7 +74,7 @@ interface CardShellProps {
   footer?: string
 }
 
-function CardShell({ icon: Icon, label, value, valueColor, sub, onOpen, footer = RISK_NOTE }: CardShellProps) {
+export function CardShell({ icon: Icon, label, value, valueColor, sub, onOpen, footer = RISK_NOTE }: CardShellProps) {
   return (
     <div
       style={{ backgroundColor: '#1a1a1a', borderColor: '#2a2a2a' }}

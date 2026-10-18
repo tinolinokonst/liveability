@@ -292,6 +292,189 @@ export interface RisksResult {
   radon?: RadonResult
 }
 
+// ─── United States: environment and risks ───────────────────────────────────
+// Every US result says where it came from and how good it is. Nothing is ever
+// filled in: a source that can't answer reports a status, never a value.
+
+/** 'error' = upstream failure or quota; retried, never cached */
+export type UsStatus = 'ok' | 'no_data' | 'error'
+
+/** One AirNow reading: the closest monitor reporting that pollutant */
+export interface UsAirReading {
+  pollutant: 'PM2.5' | 'PM10' | 'Ozone' | string
+  aqi: number
+  category: string
+  siteName: string
+  /** Null when the monitor isn't in the AQS site list near the address */
+  distanceKm: number | null
+  lat?: number
+  lng?: number
+}
+
+/** One pollutant's annual statistic from the nearest AQS monitor */
+export interface UsAnnualPollutant {
+  pollutant: 'pm25' | 'ozone' | 'no2'
+  /** PM2.5 and NO2: annual mean. Ozone: 4th-highest daily max 8-hour average */
+  value: number
+  unit: 'µg/m³' | 'ppm' | 'ppb'
+  /** The NAAQS level the value is compared against */
+  standard: number
+  siteName: string
+  distanceKm: number
+  lat: number
+  lng: number
+}
+
+export interface UsAnnualAir {
+  status: UsStatus
+  year: number | null
+  pollutants: UsAnnualPollutant[]
+}
+
+export interface UsAirQualityResult {
+  status: UsStatus
+  /** Highest current NowCast AQI across pollutants (how the AQI is defined) */
+  aqi: number | null
+  category: string | null
+  score: number | null
+  /** Local observation time as AirNow reports it, e.g. "2026-10-18 13:00 EDT" */
+  observedAt: string | null
+  reportingArea: string | null
+  readings: UsAirReading[]
+  annual: UsAnnualAir
+  message?: string
+}
+
+export type HeatRiskLevel = 0 | 1 | 2 | 3 | 4
+
+export interface WeatherAlert {
+  event: string
+  severity: string
+  headline: string | null
+  /** ISO time the alert ends (or expires, when no end is given) */
+  ends: string | null
+  sender: string
+}
+
+export interface UsWeatherResult {
+  /** Active alerts; 'error' only when the alerts request itself failed */
+  alertsStatus: UsStatus
+  alerts: WeatherAlert[]
+  heatStatus: UsStatus
+  /** NWS HeatRisk: the highest level forecast over the next 7 days */
+  heatRiskMax: HeatRiskLevel | null
+  heatRiskToday: HeatRiskLevel | null
+  /** Highest forecast maximum temperature over the same days, °F */
+  maxTempF: number | null
+  forecastUrl: string
+}
+
+export type NoiseBand = 'below_45' | '45_50' | '50_55' | '55_60' | '60_70' | '70_80' | '80_90' | 'above_90'
+export type NoiseMode = 'road' | 'rail' | 'aviation'
+
+export interface UsNoiseResult {
+  status: UsStatus
+  /** All modes combined; 'below_45' = under the map's 45 dBA floor */
+  band: NoiseBand | null
+  score: number | null
+  /** Per mode; null when that layer doesn't cover the state (e.g. rail in Hawaii) or failed */
+  modes: Record<NoiseMode, NoiseBand | null>
+  message?: string
+}
+
+export interface UsSunlightResult {
+  status: UsStatus
+  /** Long-term average global horizontal irradiance, kWh/m²/day (= peak sun hours) */
+  ghi: number | null
+  /** Same, on a surface tilted at the latitude (a typical fixed solar panel) */
+  latTilt: number | null
+  monthlyGhi: number[] | null
+  score: number | null
+  message?: string
+}
+
+/** FEMA flood zone designations, grouped the way FEMA explains them */
+export type FloodRisk = 'high' | 'coastal_high' | 'moderate' | 'minimal' | 'undetermined' | 'water'
+
+export interface UsFloodResult {
+  /** 'no_data': no digital flood map (NFHL) covers this point */
+  status: UsStatus
+  zone: string | null
+  subtype: string | null
+  risk: FloodRisk | null
+  /** Special Flood Hazard Area: the 1%-annual-chance floodplain */
+  sfha: boolean | null
+  /** Base flood elevation in feet, when the map gives one */
+  bfeFt: number | null
+  firmPanel: string | null
+  /** FIRM panel effective date, ISO */
+  effectiveDate: string | null
+}
+
+export type NriRating =
+  | 'Very High' | 'Relatively High' | 'Relatively Moderate' | 'Relatively Low' | 'Very Low'
+  | 'No Rating' | 'Not Applicable' | 'Insufficient Data'
+
+export interface NriHazard {
+  key: string
+  label: string
+  rating: NriRating
+  /** National percentile, 0-100 */
+  score: number
+}
+
+export interface NriArea {
+  name: string
+  rating: NriRating
+  score: number | null
+  /** Hazards with a real rating, worst first */
+  topHazards: NriHazard[]
+}
+
+export interface UsNriResult {
+  status: UsStatus
+  tract: NriArea | null
+  county: NriArea | null
+  version: string | null
+}
+
+export interface UsWildfireResult {
+  status: UsStatus
+  /** Annual probability that wildfire burns this ~30 m cell, 0-1 */
+  burnProbability: number | null
+  /** FEMA's tract-level wildfire rating, for context (from the NRI) */
+  nriRating: NriRating | null
+}
+
+export type EpaSiteKind = 'superfund_npl' | 'superfund' | 'tri' | 'brownfield'
+
+export interface EpaSite {
+  registryId: string
+  kind: EpaSiteKind
+  /** Official site/facility name; omitted for brownfield properties (see lib/usRiskSources.ts) */
+  name: string | null
+  /** EPA's status wording, e.g. "CURRENTLY ON THE FINAL NPL" */
+  status: string | null
+  distanceKm: number
+  lat: number
+  lng: number
+  url: string
+}
+
+export interface UsEpaSitesResult {
+  status: UsStatus
+  radiusMiles: number
+  sites: EpaSite[]
+  counts: Record<EpaSiteKind, number>
+}
+
+export interface UsRisksResult {
+  flood: UsFloodResult
+  nri: UsNriResult
+  wildfire: UsWildfireResult
+  epa: UsEpaSitesResult
+}
+
 export interface AddressMetrics {
   id: string
   address: string

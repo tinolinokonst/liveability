@@ -57,6 +57,8 @@ interface MetricInfoMapProps {
   markersFromOsm?: boolean
   /** An area to outline (e.g. a 1 km data pixel); the map frames all of it */
   areaPolygon?: { positions: [number, number][]; color: string; label: ReactNode }
+  /** swisstopo only covers Switzerland; US addresses use the USGS National Map */
+  basemap?: 'ch' | 'us'
 }
 
 const POLYGON_STYLE: Record<string, { fillOpacity: number; opacity: number }> = {
@@ -77,6 +79,11 @@ const SWISSTOPO_ATTRIBUTION =
   '&copy; <a href="https://www.swisstopo.admin.ch/" target="_blank" rel="noopener noreferrer">swisstopo</a>'
 // Amenity markers and park polygons come from OpenStreetMap, whose licence
 // requires credit wherever its data is shown
+// USGS National Map topographic base map: US public domain, keyless, cached
+// tiles to level 16 (Leaflet upscales beyond). Credit is requested, not required.
+const USGS_TILE_URL = 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}'
+const USGS_ATTRIBUTION =
+  '<a href="https://www.usgs.gov/programs/national-geospatial-program/national-map" target="_blank" rel="noopener noreferrer">USGS The National Map</a>'
 const OSM_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors'
 
@@ -151,6 +158,7 @@ export default function MetricInfoMap({
   wmsOverlay,
   markersFromOsm = true,
   areaPolygon,
+  basemap = 'ch',
 }: MetricInfoMapProps) {
   const [fullscreen, setFullscreen] = useState(false)
 
@@ -180,9 +188,14 @@ export default function MetricInfoMap({
   const mapChildren = (
     <>
       <TileLayer
-        url={TILE_URL}
-        attribution={markersFromOsm && (points.length > 0 || nearestOutside) ? `${SWISSTOPO_ATTRIBUTION} | ${OSM_ATTRIBUTION}` : SWISSTOPO_ATTRIBUTION}
-        maxNativeZoom={18}
+        // key: Leaflet doesn't swap a TileLayer's URL in place
+        key={basemap}
+        url={basemap === 'us' ? USGS_TILE_URL : TILE_URL}
+        attribution={[
+          basemap === 'us' ? USGS_ATTRIBUTION : SWISSTOPO_ATTRIBUTION,
+          ...(markersFromOsm && (points.length > 0 || nearestOutside) ? [OSM_ATTRIBUTION] : []),
+        ].join(' | ')}
+        maxNativeZoom={basemap === 'us' ? 16 : 18}
         maxZoom={19}
         keepBuffer={4}
         updateWhenIdle={true}
@@ -362,7 +375,7 @@ export default function MetricInfoMap({
           bounds={bounds.length > 1 ? bounds : undefined}
           boundsOptions={{ padding: [30, 30] }}
           style={{ height: '100%', width: '100%' }}
-          className="lv-map"
+          className={basemap === 'us' ? 'lv-map lv-map-us' : 'lv-map'}
           scrollWheelZoom={false}
           minZoom={10}
           maxZoom={19}

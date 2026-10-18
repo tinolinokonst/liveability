@@ -3,13 +3,15 @@
 import { MapPin } from 'lucide-react'
 import { COUNTRIES, countryOf } from '@/lib/country'
 import type { GeoLocation } from '@/lib/types'
+import UsMetricCards from './UsMetricCards'
 
 const MUTED = '#a0a0a0'
 
 /**
  * Shown instead of results when an address resolves in a country whose
  * metrics aren't all available yet. It says what we know — the resolved
- * address and, for the US, its Census geographies — and claims nothing else.
+ * address, for the US its Census geographies, and the environment and risk
+ * metrics that do have a source — and claims nothing else: no overall score.
  */
 export default function CoverageComingSoon({ location }: { location: GeoLocation }) {
   const country = COUNTRIES[countryOf(location)]
@@ -40,9 +42,15 @@ export default function CoverageComingSoon({ location }: { location: GeoLocation
         )
       )}
 
+      {country.code === 'US' && <UsMetricCards location={location} />}
+
       <p className="text-sm" style={{ color: MUTED }}>
-        Liveability scores for addresses in the {country.name} are on their way — we&apos;re adding the data sources
-        now. Distances will be shown in {country.distanceUnit === 'mi' ? 'miles' : 'kilometres'} and costs in {country.currency}.
+        {country.code === 'US'
+          ? <>An overall Liveability score for addresses in the {country.name} is on its way — amenities, safety, transit and
+            community data come next. Until then each card stands on its own.</>
+          : <>Liveability scores for addresses in the {country.name} are on their way — we&apos;re adding the data sources
+            now.</>}{' '}
+        Distances are shown in {country.distanceUnit === 'mi' ? 'miles' : 'kilometres'} and costs in {country.currency}.
       </p>
     </section>
   )

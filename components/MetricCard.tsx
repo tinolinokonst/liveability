@@ -23,6 +23,10 @@ interface MetricCardProps {
   comparison?: React.ReactNode
   nearestEssentials?: NearestEssentials
   icon?: LucideIcon
+  /** A map built by the caller (passed through to the modal) */
+  map?: React.ReactNode
+  /** Replaces the metric's default sources in the modal */
+  sources?: Array<{ label: string; url?: string }>
 }
 
 function qualityColor(score: number): string {
@@ -37,7 +41,7 @@ function qualityLabel(score: number): string {
   return 'Poor'
 }
 
-export default function MetricCard({ label, value, score, description, source, extra, metricKey, places, center, category, crimeIncidents, searchRadius, detail, comparison, nearestEssentials, icon: Icon }: MetricCardProps) {
+export default function MetricCard({ label, value, score, description, source, extra, metricKey, places, center, category, crimeIncidents, searchRadius, detail, comparison, nearestEssentials, icon: Icon, map, sources }: MetricCardProps) {
   const [showInfo, setShowInfo] = useState(false)
   const color = qualityColor(score)
   const quality = qualityLabel(score)
@@ -105,6 +109,8 @@ export default function MetricCard({ label, value, score, description, source, e
           detail={detail}
           comparison={comparison}
           nearestEssentials={nearestEssentials}
+          map={map}
+          sources={sources}
           onClose={() => setShowInfo(false)}
         />
       )}

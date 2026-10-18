@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { guardRequest } from '@/lib/apiGuard'
 import { parseCoords } from '@/lib/coords'
 import { wmsPointValue } from '@/lib/geoAdmin'
+import { categoryFor, scoreForAqi } from '@/lib/aqiScale'
 
 // BAFU annual air pollution modeling layers (immission maps), sampled at the
 // exact coordinate via WMS GetFeatureInfo. Values are µg/m³.
@@ -30,34 +31,6 @@ function computeIndex(r: { pm25: number | null; pm10: number | null; no2: number
   const totalW = parts.reduce((s, [, w]) => s + w, 0)
   const weighted = parts.reduce((s, [ratio, w]) => s + ratio * w, 0) / totalW
   return Math.round(weighted * 50)
-}
-
-function categoryFor(aqi: number): string {
-  if (aqi > 200) return 'Very Unhealthy'
-  if (aqi > 150) return 'Unhealthy'
-  if (aqi > 100) return 'Unhealthy for Sensitive Groups'
-  if (aqi > 50) return 'Moderate'
-  return 'Good'
-}
-
-// Map an AQI onto the 0-100 score the cards render.
-//
-// A flat `100 - aqi` looked reasonable but put the two labels on the card in
-// direct conflict: an AQI of 43 is officially "Good", yet scored 57, which the
-// UI's 70/40 thresholds call "Fair" — so the same card read "Fair" in its badge
-// and "Good" in its subtitle. This lines the two scales up at their boundaries,
-// so an AQI band and the score band always agree:
-//   AQI   0 -> 100 |  AQI  50 (Good/Moderate)      -> 70 (the "Good" cutoff)
-//   AQI 100 ->  40 (the "Fair" cutoff)             |  AQI 200 -> 0
-function scoreForAqi(aqi: number): number {
-  const raw =
-    aqi <= 50 ? 100 - aqi * 0.6
-    : aqi <= 100 ? 70 - (aqi - 50) * 0.6
-    : 40 - (aqi - 100) * 0.4
-  // Floor rather than round: at AQI 101 rounding lifts 39.6 back to 40, which is
-  // exactly the "Fair" cutoff, so the first Unhealthy-for-Sensitive reading would
-  // still have shown a Fair badge.
-  return Math.max(0, Math.min(100, Math.floor(raw)))
 }
 
 function buildResponse(aqi: number, source: string, pollutants?: Record<string, number | null>) {

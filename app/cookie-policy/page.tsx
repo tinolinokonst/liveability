@@ -16,7 +16,7 @@ export default function CookiePolicyPage() {
       <SiteHeader />
       <div className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="text-3xl font-bold tracking-tight text-white">Cookie Policy</h1>
-        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 12, 2026</p>
+        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 18, 2026</p>
 
         <div className="mt-10 space-y-10 text-base leading-relaxed text-[#a0a0a0]">
           <p>
@@ -137,6 +137,12 @@ export default function CookiePolicyPage() {
                 .
               </li>
               <li>
+                <span className="text-white">USGS map tiles</span> — the map images for US
+                addresses, requested from <code>basemap.nationalmap.gov</code>, the US
+                Geological Survey&apos;s public National Map service. Tile requests set no
+                cookies.
+              </li>
+              <li>
                 <span className="text-white">Cantonal hazard maps</span> — when you open
                 the Natural Hazards card, the canton&apos;s official hazard map is shown over
                 the map, as images requested from <code>geodienste.ch</code>, the cantons&apos;
@@ -155,7 +161,8 @@ export default function CookiePolicyPage() {
               </li>
             </ul>
             <p>
-              Maps are rendered with Leaflet using swisstopo tiles — we do not embed a Google
+              Maps are rendered with Leaflet using swisstopo tiles (USGS tiles for US
+              addresses) — we do not embed a Google
               map, so your browser makes no requests to <code>google.com</code>.
             </p>
           </section>

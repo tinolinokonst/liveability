@@ -6,6 +6,12 @@
 // added one metric at a time in later sessions; until a country has all of
 // them, its addresses resolve (with Census FIPS codes for the US) but aren't
 // scored — partial scores would be misleading.
+//
+// US environment and risk metrics (air, weather, noise, sunlight, risks) are
+// available now and shown per card, unscored overall. Their results keep the
+// sources' own units and statuses (lib/types.ts, "United States"), so they
+// sit behind their own interface below rather than the Swiss-shaped one; the
+// adapters into MetricProviders come with the US composite score.
 
 import { fetchAQI, AQIResult } from './airquality'
 import { fetchAmenityScores } from './overpass'
@@ -17,6 +23,7 @@ import { fetchNearestEssentials } from './nearest'
 import { fetchTransitCh } from './transitCh'
 import { fetchRisks } from './risks'
 import { nearestArea } from './neighborhoods'
+import { fetchUsAirQuality, fetchUsNoise, fetchUsRisks, fetchUsSunlight, fetchUsWeather } from './usMetrics'
 import type { CountryCode } from './country'
 import type {
   AmenityScores,
@@ -27,6 +34,11 @@ import type {
   RisksResult,
   SunlightResult,
   TransitCHResult,
+  UsAirQualityResult,
+  UsNoiseResult,
+  UsRisksResult,
+  UsSunlightResult,
+  UsWeatherResult,
 } from './types'
 
 export interface MetricProviders {
@@ -61,8 +73,29 @@ const SWITZERLAND: MetricProviders = {
   risks: fetchRisks,
 }
 
-// Filled in metric by metric (AirNow/AQS, FBI, ACS, …) in later sessions
+// Filled in metric by metric (FBI, ACS, …) in later sessions
 const UNITED_STATES: Partial<MetricProviders> = {}
+
+export interface UsEnvironmentProviders {
+  airQuality(lat: number, lng: number): Promise<UsAirQualityResult>
+  weather(lat: number, lng: number): Promise<UsWeatherResult>
+  noise(lat: number, lng: number): Promise<UsNoiseResult>
+  sunlight(lat: number, lng: number): Promise<UsSunlightResult>
+  risks(lat: number, lng: number): Promise<UsRisksResult>
+}
+
+const UNITED_STATES_ENVIRONMENT: UsEnvironmentProviders = {
+  airQuality: fetchUsAirQuality, // AirNow + EPA AQS
+  weather: fetchUsWeather, // NWS alerts + HeatRisk
+  noise: fetchUsNoise, // BTS National Transportation Noise Map
+  sunlight: fetchUsSunlight, // NLR solar resource
+  risks: fetchUsRisks, // FEMA NFHL + NRI, USFS Wildfire Risk to Communities, EPA FRS
+}
+
+/** The per-card US environment and risk metrics; null for other countries */
+export function environmentProvidersFor(country: CountryCode): UsEnvironmentProviders | null {
+  return country === 'US' ? UNITED_STATES_ENVIRONMENT : null
+}
 
 const PROVIDERS: Record<CountryCode, Partial<MetricProviders>> = {
   CH: SWITZERLAND,
@@ -81,6 +114,8 @@ export function providersFor(country: CountryCode): MetricProviders | null {
 }
 
 /** Metrics that already have a provider for this country (for "coming soon" messaging) */
-export function availableMetrics(country: CountryCode): Array<keyof MetricProviders> {
-  return REQUIRED.filter(k => typeof PROVIDERS[country][k] === 'function')
+export function availableMetrics(country: CountryCode): Array<keyof MetricProviders | keyof UsEnvironmentProviders> {
+  const env = environmentProvidersFor(country)
+  const scored = REQUIRED.filter(k => typeof PROVIDERS[country][k] === 'function')
+  return [...new Set([...scored, ...(env ? (Object.keys(env) as Array<keyof UsEnvironmentProviders>) : [])])]
 }
