@@ -12,6 +12,7 @@ import AiMatch from '@/components/AiMatch'
 import AppHeader from '@/components/AppHeader'
 import FeedbackButton from '@/components/FeedbackButton'
 import UsWaitlistBanner from '@/components/UsWaitlistBanner'
+import CoverageNote, { AddressKind } from '@/components/CoverageNote'
 import { HouseholdProvider } from '@/components/HouseholdContext'
 import { AddressMetrics, AiMatchListingsState } from '@/lib/types'
 
@@ -117,7 +118,7 @@ function Dashboard() {
             Search any address or explore area rankings
           </p>
           <p className="text-xs font-semibold mt-1" style={{ color: '#f97316' }}>
-            Currently covering Switzerland
+            <CoverageNote />
           </p>
         </div>
 
@@ -166,7 +167,7 @@ function Dashboard() {
             >
               <h2 className="text-white font-bold mb-1">Search an address</h2>
               <p style={{ color: '#a0a0a0' }} className="text-xs mb-6">
-                Enter any Swiss address to get real air quality and amenity scores
+                Enter any <AddressKind /> to get real air quality and amenity scores
               </p>
               <AddressSearch
                 onAdd={addToCompare}

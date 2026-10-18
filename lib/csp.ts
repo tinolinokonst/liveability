@@ -25,6 +25,12 @@
 // called server-side through /api/* routes, so those origins deliberately do
 // NOT appear in connect-src: the browser never contacts them, and listing them
 // would only widen the exfiltration surface the policy exists to close.
+//
+// US providers follow the same rule: the Census Geocoder and every keyed US
+// API (Census, AirNow, AQS, data.gov, HUD, FCC, MobilityDatabase) are called
+// from /api/* routes with server-only keys, so they need no CSP entry. Only a
+// US origin the BROWSER loads directly (map tiles, an embedded widget) gets
+// added here — to img-src/connect-src as appropriate — in the session that adds it.
 
 // PostHog EU cloud only — a US-region key would be blocked by the policy
 const POSTHOG_INGEST = 'https://eu.i.posthog.com'

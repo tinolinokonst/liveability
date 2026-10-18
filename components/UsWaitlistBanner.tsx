@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { track } from '@vercel/analytics'
 import { Check, MapPin, X } from 'lucide-react'
 import { useVisitorCountry } from '@/components/VisitorCountry'
+import { useFeatureFlags } from '@/components/FeatureFlags'
 import { capture } from '@/lib/analytics'
 import {
   EMAIL_PATTERN,
@@ -31,7 +32,9 @@ const INPUT_STYLE = { backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }
  */
 export default function UsWaitlistBanner({ className = '' }: { className?: string }) {
   const country = useVisitorCountry()
-  const eligible = country !== null && country !== 'CH'
+  const { us: usLive } = useFeatureFlags()
+  // Once US coverage is switched on, "coming to the US" would contradict the copy
+  const eligible = country !== null && country !== 'CH' && !usLive
 
   // Hidden until mounted so a banner dismissed earlier in this tab doesn't
   // flash in during hydration

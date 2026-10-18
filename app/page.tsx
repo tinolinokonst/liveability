@@ -13,6 +13,7 @@ import BackgroundDecor from '@/components/BackgroundDecor'
 import Reveal from '@/components/Reveal'
 import MotionLink from '@/components/MotionLink'
 import UsWaitlistBanner from '@/components/UsWaitlistBanner'
+import CoverageNote, { AddressKind, RankingsKind } from '@/components/CoverageNote'
 
 const FEATURES = [
   { icon: Wind,          label: 'Air Quality',          desc: 'BAFU air pollution modeling at your address' },
@@ -84,7 +85,7 @@ export default function Home() {
             className="text-sm font-semibold mb-6"
             style={{ color: '#f97316' }}
           >
-            Currently covering Switzerland
+            <CoverageNote />
           </motion.p>
 
           <motion.p
@@ -174,7 +175,7 @@ export default function Home() {
             />
             <h2 className="text-3xl sm:text-5xl font-black text-white mb-4 tracking-tight">Ready to find home?</h2>
             <p style={{ color: '#a0a0a0' }} className="mb-8 sm:mb-10 text-base sm:text-lg">
-              Search any Swiss address or browse city rankings — free.
+              Search any <AddressKind /> or browse <RankingsKind /> — free.
             </p>
             {loggedIn ? (
               <MotionLink

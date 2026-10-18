@@ -1,9 +1,27 @@
 import type { RadonResult } from './radon'
+import type { CountryCode } from './country'
 
 export interface GeoLocation {
   lat: number
   lng: number
   formattedAddress: string
+  /** From the geocoder; absent on data saved before US support (= Switzerland) */
+  country?: CountryCode
+  /** US addresses only: Census geographies every US data provider keys off */
+  us?: UsGeography | null
+}
+
+/** Census Bureau geographies for a US address (Census Geocoder, current vintage) */
+export interface UsGeography {
+  stateFips: string     // 2 digits, e.g. "11"
+  stateAbbr: string     // "DC"
+  stateName: string
+  countyFips: string    // 3 digits within the state, e.g. "001"
+  countyName: string
+  tractFips: string     // 6 digits within the county, e.g. "980000"
+  tractName: string     // "Census Tract 9800"
+  /** state + county + tract, 11 digits — the key for tract-level ACS data */
+  tractGeoid: string
 }
 
 export interface NearestAmenity {

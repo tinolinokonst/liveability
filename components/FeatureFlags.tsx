@@ -6,9 +6,11 @@ import { createContext, useContext } from 'react'
 // client components. Defaults are all off.
 export interface FeatureFlags {
   radon: boolean
+  /** US coverage (US_ENABLED) */
+  us: boolean
 }
 
-const FeatureFlagsContext = createContext<FeatureFlags>({ radon: false })
+const FeatureFlagsContext = createContext<FeatureFlags>({ radon: false, us: false })
 
 export function FeatureFlagsProvider({ flags, children }: { flags: FeatureFlags; children: React.ReactNode }) {
   return <FeatureFlagsContext.Provider value={flags}>{children}</FeatureFlagsContext.Provider>

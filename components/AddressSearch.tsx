@@ -4,22 +4,16 @@ import { useState, useEffect, useRef } from 'react'
 import { ArrowLeft, Check } from 'lucide-react'
 import { geocodeAddress } from '@/lib/geocoding'
 import { capture } from '@/lib/analytics'
-import { fetchRisks } from '@/lib/risks'
 import { useFeatureFlags } from './FeatureFlags'
-import { fetchAmenityScores } from '@/lib/overpass'
 import { buildMetrics } from '@/lib/metrics'
-import { fetchAQI, AQIResult } from '@/lib/airquality'
-import { fetchCrimeScore } from '@/lib/crime'
-import { fetchSunlight } from '@/lib/sunlight'
-import { fetchNoiseEstimate } from '@/lib/noise'
-import { fetchCensus } from '@/lib/census'
-import { fetchNearestEssentials } from '@/lib/nearest'
-import { fetchTransitCh } from '@/lib/transitCh'
+import { AQIResult } from '@/lib/airquality'
+import { countryOf } from '@/lib/country'
+import { providersFor } from '@/lib/providers'
 import { loadGoogleMapsScript } from '@/lib/googleMaps'
-import { nearestArea } from '@/lib/neighborhoods'
 import { saveAddress } from '@/lib/savedAddresses'
-import { AddressMetrics, AmenityScores, CrimeResult } from '@/lib/types'
+import { AddressMetrics, AmenityScores, CrimeResult, GeoLocation } from '@/lib/types'
 import AddressResults from './AddressResults'
+import CoverageComingSoon from './CoverageComingSoon'
 import ResultsHeader from './ResultsHeader'
 
 interface AddressSearchProps {
@@ -37,14 +31,15 @@ const RADIUS_OPTIONS: Array<{ label: string; meters: number }> = [
   { label: '3km', meters: 3000 },
 ]
 
-function isValidAddress(addr: string): boolean {
+function isValidAddress(addr: string, allowUs = false): boolean {
   const trimmed = addr.trim()
   if (trimmed.length < 8) return false
   if (!/\d+/.test(trimmed)) return false
   // Swiss addresses put the house number after the street ("Bahnhofstrasse 1"),
   // so require a street word followed by a number (unicode letters for ü/é/etc.)
-  if (!/[A-Za-zÀ-ÖØ-öø-ÿ]{3,}\.?\s*\d+/.test(trimmed)) return false
-  return true
+  if (/[A-Za-zÀ-ÖØ-öø-ÿ]{3,}\.?\s*\d+/.test(trimmed)) return true
+  // US addresses lead with the number ("350 5th Ave", "1600 Pennsylvania Ave")
+  return allowUs && /^\d+[A-Za-z]?\s+\S{2,}/.test(trimmed)
 }
 
 export default function AddressSearch({ onAdd, compareCount = 0, userId, initialAddress, onBack }: AddressSearchProps) {
@@ -57,6 +52,8 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
   const [amenityData, setAmenityData] = useState<AmenityScores | null>(null)
   const [aqiData, setAqiData] = useState<AQIResult | null>(null)
   const [crimeData, setCrimeData] = useState<CrimeResult | null>(null)
+  // Resolved, but in a country whose metrics aren't all available yet (US, for now)
+  const [unscored, setUnscored] = useState<GeoLocation | null>(null)
   const [radius, setRadius] = useState(800)
   const flags = useFeatureFlags()
   const [saving, setSaving] = useState(false)
@@ -78,7 +75,8 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
 
         autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
           fields: ['formatted_address', 'geometry', 'name'],
-          componentRestrictions: { country: 'ch' },
+          // Places allows up to five countries; US only while US_ENABLED is on
+          componentRestrictions: { country: flags.us ? ['ch', 'us'] : 'ch' },
         })
 
         listener = autocomplete.addListener('place_changed', () => {
@@ -120,7 +118,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
   async function runSearch(address: string, bypass = false) {
     const trimmed = address.trim()
     if (!trimmed) return
-    if (!bypass && !isValidAddress(trimmed)) {
+    if (!bypass && !isValidAddress(trimmed, flags.us)) {
       failValidation()
       return
     }
@@ -129,36 +127,44 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
     setLoading(true)
     setError(null)
     setResult(null)
+    setUnscored(null)
     setSaved(false)
 
     try {
       const location = await geocodeAddress(address.trim())
       if (!location) {
-        setError('Address not found. Try a more specific Swiss address.')
+        setError(flags.us
+          ? 'Address not found. Try a more specific Swiss or US address.'
+          : 'Address not found. Try a more specific Swiss address.')
         return
       }
 
-      // Compare the searched address against the nearest major Swiss city center
-      const referenceCity = nearestArea(location.lat, location.lng)
+      // Each metric comes from the address's country's provider (lib/providers.ts)
+      const providers = providersFor(countryOf(location))
+      if (!providers) {
+        setUnscored(location)
+        return
+      }
+      const { lat, lng } = location
 
       const [aqi, cityAqiResult, amenity, crime, sunlight, noise, census, nearest, transitCh, risks] = await Promise.all([
-        fetchAQI(location.lat, location.lng),
-        fetchAQI(referenceCity.lat, referenceCity.lng).catch(() => null),
-        fetchAmenityScores(location.lat, location.lng, radius),
-        fetchCrimeScore(location.lat, location.lng),
-        fetchSunlight(location.lat, location.lng),
-        fetchNoiseEstimate(location.lat, location.lng),
-        fetchCensus(location.lat, location.lng),
-        fetchNearestEssentials(location.lat, location.lng),
-        fetchTransitCh(location.lat, location.lng),
-        fetchRisks(location.lat, location.lng, { radon: flags.radon }),
+        providers.airQuality(lat, lng),
+        providers.referenceAirQuality(lat, lng),
+        providers.amenities(lat, lng, radius),
+        providers.safety(lat, lng),
+        providers.sunlight(lat, lng),
+        providers.noise(lat, lng),
+        providers.community(lat, lng),
+        providers.nearestEssentials(lat, lng),
+        providers.transit(lat, lng),
+        providers.risks(lat, lng, { radon: flags.radon }),
       ])
 
       setAqiData(aqi)
       setAmenityData(amenity)
       setCrimeData(crime)
       const baseResult = buildMetrics(address.trim(), location, aqi, amenity, crime, sunlight, noise, census, nearest, transitCh, undefined, risks)
-      setResult(cityAqiResult != null ? { ...baseResult, cityAqi: cityAqiResult.aqi, cityAqiName: referenceCity.name } : baseResult)
+      setResult(cityAqiResult != null ? { ...baseResult, cityAqi: cityAqiResult.aqi, cityAqiName: cityAqiResult.name } : baseResult)
       capture('address_search_completed')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
@@ -170,7 +176,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault()
     const bypass = autocompleteSelectedRef.current
-    if (!bypass && !isValidAddress(query)) {
+    if (!bypass && !isValidAddress(query, flags.us)) {
       failValidation()
       return
     }
@@ -180,11 +186,13 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
   // Re-query Overpass when the amenity radius changes
   useEffect(() => {
     if (!result || !aqiData || !crimeData) return
+    const providers = providersFor(countryOf(result.location))
+    if (!providers) return
 
     let cancelled = false
     setRadiusLoading(true)
 
-    fetchAmenityScores(result.location.lat, result.location.lng, radius)
+    providers.amenities(result.location.lat, result.location.lng, radius)
       .then(amenity => {
         if (cancelled) return
         setAmenityData(amenity)
@@ -260,7 +268,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
               setValidationError(false)
               autocompleteSelectedRef.current = false
             }}
-            placeholder="e.g. Bahnhofstrasse 1, Zürich"
+            placeholder={flags.us ? 'e.g. Bahnhofstrasse 1, Zürich or 350 5th Ave, New York' : 'e.g. Bahnhofstrasse 1, Zürich'}
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
@@ -270,7 +278,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
           />
           {validationError && (
             <p className="text-xs px-1" style={{ color: '#ef4444' }}>
-              Please enter a full street address (e.g. Bahnhofstrasse 1, 8001 Zürich)
+              Please enter a full street address (e.g. Bahnhofstrasse 1, 8001 Zürich{flags.us ? ' or 350 5th Ave, New York, NY' : ''})
             </p>
           )}
         </div>
@@ -278,7 +286,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
           type="submit"
           disabled={loading}
           onClick={(e) => {
-            if (!autocompleteSelectedRef.current && !isValidAddress(query)) {
+            if (!autocompleteSelectedRef.current && !isValidAddress(query, flags.us)) {
               e.preventDefault()
               failValidation()
             }
@@ -286,7 +294,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
           className="flex-1 sm:flex-none px-5 py-3 rounded-xl font-semibold text-sm text-white transition-all disabled:cursor-not-allowed"
           style={{
             backgroundColor: '#f97316',
-            opacity: loading ? 0.5 : (!isValidAddress(query) && !autocompleteSelectedRef.current ? 0.65 : 1),
+            opacity: loading ? 0.5 : (!isValidAddress(query, flags.us) && !autocompleteSelectedRef.current ? 0.65 : 1),
           }}
         >
           {loading ? 'Searching...' : 'Search'}
@@ -306,6 +314,9 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
           {error}
         </div>
       )}
+
+      {/* Resolved in a country that isn't fully scored yet (the US, for now) */}
+      {unscored && !loading && <CoverageComingSoon location={unscored} />}
 
       {loading && (
         <div className="flex flex-col gap-4 animate-pulse">

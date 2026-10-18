@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase'
 import { authCallbackUrl } from '@/lib/site'
 import { capture } from '@/lib/analytics'
 import Link from 'next/link'
+import CoverageNote from '@/components/CoverageNote'
 
 // Reasons the /auth/callback route can bounce someone back here. Mapped to
 // readable copy so a failed confirmation link never fails silently.
@@ -113,7 +114,7 @@ function AuthForm() {
             Location intelligence beyond the listing
           </p>
           <p className="text-xs font-semibold mt-1" style={{ color: '#f97316' }}>
-            Currently covering Switzerland
+            <CoverageNote />
           </p>
         </div>
 

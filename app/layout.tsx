@@ -8,7 +8,7 @@ import FooterWrapper from "@/components/FooterWrapper";
 import { VisitorCountryProvider } from "@/components/VisitorCountry";
 import AnalyticsIdentity from "@/components/AnalyticsIdentity";
 import { FeatureFlagsProvider } from "@/components/FeatureFlags";
-import { radonEnabled } from "@/lib/flags";
+import { radonEnabled, usEnabled } from "@/lib/flags";
 
 import { SITE_URL } from "@/lib/site";
 
@@ -23,30 +23,36 @@ const OG_IMAGE = {
   alt: "Liveability — real data on where you're moving in Switzerland",
 };
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: "Liveability — Find where to live",
-  description:
-    "Browse area rankings and address-level scores for air quality, walkability, green space, grocery access, and transit. Currently available for Switzerland.",
-  alternates: {
-    canonical: "/",
-  },
-  openGraph: {
-    type: "website",
-    siteName: "Liveability",
-    locale: "en_US",
-    url: "/",
+// A function rather than a constant so the coverage line follows US_ENABLED
+export async function generateMetadata(): Promise<Metadata> {
+  const coverage = usEnabled()
+    ? "Currently available for Switzerland and the United States."
+    : "Currently available for Switzerland.";
+  return {
+    metadataBase: new URL(SITE_URL),
     title: "Liveability — Find where to live",
-    description: "Find where to live beyond just rent. Currently available for Switzerland.",
-    images: [OG_IMAGE],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Liveability — Find where to live",
-    description: "Find where to live beyond just rent. Currently available for Switzerland.",
-    images: [OG_IMAGE.url],
-  },
-};
+    description:
+      `Browse area rankings and address-level scores for air quality, walkability, green space, grocery access, and transit. ${coverage}`,
+    alternates: {
+      canonical: "/",
+    },
+    openGraph: {
+      type: "website",
+      siteName: "Liveability",
+      locale: "en_US",
+      url: "/",
+      title: "Liveability — Find where to live",
+      description: `Find where to live beyond just rent. ${coverage}`,
+      images: [OG_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Liveability — Find where to live",
+      description: `Find where to live beyond just rent. ${coverage}`,
+      images: [OG_IMAGE.url],
+    },
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -68,7 +74,7 @@ export default async function RootLayout({
   const country = rawCountry && /^[A-Za-z]{2}$/.test(rawCountry) ? rawCountry.toUpperCase() : null;
 
   // Server-side flags (lib/flags.ts), resolved per request and passed down
-  const flags = { radon: radonEnabled() };
+  const flags = { radon: radonEnabled(), us: usEnabled() };
 
   return (
     <html lang="en">

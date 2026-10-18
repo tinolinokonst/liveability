@@ -1,12 +1,7 @@
-import { fetchAQI, AQIResult } from './airquality'
-import { fetchAmenityScores } from './overpass'
-import { fetchCrimeScore } from './crime'
-import { fetchSunlight } from './sunlight'
-import { fetchNoiseEstimate } from './noise'
-import { fetchCensus } from './census'
-import { fetchNearestEssentials } from './nearest'
-import { fetchTransitCh } from './transitCh'
-import { fetchRisks, riskPenalty } from './risks'
+import { AQIResult } from './airquality'
+import { riskPenalty } from './risks'
+import { providersFor } from './providers'
+import { COUNTRIES, countryOf } from './country'
 import { AddressMetrics, AmenityScores, CrimeResult, DemographicsResult, GeoLocation, NearestEssentials, NoiseResult, RisksResult, SunlightResult, TransitCHResult } from './types'
 
 // Single source of truth for an address's headline score.
@@ -149,16 +144,21 @@ export async function fetchFullMetrics(
   /** RADON_ENABLED, from useFeatureFlags */
   includeRadon = false
 ): Promise<AddressMetrics> {
+  // Same country routing as the address search (lib/providers.ts)
+  const providers = providersFor(countryOf(location))
+  if (!providers) throw new Error(`Scores for addresses in ${COUNTRIES[countryOf(location)].name} are coming soon`)
+  const { lat, lng } = location
+
   const [aqi, amenity, crime, sunlight, noise, census, nearest, transitCh, risks] = await Promise.all([
-    fetchAQI(location.lat, location.lng),
-    fetchAmenityScores(location.lat, location.lng, radius),
-    fetchCrimeScore(location.lat, location.lng),
-    fetchSunlight(location.lat, location.lng),
-    fetchNoiseEstimate(location.lat, location.lng),
-    fetchCensus(location.lat, location.lng),
-    fetchNearestEssentials(location.lat, location.lng),
-    fetchTransitCh(location.lat, location.lng),
-    includeRisks ? fetchRisks(location.lat, location.lng, { radon: includeRadon }) : Promise.resolve(undefined),
+    providers.airQuality(lat, lng),
+    providers.amenities(lat, lng, radius),
+    providers.safety(lat, lng),
+    providers.sunlight(lat, lng),
+    providers.noise(lat, lng),
+    providers.community(lat, lng),
+    providers.nearestEssentials(lat, lng),
+    providers.transit(lat, lng),
+    includeRisks ? providers.risks(lat, lng, { radon: includeRadon }) : Promise.resolve(undefined),
   ])
 
   return buildMetrics(address, location, aqi, amenity, crime, sunlight, noise, census, nearest, transitCh, id, risks)
