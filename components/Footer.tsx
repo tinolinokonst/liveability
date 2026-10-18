@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { useFeatureFlags } from "./FeatureFlags";
+import { RADON_ATTRIBUTION, RADON_INFO_URL } from "@/lib/radon";
 
 const GENERAL_LINKS = [
   { label: "About Us", href: "/about" },
@@ -19,6 +21,11 @@ const DATA_SOURCES = [
 
 export default function Footer() {
   const year = new Date().getFullYear();
+  // FOPH's radon attribution, verbatim, only while the radon feature is on
+  const { radon } = useFeatureFlags();
+  const dataSources = radon
+    ? [...DATA_SOURCES, { label: RADON_ATTRIBUTION, href: RADON_INFO_URL }]
+    : DATA_SOURCES;
 
   return (
     <footer style={{ backgroundColor: "#0f0f0f", borderTop: "1px solid #2a2a2a" }}>
@@ -60,7 +67,7 @@ export default function Footer() {
               Data Sources
             </h3>
             <ul className="mt-3 space-y-2 text-sm">
-              {DATA_SOURCES.map(({ label, href }) => (
+              {dataSources.map(({ label, href }) => (
                 <li key={href}>
                   <a
                     href={href}

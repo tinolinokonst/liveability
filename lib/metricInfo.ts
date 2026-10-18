@@ -1,4 +1,5 @@
 import { AmenityPlaces } from './types'
+import { RADON_ATTRIBUTION, RADON_INFO_URL } from './radon'
 
 export type MetricKey =
   | 'aqi'
@@ -20,6 +21,7 @@ export type MetricKey =
   | 'budget'
   | 'hazards'
   | 'contamination'
+  | 'radon'
 
 // AQI category colors (US EPA category names)
 export function aqiColor(category: string): string {
@@ -180,6 +182,13 @@ export const METRIC_INFO: Record<MetricKey, MetricInfo> = {
       "Whether this address, or any site within 100 m, is registered in the cadastre of contaminated sites (Kataster der belasteten Standorte): former landfills, industrial sites, accident sites and shooting ranges with polluted ground. Includes the canton's cadastre and the federal cadastres for railway, airfield and military land. A registered site at the address lowers the overall score (up to −10 if it requires remediation), and one within 100 m that requires action lowers it slightly; no data never changes it.",
     source: 'Cantonal cadastres via geodienste.ch',
     sourceUrl: 'https://geodienste.ch/services/kataster_belasteter_standorte',
+  },
+  radon: {
+    label: 'Radon',
+    description:
+      "The probability that homes in this 1 km area exceed the radon reference level of 300 Bq/m³, with a confidence index, from the Federal Office of Public Health's Swiss Radon Map. It describes the area, not a specific building: radon levels vary from building to building, and only a measurement can determine the concentration in a specific home.",
+    source: RADON_ATTRIBUTION,
+    sourceUrl: RADON_INFO_URL,
   },
   budget: {
     label: 'Monthly Budget',

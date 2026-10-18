@@ -1,6 +1,8 @@
 // Client side of the Risks section: fetching, display wording, and how risks
 // lower the composite score. Server lookups live in lib/riskSources.ts.
 
+import { fetchRadon, radonPenalty } from './radon'
+
 import type {
   ContaminatedSite,
   ContaminatedSiteStatus,
@@ -20,7 +22,7 @@ export const RISKS_UNAVAILABLE: RisksResult = {
   contamination: { status: 'error', sites: [], radiusM: 100, credits: [], message: ERROR_MESSAGE },
 }
 
-export async function fetchRisks(lat: number, lng: number): Promise<RisksResult> {
+async function fetchBaseRisks(lat: number, lng: number): Promise<RisksResult> {
   try {
     const res = await fetch(`/api/risks?lat=${lat}&lng=${lng}`)
     if (!res.ok) return RISKS_UNAVAILABLE
@@ -28,6 +30,15 @@ export async function fetchRisks(lat: number, lng: number): Promise<RisksResult>
   } catch {
     return RISKS_UNAVAILABLE
   }
+}
+
+/** opts.radon: the server-side RADON_ENABLED flag (via useFeatureFlags); off → radon is never requested */
+export async function fetchRisks(lat: number, lng: number, opts: { radon?: boolean } = {}): Promise<RisksResult> {
+  const [base, radon] = await Promise.all([
+    fetchBaseRisks(lat, lng),
+    opts.radon ? fetchRadon(lat, lng) : Promise.resolve(undefined),
+  ])
+  return radon ? { ...base, radon } : base
 }
 
 // ─── score penalties ─────────────────────────────────────────────────────────
@@ -69,7 +80,8 @@ export function contaminationPenalty(c: ContaminationResult | undefined): number
 }
 
 export function riskPenalty(risks: RisksResult | undefined): number {
-  return hazardPenalty(risks?.hazards) + contaminationPenalty(risks?.contamination)
+  // radon is only present when it was fetched with the feature on
+  return hazardPenalty(risks?.hazards) + contaminationPenalty(risks?.contamination) + radonPenalty(risks?.radon)
 }
 
 // ─── wording ─────────────────────────────────────────────────────────────────

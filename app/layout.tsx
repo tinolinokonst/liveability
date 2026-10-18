@@ -7,6 +7,8 @@ import TransitionWrapper from "@/components/TransitionWrapper";
 import FooterWrapper from "@/components/FooterWrapper";
 import { VisitorCountryProvider } from "@/components/VisitorCountry";
 import AnalyticsIdentity from "@/components/AnalyticsIdentity";
+import { FeatureFlagsProvider } from "@/components/FeatureFlags";
+import { radonEnabled } from "@/lib/flags";
 
 import { SITE_URL } from "@/lib/site";
 
@@ -65,15 +67,20 @@ export default async function RootLayout({
     (process.env.NODE_ENV === "development" ? process.env.DEV_VISITOR_COUNTRY : undefined);
   const country = rawCountry && /^[A-Za-z]{2}$/.test(rawCountry) ? rawCountry.toUpperCase() : null;
 
+  // Server-side flags (lib/flags.ts), resolved per request and passed down
+  const flags = { radon: radonEnabled() };
+
   return (
     <html lang="en">
       <body className="flex min-h-screen flex-col">
-        <main className="flex-1">
-          <VisitorCountryProvider country={country}>
-            <TransitionWrapper>{children}</TransitionWrapper>
-          </VisitorCountryProvider>
-        </main>
-        <FooterWrapper />
+        <FeatureFlagsProvider flags={flags}>
+          <main className="flex-1">
+            <VisitorCountryProvider country={country}>
+              <TransitionWrapper>{children}</TransitionWrapper>
+            </VisitorCountryProvider>
+          </main>
+          <FooterWrapper />
+        </FeatureFlagsProvider>
         {/* PostHog itself starts in instrumentation-client.ts */}
         <AnalyticsIdentity />
         {/* Production loads the script from same-origin /_vercel/insights; it is

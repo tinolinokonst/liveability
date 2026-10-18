@@ -55,6 +55,8 @@ interface MetricInfoMapProps {
   wmsOverlay?: WmsOverlay
   /** Markers default to OpenStreetMap amenities; set false when they come from elsewhere */
   markersFromOsm?: boolean
+  /** An area to outline (e.g. a 1 km data pixel); the map frames all of it */
+  areaPolygon?: { positions: [number, number][]; color: string; label: ReactNode }
 }
 
 const POLYGON_STYLE: Record<string, { fillOpacity: number; opacity: number }> = {
@@ -148,6 +150,7 @@ export default function MetricInfoMap({
   height = 380,
   wmsOverlay,
   markersFromOsm = true,
+  areaPolygon,
 }: MetricInfoMapProps) {
   const [fullscreen, setFullscreen] = useState(false)
 
@@ -171,6 +174,7 @@ export default function MetricInfoMap({
     ...points.map(p => [p.lat as number, p.lng as number] as [number, number]),
     ...clusters.map(c => [c.lat, c.lng] as [number, number]),
     ...(nearestOutside ? [[nearestOutside.lat, nearestOutside.lng] as [number, number]] : []),
+    ...(areaPolygon?.positions ?? []),
   ]
 
   const mapChildren = (
@@ -217,6 +221,15 @@ export default function MetricInfoMap({
         >
           <Popup>{contextCircle.label}</Popup>
         </Circle>
+      )}
+
+      {areaPolygon && (
+        <Polygon
+          positions={areaPolygon.positions}
+          pathOptions={{ color: areaPolygon.color, fillColor: areaPolygon.color, fillOpacity: 0.18, opacity: 0.9, weight: 2 }}
+        >
+          <Popup>{areaPolygon.label}</Popup>
+        </Polygon>
       )}
 
       <Marker position={[center.lat, center.lng]} icon={dotIcon(centerColor, 22)}>

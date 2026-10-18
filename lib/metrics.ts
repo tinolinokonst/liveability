@@ -145,7 +145,9 @@ export async function fetchFullMetrics(
   radius: number = 800,
   id?: string,
   /** Address-level risks; off for areas, where a single centre point would mislead */
-  includeRisks = false
+  includeRisks = false,
+  /** RADON_ENABLED, from useFeatureFlags */
+  includeRadon = false
 ): Promise<AddressMetrics> {
   const [aqi, amenity, crime, sunlight, noise, census, nearest, transitCh, risks] = await Promise.all([
     fetchAQI(location.lat, location.lng),
@@ -156,7 +158,7 @@ export async function fetchFullMetrics(
     fetchCensus(location.lat, location.lng),
     fetchNearestEssentials(location.lat, location.lng),
     fetchTransitCh(location.lat, location.lng),
-    includeRisks ? fetchRisks(location.lat, location.lng) : Promise.resolve(undefined),
+    includeRisks ? fetchRisks(location.lat, location.lng, { radon: includeRadon }) : Promise.resolve(undefined),
   ])
 
   return buildMetrics(address, location, aqi, amenity, crime, sunlight, noise, census, nearest, transitCh, id, risks)

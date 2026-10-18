@@ -13,6 +13,7 @@ import { ALL_AREAS, nearestNeighborhood } from '@/lib/neighborhoods'
 import AddressResults from './AddressResults'
 import ResultsHeader from './ResultsHeader'
 import { PermitsNearby, WatchToggle } from './PermitWatch'
+import { useFeatureFlags } from './FeatureFlags'
 
 const NEIGHBORHOOD_NAMES = new Set(ALL_AREAS.map(n => n.name))
 
@@ -53,6 +54,7 @@ export default function SavedAddresses({ onAdd, compareCount = 0, onViewNeighbor
   const [refreshingId, setRefreshingId] = useState<string | null>(null)
   const [removingId, setRemovingId] = useState<string | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const flags = useFeatureFlags()
 
   useEffect(() => {
     load()
@@ -87,7 +89,7 @@ export default function SavedAddresses({ onAdd, compareCount = 0, onViewNeighbor
       const location = { lat: saved.lat, lng: saved.lng, formattedAddress: saved.address }
       // Saved areas share this list; only entries saved from an address search
       // carry risks, and a refresh keeps it that way
-      const metrics = await fetchFullMetrics(saved.address, location, radius, saved.metrics.id, saved.metrics.risks !== undefined)
+      const metrics = await fetchFullMetrics(saved.address, location, radius, saved.metrics.id, saved.metrics.risks !== undefined, flags.radon)
       await updateSavedAddressMetrics(saved.id, metrics)
       setAddresses(prev => prev.map(a => (a.id === saved.id ? { ...a, metrics } : a)))
     } catch (err) {

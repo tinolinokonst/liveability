@@ -13,6 +13,7 @@ import NearestEssentials from './NearestEssentials'
 import { MonthlyBudgetCard } from './MonthlyBudget'
 import RiskCards from './RiskCards'
 import { contaminationPenalty, hazardPenalty } from '@/lib/risks'
+import { radonPenalty } from '@/lib/radon'
 
 interface AddressResultsProps {
   metrics: AddressMetrics
@@ -495,6 +496,8 @@ function compositeSubtitle(metrics: AddressMetrics): string {
   const contamination = contaminationPenalty(metrics.risks?.contamination)
   if (hazard) parts.push(`−${hazard} natural hazard`)
   if (contamination) parts.push(`−${contamination} contaminated site`)
+  const radon = radonPenalty(metrics.risks?.radon)
+  if (radon) parts.push(`−${radon} radon (area)`)
   return parts.join(' · ')
 }
 

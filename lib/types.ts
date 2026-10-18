@@ -1,3 +1,5 @@
+import type { RadonResult } from './radon'
+
 export interface GeoLocation {
   lat: number
   lng: number
@@ -268,6 +270,8 @@ export interface ContaminationResult {
 export interface RisksResult {
   hazards: HazardResult
   contamination: ContaminationResult
+  /** FOPH radon map; only fetched while RADON_ENABLED is on (lib/flags.ts) */
+  radon?: RadonResult
 }
 
 export interface AddressMetrics {

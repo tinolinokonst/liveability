@@ -5,6 +5,7 @@ import { ArrowLeft, Check } from 'lucide-react'
 import { geocodeAddress } from '@/lib/geocoding'
 import { capture } from '@/lib/analytics'
 import { fetchRisks } from '@/lib/risks'
+import { useFeatureFlags } from './FeatureFlags'
 import { fetchAmenityScores } from '@/lib/overpass'
 import { buildMetrics } from '@/lib/metrics'
 import { fetchAQI, AQIResult } from '@/lib/airquality'
@@ -57,6 +58,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
   const [aqiData, setAqiData] = useState<AQIResult | null>(null)
   const [crimeData, setCrimeData] = useState<CrimeResult | null>(null)
   const [radius, setRadius] = useState(800)
+  const flags = useFeatureFlags()
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
@@ -149,7 +151,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
         fetchCensus(location.lat, location.lng),
         fetchNearestEssentials(location.lat, location.lng),
         fetchTransitCh(location.lat, location.lng),
-        fetchRisks(location.lat, location.lng),
+        fetchRisks(location.lat, location.lng, { radon: flags.radon }),
       ])
 
       setAqiData(aqi)

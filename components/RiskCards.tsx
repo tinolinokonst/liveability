@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import dynamic from 'next/dynamic'
-import { Mountain, FlaskConical, TriangleAlert } from 'lucide-react'
+import { Mountain, FlaskConical, TriangleAlert, Radiation } from 'lucide-react'
 import MetricInfoModal from './MetricInfoModal'
+import { useFeatureFlags } from './FeatureFlags'
 import type { LegendItem } from './MetricInfoMap'
 import type { ContaminatedSite, ContaminationResult, HazardResult, NearestAmenity, RisksResult } from '@/lib/types'
 import {
@@ -16,6 +17,16 @@ import {
   SITE_TYPE_LABEL,
   ZONE_INFO,
 } from '@/lib/risks'
+import {
+  RADON_ATTRIBUTION,
+  RADON_BAND_INFO,
+  RADON_CONFIDENCE_LABEL,
+  RADON_INFO_URL,
+  RADON_MEASUREMENT_URL,
+  RADON_NOTE,
+  radonPenalty,
+  RadonResult,
+} from '@/lib/radon'
 
 const MetricInfoMap = dynamic(() => import('./MetricInfoMap'), { ssr: false })
 
@@ -59,9 +70,11 @@ interface CardShellProps {
   valueColor: string
   sub: string
   onOpen?: () => void
+  /** Small print at the bottom; defaults to the "check the cantonal map" note */
+  footer?: string
 }
 
-function CardShell({ icon: Icon, label, value, valueColor, sub, onOpen }: CardShellProps) {
+function CardShell({ icon: Icon, label, value, valueColor, sub, onOpen, footer = RISK_NOTE }: CardShellProps) {
   return (
     <div
       style={{ backgroundColor: '#1a1a1a', borderColor: '#2a2a2a' }}
@@ -77,7 +90,7 @@ function CardShell({ icon: Icon, label, value, valueColor, sub, onOpen }: CardSh
       </span>
       <span className="text-lg font-bold leading-snug" style={{ color: valueColor }}>{value}</span>
       <span className="text-xs leading-relaxed" style={{ color: MUTED }}>{sub}</span>
-      <span className="text-[11px] leading-snug mt-auto pt-1" style={{ color: NEUTRAL }}>{RISK_NOTE}</span>
+      <span className="text-[11px] leading-snug mt-auto pt-1" style={{ color: NEUTRAL }}>{footer}</span>
     </div>
   )
 }
@@ -301,13 +314,113 @@ function ContaminationCard({ c, center }: { c: ContaminationResult; center: { la
   )
 }
 
+// ─── radon (FOPH) ────────────────────────────────────────────────────────────
+// An area statistic for a 1 km pixel. Every sentence says "homes in this
+// 1 km area" — never the building — and carries FOPH's exact attribution.
+
+function RadonCard({ r, center }: { r: RadonResult; center: { lat: number; lng: number } }) {
+  const [open, setOpen] = useState(false)
+
+  if (r.status !== 'ok' || r.probability === null || !r.band || !r.confidence) {
+    return (
+      <CardShell
+        icon={Radiation}
+        label="Radon"
+        value={r.status === 'no_data' ? 'No data for this area' : 'Temporarily unavailable'}
+        valueColor={MUTED}
+        sub={r.status === 'no_data' ? 'The radon map has no value for this location.' : 'Try again later.'}
+        footer={RADON_ATTRIBUTION}
+      />
+    )
+  }
+
+  const band = RADON_BAND_INFO[r.band]
+  const confidence = RADON_CONFIDENCE_LABEL[r.confidence]
+  const value = `${band.label} · ${r.probability} %`
+
+  return (
+    <>
+      <CardShell
+        icon={Radiation}
+        label="Radon"
+        value={value}
+        valueColor={band.color}
+        sub={`${r.probability} % probability that homes in this 1 km area exceed 300 Bq/m³ · confidence: ${confidence.toLowerCase()}`}
+        onOpen={() => setOpen(true)}
+        footer={RADON_ATTRIBUTION}
+      />
+      {open && (
+        <MetricInfoModal
+          metricKey="radon"
+          value={value}
+          detail={
+            <>
+              <p>
+                <strong className="text-white">{r.probability} % probability</strong> that homes in this 1 km area
+                exceed the reference level of <strong className="text-white">300 Bq/m³</strong>.
+              </p>
+              <ul className="flex flex-col gap-1.5">
+                <li className="flex items-baseline justify-between gap-3">
+                  <span>Probability class</span>
+                  <span className="text-xs font-semibold text-right" style={{ color: band.color }}>{band.label} ({band.range})</span>
+                </li>
+                <li className="flex items-baseline justify-between gap-3">
+                  <span>Confidence index</span>
+                  <span className="text-xs font-semibold text-right text-white">{confidence}</span>
+                </li>
+              </ul>
+              <p className="text-xs">
+                The confidence index says how reliable the estimate is for this area, based on the measurements
+                behind it. The figure describes the 1 km area shown on the map, not this building.
+              </p>
+              <div
+                className="rounded-xl px-3 py-2.5 text-xs leading-relaxed flex gap-2"
+                style={{ backgroundColor: '#f973161a', border: '1px solid #f9731633', color: '#f97316' }}
+              >
+                <TriangleAlert size={14} className="shrink-0 mt-0.5" />
+                <span>
+                  {RADON_NOTE}{' '}
+                  <a href={RADON_MEASUREMENT_URL} target="_blank" rel="noopener noreferrer" className="underline">
+                    Approved measuring services
+                  </a>
+                </span>
+              </div>
+              <PenaltyLine penalty={radonPenalty(r)} />
+            </>
+          }
+          map={
+            <MetricInfoMap
+              center={center}
+              centerLabel="This address"
+              areaPolygon={r.pixel?.length ? {
+                positions: r.pixel,
+                color: band.color,
+                label: `1 km area of the radon map: ${r.probability} % probability of exceeding 300 Bq/m³`,
+              } : undefined}
+              legend={[
+                { color: '#f97316', label: 'This address' },
+                { color: band.color, label: '1 km radon map area', shape: 'square' },
+              ]}
+            />
+          }
+          sources={[{ label: RADON_ATTRIBUTION, url: RADON_INFO_URL }]}
+          onClose={() => setOpen(false)}
+        />
+      )}
+    </>
+  )
+}
+
 // ─── section ─────────────────────────────────────────────────────────────────
 
 export default function RiskCards({ risks, center }: { risks: RisksResult; center: { lat: number; lng: number } }) {
+  // Flag checked here too: radon saved while the feature was on stays hidden when it's off
+  const { radon: radonOn } = useFeatureFlags()
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <HazardCard h={risks.hazards} center={center} />
       <ContaminationCard c={risks.contamination} center={center} />
+      {radonOn && risks.radon && <RadonCard r={risks.radon} center={center} />}
     </div>
   )
 }
