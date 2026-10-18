@@ -61,23 +61,31 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
 
   const inputRef = useRef<HTMLInputElement>(null)
   const autocompleteSelectedRef = useRef(false)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const autocompleteRef = useRef<any>(null)
 
   // Wire up Google Places Autocomplete on the address input
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let autocomplete: any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let listener: any
+    let cancelled = false
 
     loadGoogleMapsScript()
       .then(() => {
-        if (!inputRef.current || !window.google) return
+        // A setup run that was already cleaned up must not attach anything:
+        // React runs effects twice in development, and a second
+        // place_changed listener would run every selected search twice
+        if (cancelled || !inputRef.current || !window.google) return
 
-        autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
+        // Autocomplete has no destroy(), so create it once per input and
+        // reuse it. A second instance on the same input doubles every
+        // Places request (billed) and stacks two suggestion lists.
+        autocompleteRef.current ??= new window.google.maps.places.Autocomplete(inputRef.current, {
           fields: ['formatted_address', 'geometry', 'name'],
           // Places allows up to five countries; US only while US_ENABLED is on
           componentRestrictions: { country: flags.us ? ['ch', 'us'] : 'ch' },
         })
+        const autocomplete = autocompleteRef.current
 
         listener = autocomplete.addListener('place_changed', () => {
           const place = autocomplete!.getPlace()
@@ -96,6 +104,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
       .catch(err => console.log('Google Maps script failed to load:', err))
 
     return () => {
+      cancelled = true
       listener?.remove()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -267,6 +276,14 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
               setQuery(e.target.value)
               setValidationError(false)
               autocompleteSelectedRef.current = false
+            }}
+            // Capture phase: Google's own keydown listener on this input runs
+            // before a bubbling handler and clears the highlight first
+            onKeyDownCapture={e => {
+              // Enter on a highlighted suggestion is a selection, which Google's
+              // place_changed handler searches; without this it also submitted the
+              // form with the half-typed text — two searches, last one wins
+              if (e.key === 'Enter' && document.querySelector('.pac-container .pac-item-selected')) e.preventDefault()
             }}
             placeholder={flags.us ? 'e.g. Bahnhofstrasse 1, Zürich or 350 5th Ave, New York' : 'e.g. Bahnhofstrasse 1, Zürich'}
             autoComplete="off"
