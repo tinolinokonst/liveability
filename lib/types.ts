@@ -438,12 +438,22 @@ export interface UsNriResult {
   version: string | null
 }
 
+/** One area's National Risk Index rating for a single hazard */
+export interface NriHazardRating {
+  rating: NriRating
+  /** National percentile, 0-100; null when FEMA gives no score */
+  score: number | null
+}
+
+/**
+ * Wildfire, from FEMA's National Risk Index. (USDA Forest Service Wildfire
+ * Risk to Communities was the first choice, but its service refuses our
+ * server with HTTP 403.) 'no_data': FEMA rates neither the tract nor the county.
+ */
 export interface UsWildfireResult {
   status: UsStatus
-  /** Annual probability that wildfire burns this ~30 m cell, 0-1 */
-  burnProbability: number | null
-  /** FEMA's tract-level wildfire rating, for context (from the NRI) */
-  nriRating: NriRating | null
+  tract: NriHazardRating | null
+  county: NriHazardRating | null
 }
 
 export type EpaSiteKind = 'superfund_npl' | 'superfund' | 'tri' | 'brownfield'

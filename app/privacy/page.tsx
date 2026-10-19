@@ -215,7 +215,7 @@ export default function PrivacyPage() {
                 EPA Air Quality System (air quality), the National Weather Service (alerts
                 and heat), the Bureau of Transportation Statistics (noise), the National
                 Laboratory of the Rockies (sunlight), FEMA (flood zones and the National
-                Risk Index), the USDA Forest Service (wildfire likelihood), and the EPA
+                Risk Index, including wildfire), and the EPA
                 Facility Registry Service (Superfund, brownfield and toxic-release sites)
               </li>
             </ul>

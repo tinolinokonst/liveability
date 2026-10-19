@@ -27,7 +27,7 @@
 // would only widen the exfiltration surface the policy exists to close.
 //
 // US providers follow the same rule: the Census Geocoder and every US data
-// API (Census, AirNow, AQS, NWS, BTS noise tiles, NLR, FEMA, USFS, EPA, HUD,
+// API (Census, AirNow, AQS, NWS, BTS noise tiles, NLR, FEMA, EPA, HUD,
 // FCC, MobilityDatabase) are called from /api/* routes, keyed ones with
 // server-only keys, so they need no connect-src entry. The only US origin the
 // BROWSER loads is the USGS base map (img-src).

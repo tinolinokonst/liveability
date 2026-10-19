@@ -38,7 +38,7 @@ const SUN_ERROR: UsSunlightResult = { status: 'error', ghi: null, latTilt: null,
 export const US_RISKS_ERROR: UsRisksResult = {
   flood: { status: 'error', zone: null, subtype: null, risk: null, sfha: null, bfeFt: null, firmPanel: null, effectiveDate: null },
   nri: { status: 'error', tract: null, county: null, version: null },
-  wildfire: { status: 'error', burnProbability: null, nriRating: null },
+  wildfire: { status: 'error', tract: null, county: null },
   epa: { status: 'error', radiusMiles: 1, sites: [], counts: { superfund_npl: 0, superfund: 0, tri: 0, brownfield: 0 } },
 }
 
@@ -157,14 +157,11 @@ export const EPA_KIND_INFO: Record<EpaSiteKind, { label: string; singular: strin
   },
 }
 
-/** "0.0012" → "0.12 % a year (about 1 in 830)" */
-export function formatBurnProbability(bp: number): string {
-  if (bp <= 0) return 'Effectively zero'
-  const pct = bp * 100
-  const pctText = pct >= 1 ? pct.toFixed(1) : pct >= 0.01 ? pct.toFixed(2) : '<0.01'
-  const oneIn = Math.round(1 / bp)
-  const oneInText = oneIn >= 10000 ? '>10,000' : oneIn.toLocaleString('en-US', { maximumSignificantDigits: 2 })
-  return `${pctText} % a year (about 1 in ${oneInText})`
+/** What FEMA's non-ratings mean, in its own terms (NRI technical documentation) */
+export const NRI_NON_RATING: Partial<Record<NriRating, string>> = {
+  'No Rating': 'FEMA estimates no expected annual loss from this hazard here.',
+  'Not Applicable': 'FEMA considers this hazard not applicable here.',
+  'Insufficient Data': 'FEMA has too little data to rate this hazard here.',
 }
 
 export const US_RISK_NOTE = 'Informational only — check the official FEMA flood map and local records before signing a lease or buying.'

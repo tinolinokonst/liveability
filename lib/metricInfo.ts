@@ -270,13 +270,9 @@ export const METRIC_INFO: Record<MetricKey, MetricInfo> = {
   wildfire: {
     label: 'Wildfire',
     description:
-      "Wildfire likelihood: the modeled annual probability that a wildfire burns this ~30 m location, from the USDA Forest Service's Wildfire Risk to Communities. FEMA's National Risk Index wildfire rating for the census tract is shown for context.",
-    source: 'USDA Forest Service, Wildfire Risk to Communities',
-    sourceUrl: 'https://wildfirerisk.org/',
-    sources: [
-      { label: 'USDA Forest Service — Wildfire Risk to Communities', url: 'https://wildfirerisk.org/' },
-      { label: 'FEMA National Risk Index — wildfire', url: 'https://hazards.fema.gov/nri/wildfire' },
-    ],
+      "FEMA's National Risk Index wildfire rating for this census tract and its county: expected annual losses from wildfire to buildings, people and agriculture, adjusted for social vulnerability and community resilience, relative to all US tracts (or counties).",
+    source: 'FEMA National Risk Index',
+    sourceUrl: 'https://hazards.fema.gov/nri/wildfire',
   },
   epaSites: {
     label: 'EPA-Listed Sites',

@@ -89,7 +89,7 @@ const UNITED_STATES_ENVIRONMENT: UsEnvironmentProviders = {
   weather: fetchUsWeather, // NWS alerts + HeatRisk
   noise: fetchUsNoise, // BTS National Transportation Noise Map
   sunlight: fetchUsSunlight, // NLR solar resource
-  risks: fetchUsRisks, // FEMA NFHL + NRI, USFS Wildfire Risk to Communities, EPA FRS
+  risks: fetchUsRisks, // FEMA NFHL + National Risk Index (incl. wildfire), EPA FRS
 }
 
 /** The per-card US environment and risk metrics; null for other countries */

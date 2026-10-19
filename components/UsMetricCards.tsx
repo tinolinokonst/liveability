@@ -13,10 +13,10 @@ import { environmentProvidersFor } from '@/lib/providers'
 import {
   EPA_KIND_INFO,
   FLOOD_RISK_INFO,
-  formatBurnProbability,
   HEAT_RISK_INFO,
   MUTED,
   NOISE_BAND_LABEL,
+  NRI_NON_RATING,
   noiseLevel,
   NRI_RATING_COLOR,
   POLLUTANT_LABEL,
@@ -28,6 +28,7 @@ import type {
   GeoLocation,
   NearestAmenity,
   NriArea,
+  NriHazardRating,
   UsAirQualityResult,
   UsEpaSitesResult,
   UsFloodResult,
@@ -410,8 +411,9 @@ function FloodCard({ f, address }: { f: UsFloodResult; address: string }) {
 
 // ─── National Risk Index ─────────────────────────────────────────────────────
 
+/** Percentiles are truncated, not rounded: 99.96 is the 99th, never the "100th" */
 function ordinal(n: number): string {
-  const r = Math.round(n)
+  const r = Math.min(99, Math.floor(n))
   const suffix = r % 100 >= 11 && r % 100 <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[r % 10] ?? 'th'
   return `${r}${suffix}`
 }
@@ -474,54 +476,67 @@ function NriCard({ n }: { n: UsNriResult }) {
   )
 }
 
-// ─── wildfire ────────────────────────────────────────────────────────────────
+// ─── wildfire (FEMA National Risk Index) ─────────────────────────────────────
 
-function WildfireCard({ w }: { w: UsWildfireResult }) {
+function WildfireRow({ title, r }: { title: string; r: NriHazardRating }) {
+  const rated = !(r.rating in NRI_NON_RATING)
+  return (
+    <Row
+      label={title}
+      value={rated ? `${r.rating}${r.score !== null ? ` · ${ordinal(r.score)} percentile` : ''}` : r.rating}
+      color={NRI_RATING_COLOR[r.rating]}
+    />
+  )
+}
+
+function WildfireCard({ w, countyName }: { w: UsWildfireResult; countyName: string | null }) {
   const [open, setOpen] = useState(false)
-  const footer = 'Source: USDA Forest Service · FEMA NRI'
-  const rated = w.nriRating && !['No Rating', 'Not Applicable', 'Insufficient Data'].includes(w.nriRating)
-  const ratingText = w.nriRating ? `FEMA tract rating: ${rated ? w.nriRating.toLowerCase() : 'not rated'}` : null
-
-  if (w.status !== 'ok' || w.burnProbability === null) {
-    // FEMA's tract rating can still be shown on its own, clearly labelled
-    return (
-      <UnavailableCard
-        icon={Flame}
-        label="Wildfire"
-        value={w.status === 'no_data' ? 'No likelihood value here' : 'Likelihood unavailable'}
-        sub={[w.status === 'no_data' ? 'Wildfire Risk to Communities has no value for this location.' : 'The Forest Service map is temporarily unavailable.', ratingText].filter(Boolean).join(' · ')}
-        footer={footer}
-      />
-    )
+  const footer = 'Source: FEMA National Risk Index'
+  if (w.status === 'error') return <UnavailableCard icon={Flame} label="Wildfire" footer={footer} />
+  if (w.status === 'no_data') {
+    return <UnavailableCard icon={Flame} label="Wildfire" value="No rating here" sub="FEMA's National Risk Index has no wildfire rating for this tract or county." footer={footer} />
   }
-  const value = formatBurnProbability(w.burnProbability)
+
+  // The tract describes this neighbourhood; the county only stands in when FEMA has no tract rating
+  const main = w.tract ?? w.county!
+  const scope = w.tract ? 'census tract' : 'county'
+  const rated = !(main.rating in NRI_NON_RATING)
+  const sub = rated
+    ? `FEMA rating for this ${scope}${main.score !== null ? ` · ${ordinal(main.score)} percentile nationally` : ''}`
+    : NRI_NON_RATING[main.rating]!.replace(' here.', ` in this ${scope}.`)
+
   return (
     <>
       <CardShell
         icon={Flame}
         label="Wildfire"
-        value={value.split(' (')[0]}
-        // No colour scale: the Forest Service publishes likelihood without one,
-        // and borrowing FEMA's rating colour would attribute it to the wrong number
-        valueColor="white"
-        sub={['Annual chance a wildfire burns here', ratingText].filter(Boolean).join(' · ')}
+        value={main.rating}
+        valueColor={NRI_RATING_COLOR[main.rating]}
+        sub={sub}
         footer={footer}
         onOpen={() => setOpen(true)}
       />
       {open && (
         <MetricInfoModal
           metricKey="wildfire"
-          value={value.split(' (')[0]}
+          value={main.rating}
           detail={
             <>
-              <p><strong className="text-white">Wildfire likelihood here: {value}.</strong></p>
+              <p>
+                <strong className="text-white">
+                  {rated
+                    ? `FEMA rates the wildfire risk of this ${scope} as ${main.rating.toLowerCase()}, relative to all US ${scope === 'county' ? 'counties' : 'tracts'}.`
+                    : NRI_NON_RATING[main.rating]!.replace(' here.', ` in this ${scope}.`)}
+                </strong>
+              </p>
               <ul className="flex flex-col gap-1.5">
-                <Row label="Annual burn probability (~30 m cell)" value={value.split(' (')[0]} />
-                {w.nriRating && <Row label="FEMA National Risk Index, tract wildfire rating" value={w.nriRating} color={NRI_RATING_COLOR[w.nriRating]} />}
+                {w.tract && <WildfireRow title="Census tract" r={w.tract} />}
+                {w.county && <WildfireRow title={countyName ?? 'County'} r={w.county} />}
               </ul>
               <p className="text-xs">
-                Modeled from fuels, weather and terrain by the USDA Forest Service. Likelihood says nothing about how
-                intense a fire would be or how a particular home would fare; ember exposure and defensible space matter too.
+                The rating combines how much wildfire is expected to cost each year (buildings, people and
+                agriculture) with social vulnerability and community resilience. It describes the whole area, not
+                this property: defensible space, roofing and vents matter for a particular home.
               </p>
               <NoteBox text={US_RISK_NOTE} />
             </>
@@ -701,7 +716,7 @@ export default function UsMetricCards({ location }: { location: GeoLocation }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <FloodCard f={data.risks.flood} address={location.formattedAddress} />
           <NriCard n={data.risks.nri} />
-          <WildfireCard w={data.risks.wildfire} />
+          <WildfireCard w={data.risks.wildfire} countyName={data.risks.nri.county?.name ?? null} />
           <EpaSitesCard e={data.risks.epa} center={center} />
         </div>
       ) : <Skeleton count={4} />}

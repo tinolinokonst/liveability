@@ -4,8 +4,9 @@
 // - Flood zone: FEMA National Flood Hazard Layer (the digital FIRMs), point query.
 // - National Risk Index: FEMA's composite and per-hazard ratings for the
 //   census tract and county, from FEMA's public NRI feature services.
-// - Wildfire: annual burn probability from USDA Forest Service Wildfire Risk
-//   to Communities, at the ~30 m cell; FEMA's tract wildfire rating for context.
+// - Wildfire: FEMA's National Risk Index wildfire rating for the tract and
+//   county. USDA Forest Service Wildfire Risk to Communities would give a
+//   point value, but its image service answers our server with HTTP 403.
 // - EPA sites within 1 mile: Superfund (NPL and non-NPL, from SEMS), Toxics
 //   Release Inventory reporters and brownfield properties (ACRES), from the
 //   EPA Facility Registry Service — the registry behind Envirofacts.
@@ -25,6 +26,7 @@ import type {
   FloodRisk,
   NriArea,
   NriHazard,
+  NriHazardRating,
   NriRating,
   UsEpaSitesResult,
   UsFloodResult,
@@ -42,7 +44,6 @@ const NFHL_ZONES_LAYER = 28 // "Flood Hazard Zones" (S_FLD_HAZ_AR)
 const NFHL_PANELS_LAYER = 3 // "FIRM Panels" (S_FIRM_PAN)
 const NRI_TRACTS = 'https://services.arcgis.com/XG15cJAlne2vxtgt/arcgis/rest/services/National_Risk_Index_Census_Tracts/FeatureServer/0'
 const NRI_COUNTIES = 'https://services.arcgis.com/XG15cJAlne2vxtgt/arcgis/rest/services/National_Risk_Index_Counties/FeatureServer/0'
-const WRC_BURN_PROBABILITY = 'https://apps.fs.usda.gov/fsgisx01/rest/services/RDW_Wildfire/RMRS_WRC_BurnProbability/ImageServer'
 const FRS = 'https://gispub.epa.gov/arcgis/rest/services/OEI/FRS_INTERESTS/MapServer'
 const FRS_LAYERS = { acres: 0, sems: 21, semsNpl: 22, tri: 23 } as const
 
@@ -175,7 +176,14 @@ interface NriCached {
   tract: NriArea | null
   county: NriArea | null
   version: string | null
-  wildfire: NriRating | null
+  wildfire: { tract: NriHazardRating | null; county: NriHazardRating | null }
+}
+
+function hazardRating(a: NriAttrs | undefined, key: string): NriHazardRating | null {
+  const rating = a?.[`${key}_RISKR`]
+  if (!isRating(rating)) return null
+  const score = a?.[`${key}_RISKS`]
+  return { rating, score: typeof score === 'number' ? Math.round(score * 10) / 10 : null }
 }
 
 async function lookupNri(lat: number, lng: number): Promise<NriCached> {
@@ -191,32 +199,11 @@ async function lookupNri(lat: number, lng: number): Promise<NriCached> {
     tract: t ? nriArea(t, `GEOID ${t.TRACTFIPS}`) : null,
     county: counties[0] && countyName ? nriArea(counties[0], countyName) : null,
     version: (t?.NRI_VER ?? counties[0]?.NRI_VER ?? null) as string | null,
-    wildfire: t && isRating(t.WFIR_RISKR) ? t.WFIR_RISKR : null,
+    wildfire: { tract: hazardRating(t, 'WFIR'), county: hazardRating(counties[0], 'WFIR') },
   }
 }
 
-const cachedNri = unstable_cache(lookupNri, ['us-nri-v2'], { revalidate: CACHE_SECONDS })
-
-// ─── wildfire (USFS Wildfire Risk to Communities) ────────────────────────────
-
-async function lookupBurnProbability(lat: number, lng: number): Promise<number | null> {
-  const params = new URLSearchParams({
-    geometry: JSON.stringify({ x: lng, y: lat, spatialReference: { wkid: 4326 } }),
-    geometryType: 'esriGeometryPoint',
-    returnGeometry: 'false',
-    returnCatalogItems: 'false',
-    f: 'json',
-  })
-  const data = await fetchJson<{ value?: string; error?: { message?: string } }>(`${WRC_BURN_PROBABILITY}/identify?${params}`, { timeoutMs: 15000 })
-  if (data.error || typeof data.value !== 'string') throw new UsLookupError(`WRC: ${data.error?.message ?? 'unexpected response'}`)
-  if (data.value === 'NoData') return null
-  const bp = Number(data.value)
-  // An annual probability; anything else means the service changed its encoding
-  if (!Number.isFinite(bp) || bp < 0 || bp > 1) throw new UsLookupError(`WRC: unexpected value ${data.value}`)
-  return bp
-}
-
-const cachedBurnProbability = unstable_cache(lookupBurnProbability, ['us-wrc-bp-v1'], { revalidate: CACHE_SECONDS })
+const cachedNri = unstable_cache(lookupNri, ['us-nri-v3'], { revalidate: CACHE_SECONDS })
 
 // ─── EPA sites (FRS) ─────────────────────────────────────────────────────────
 
@@ -295,10 +282,9 @@ function epaResult(cached: CachedEpaSite[], lat: number, lng: number): UsEpaSite
 // ─── all risks ───────────────────────────────────────────────────────────────
 
 export async function getUsRisks(lat: number, lng: number): Promise<UsRisksResult> {
-  const [flood, nri, bp, epa] = await Promise.all([
+  const [flood, nri, epa] = await Promise.all([
     orError(() => cachedFlood(roundCoord(lat, 5), roundCoord(lng, 5)), null, 'us-nfhl'),
     orError(() => cachedNri(roundCoord(lat), roundCoord(lng)), null, 'us-nri'),
-    orError(async () => ({ value: await cachedBurnProbability(roundCoord(lat), roundCoord(lng)) }), null, 'us-wrc'),
     orError(() => cachedEpaSites(roundCoord(lat, 3), roundCoord(lng, 3)), null, 'us-epa'),
   ])
 
@@ -306,11 +292,9 @@ export async function getUsRisks(lat: number, lng: number): Promise<UsRisksResul
     ? { status: nri.tract || nri.county ? 'ok' : 'no_data', tract: nri.tract, county: nri.county, version: nri.version }
     : { status: 'error', tract: null, county: null, version: null }
 
-  const wildfire: UsWildfireResult = {
-    status: !bp ? 'error' : bp.value === null ? 'no_data' : 'ok',
-    burnProbability: bp?.value ?? null,
-    nriRating: nri?.wildfire ?? null,
-  }
+  const wildfire: UsWildfireResult = nri
+    ? { status: nri.wildfire.tract || nri.wildfire.county ? 'ok' : 'no_data', ...nri.wildfire }
+    : { status: 'error', tract: null, county: null }
 
   return {
     flood: flood ?? { status: 'error', zone: null, subtype: null, risk: null, sfha: null, bfeFt: null, firmPanel: null, effectiveDate: null },
