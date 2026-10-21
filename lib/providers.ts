@@ -23,7 +23,19 @@ import { fetchNearestEssentials } from './nearest'
 import { fetchTransitCh } from './transitCh'
 import { fetchRisks } from './risks'
 import { nearestArea } from './neighborhoods'
-import { fetchUsAirQuality, fetchUsNoise, fetchUsRisks, fetchUsSunlight, fetchUsWeather } from './usMetrics'
+import {
+  fetchUsAirQuality,
+  fetchUsBroadband,
+  fetchUsFoodAccess,
+  fetchUsHealth,
+  fetchUsNoise,
+  fetchUsRisks,
+  fetchUsSchools,
+  fetchUsSunlight,
+  fetchUsTransit,
+  fetchUsWalkability,
+  fetchUsWeather,
+} from './usMetrics'
 import type { CountryCode } from './country'
 import type {
   AmenityScores,
@@ -35,7 +47,13 @@ import type {
   SunlightResult,
   TransitCHResult,
   UsAirQualityResult,
+  UsBroadbandResult,
+  UsFoodAccessResult,
+  UsHealthResult,
   UsNoiseResult,
+  UsSchoolsResult,
+  UsTransitResult,
+  UsWalkabilityResult,
   UsRisksResult,
   UsSunlightResult,
   UsWeatherResult,
@@ -92,6 +110,29 @@ const UNITED_STATES_ENVIRONMENT: UsEnvironmentProviders = {
   risks: fetchUsRisks, // FEMA NFHL + National Risk Index (incl. wildfire), EPA FRS
 }
 
+export interface UsDailyLifeProviders {
+  walkability(lat: number, lng: number): Promise<UsWalkabilityResult>
+  transit(lat: number, lng: number): Promise<UsTransitResult>
+  schools(lat: number, lng: number): Promise<UsSchoolsResult>
+  foodAccess(lat: number, lng: number): Promise<UsFoodAccessResult>
+  broadband(lat: number, lng: number): Promise<UsBroadbandResult>
+  health(lat: number, lng: number): Promise<UsHealthResult>
+}
+
+const UNITED_STATES_DAILY_LIFE: UsDailyLifeProviders = {
+  walkability: fetchUsWalkability, // EPA Smart Location Database
+  transit: fetchUsTransit, // OpenStreetMap stops + Mobility Database feeds
+  schools: fetchUsSchools, // NCES EDGE school locations
+  foodAccess: fetchUsFoodAccess, // OpenStreetMap grocery + USDA Food Access Research Atlas
+  broadband: fetchUsBroadband, // FCC National Broadband Map (county)
+  health: fetchUsHealth, // CDC PLACES + CDC/ATSDR SVI
+}
+
+/** The per-card US mobility and daily-life metrics; null for other countries */
+export function dailyLifeProvidersFor(country: CountryCode): UsDailyLifeProviders | null {
+  return country === 'US' ? UNITED_STATES_DAILY_LIFE : null
+}
+
 /** The per-card US environment and risk metrics; null for other countries */
 export function environmentProvidersFor(country: CountryCode): UsEnvironmentProviders | null {
   return country === 'US' ? UNITED_STATES_ENVIRONMENT : null
@@ -114,8 +155,8 @@ export function providersFor(country: CountryCode): MetricProviders | null {
 }
 
 /** Metrics that already have a provider for this country (for "coming soon" messaging) */
-export function availableMetrics(country: CountryCode): Array<keyof MetricProviders | keyof UsEnvironmentProviders> {
-  const env = environmentProvidersFor(country)
+export function availableMetrics(country: CountryCode): Array<keyof MetricProviders | keyof UsEnvironmentProviders | keyof UsDailyLifeProviders> {
+  const perCard = { ...environmentProvidersFor(country), ...dailyLifeProvidersFor(country) }
   const scored = REQUIRED.filter(k => typeof PROVIDERS[country][k] === 'function')
-  return [...new Set([...scored, ...(env ? (Object.keys(env) as Array<keyof UsEnvironmentProviders>) : [])])]
+  return [...new Set([...scored, ...(Object.keys(perCard) as Array<keyof UsEnvironmentProviders | keyof UsDailyLifeProviders>)])]
 }

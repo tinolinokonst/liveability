@@ -30,6 +30,12 @@ export type MetricKey =
   | 'nri'
   | 'wildfire'
   | 'epaSites'
+  | 'usWalkability'
+  | 'usTransit'
+  | 'usSchools'
+  | 'usFood'
+  | 'broadband'
+  | 'usHealth'
 
 // AQI category colors (US EPA category names)
 export function aqiColor(category: string): string {
@@ -285,6 +291,60 @@ export const METRIC_INFO: Record<MetricKey, MetricInfo> = {
       { label: 'EPA Superfund: National Priorities List', url: 'https://www.epa.gov/superfund/superfund-national-priorities-list-npl' },
       { label: 'EPA Toxics Release Inventory', url: 'https://www.epa.gov/toxics-release-inventory-tri-program' },
       { label: 'EPA Brownfields (ACRES)', url: 'https://www.epa.gov/brownfields' },
+    ],
+  },
+  usWalkability: {
+    label: 'Walkability',
+    description:
+      "EPA's National Walkability Index for this address's census block group, from the Smart Location Database: a 1–20 rank built from street intersection density, distance to the nearest transit stop, and the mix of jobs and homes. It describes the neighbourhood's layout, not sidewalks or safety.",
+    source: 'US EPA Smart Location Database',
+    sourceUrl: 'https://www.epa.gov/smartgrowth/smart-location-mapping',
+  },
+  usTransit: {
+    label: 'Transit',
+    description:
+      "Public transport stops within half a mile, mapped in OpenStreetMap, and the transit agencies whose published GTFS schedules cover this location, from the Mobility Database. The score counts stops, not how often vehicles come.",
+    source: 'OpenStreetMap · Mobility Database',
+    sourceUrl: 'https://mobilitydatabase.org/',
+    sources: [
+      { label: 'OpenStreetMap contributors — stops (ODbL)', url: 'https://www.openstreetmap.org/copyright' },
+      { label: 'Mobility Database — GTFS feeds', url: 'https://mobilitydatabase.org/' },
+    ],
+  },
+  usSchools: {
+    label: 'Schools',
+    description:
+      "Public and private K–12 schools near this address, from the National Center for Education Statistics' EDGE school locations. Being nearby doesn't mean a school is assigned to this address — check the school district's attendance zones.",
+    source: 'NCES Education Demographic and Geographic Estimates (EDGE)',
+    sourceUrl: 'https://nces.ed.gov/programs/edge/Geographic/SchoolLocations',
+  },
+  usFood: {
+    label: 'Food Access',
+    description:
+      "Supermarkets and grocery stores within a mile, mapped in OpenStreetMap, alongside the USDA Food Access Research Atlas flags for this census tract: whether many residents live far from a supermarket (more than 1 mile in cities, 10 miles in rural areas) and whether the tract is low-income.",
+    source: 'OpenStreetMap · USDA Food Access Research Atlas',
+    sourceUrl: 'https://www.ers.usda.gov/data-products/food-access-research-atlas/',
+    sources: [
+      { label: 'OpenStreetMap contributors — grocery stores (ODbL)', url: 'https://www.openstreetmap.org/copyright' },
+      { label: 'USDA ERS Food Access Research Atlas', url: 'https://www.ers.usda.gov/data-products/food-access-research-atlas/' },
+    ],
+  },
+  broadband: {
+    label: 'Broadband',
+    description:
+      "Home internet availability from the FCC National Broadband Map: the share of homes in this county (its urban or rural part, matching this address) that providers report they can serve at each speed. The FCC doesn't publish availability for individual addresses in a form we can use, so this describes the area — check the FCC map for this exact address.",
+    source: 'FCC National Broadband Map',
+    sourceUrl: 'https://broadbandmap.fcc.gov/',
+  },
+  usHealth: {
+    label: 'Community Health',
+    description:
+      "Model-based estimates of adult health in this census tract from CDC PLACES, next to the county's figures, and the tract's CDC/ATSDR Social Vulnerability Index: how its social conditions (poverty, housing, transportation, language and more) compare with every other US tract.",
+    source: 'CDC PLACES · CDC/ATSDR Social Vulnerability Index',
+    sourceUrl: 'https://www.cdc.gov/places/',
+    sources: [
+      { label: 'CDC PLACES: Local Data for Better Health (2025 release)', url: 'https://www.cdc.gov/places/' },
+      { label: 'CDC/ATSDR Social Vulnerability Index 2022', url: 'https://www.atsdr.cdc.gov/place-health/php/svi/' },
     ],
   },
 }

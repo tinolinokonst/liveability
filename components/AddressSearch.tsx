@@ -38,8 +38,9 @@ function isValidAddress(addr: string, allowUs = false): boolean {
   // Swiss addresses put the house number after the street ("Bahnhofstrasse 1"),
   // so require a street word followed by a number (unicode letters for ü/é/etc.)
   if (/[A-Za-zÀ-ÖØ-öø-ÿ]{3,}\.?\s*\d+/.test(trimmed)) return true
-  // US addresses lead with the number ("350 5th Ave", "1600 Pennsylvania Ave")
-  return allowUs && /^\d+[A-Za-z]?\s+\S{2,}/.test(trimmed)
+  // US addresses lead with the number ("350 5th Ave", "1600 Pennsylvania Ave"),
+  // often with a one-letter direction before the street ("200 W Washington St")
+  return allowUs && /^\d+[A-Za-z]?\s+(?:[NSEW]\.?\s+)?\S{2,}/i.test(trimmed)
 }
 
 export default function AddressSearch({ onAdd, compareCount = 0, userId, initialAddress, onBack }: AddressSearchProps) {

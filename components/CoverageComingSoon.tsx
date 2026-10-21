@@ -3,6 +3,7 @@
 import { MapPin } from 'lucide-react'
 import { COUNTRIES, countryOf } from '@/lib/country'
 import type { GeoLocation } from '@/lib/types'
+import UsDailyLifeCards from './UsDailyLifeCards'
 import UsMetricCards from './UsMetricCards'
 
 const MUTED = '#a0a0a0'
@@ -42,12 +43,13 @@ export default function CoverageComingSoon({ location }: { location: GeoLocation
         )
       )}
 
+      {country.code === 'US' && <UsDailyLifeCards location={location} />}
       {country.code === 'US' && <UsMetricCards location={location} />}
 
       <p className="text-sm" style={{ color: MUTED }}>
         {country.code === 'US'
-          ? <>An overall Liveability score for addresses in the {country.name} is on its way — amenities, safety, transit and
-            community data come next. Until then each card stands on its own.</>
+          ? <>An overall Liveability score for addresses in the {country.name} is on its way — safety, housing costs and community
+            data come next. Until then each card stands on its own.</>
           : <>Liveability scores for addresses in the {country.name} are on their way — we&apos;re adding the data sources
             now.</>}{' '}
         Distances are shown in {country.distanceUnit === 'mi' ? 'miles' : 'kilometres'} and costs in {country.currency}.

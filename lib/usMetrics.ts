@@ -3,6 +3,12 @@
 // lib/us*Source(s).ts. A failed request becomes an 'error' result, never a value.
 
 import type {
+  UsBroadbandResult,
+  UsFoodAccessResult,
+  UsHealthResult,
+  UsSchoolsResult,
+  UsTransitResult,
+  UsWalkabilityResult,
   EpaSiteKind,
   FloodRisk,
   HeatRiskLevel,
@@ -47,6 +53,21 @@ export const fetchUsWeather = (lat: number, lng: number) => getJson('weather', l
 export const fetchUsNoise = (lat: number, lng: number) => getJson('noise', lat, lng, NOISE_ERROR)
 export const fetchUsSunlight = (lat: number, lng: number) => getJson('sunlight', lat, lng, SUN_ERROR)
 export const fetchUsRisks = (lat: number, lng: number) => getJson('risks', lat, lng, US_RISKS_ERROR)
+
+// Getting around and daily life
+const WALK_ERROR: UsWalkabilityResult = { status: 'error', index: null, score: null, ranks: null, blockGroup: null }
+const TRANSIT_ERROR: UsTransitResult = { status: 'error', stops: null, stationCount: 0, score: null, feedsStatus: 'error', feeds: [] }
+const SCHOOLS_ERROR: UsSchoolsResult = { status: 'error', schools: null, publicYear: null, privateYear: null }
+const FOOD_ERROR: UsFoodAccessResult = { groceryStatus: 'error', grocery: null, usdaStatus: 'error', usda: null }
+const BROADBAND_ERROR: UsBroadbandResult = { status: 'error', county: null, area: null, figures: null, asOf: null }
+const HEALTH_ERROR: UsHealthResult = { placesStatus: 'error', measures: [], placesYear: null, sviStatus: 'error', svi: null, tract: null }
+
+export const fetchUsWalkability = (lat: number, lng: number) => getJson('walkability', lat, lng, WALK_ERROR)
+export const fetchUsTransit = (lat: number, lng: number) => getJson('transit', lat, lng, TRANSIT_ERROR)
+export const fetchUsSchools = (lat: number, lng: number) => getJson('schools', lat, lng, SCHOOLS_ERROR)
+export const fetchUsFoodAccess = (lat: number, lng: number) => getJson('food', lat, lng, FOOD_ERROR)
+export const fetchUsBroadband = (lat: number, lng: number) => getJson('broadband', lat, lng, BROADBAND_ERROR)
+export const fetchUsHealth = (lat: number, lng: number) => getJson('health', lat, lng, HEALTH_ERROR)
 
 // ─── wording ─────────────────────────────────────────────────────────────────
 
@@ -163,5 +184,23 @@ export const NRI_NON_RATING: Partial<Record<NriRating, string>> = {
   'Not Applicable': 'FEMA considers this hazard not applicable here.',
   'Insufficient Data': 'FEMA has too little data to rate this hazard here.',
 }
+
+// EPA's four National Walkability Index categories
+export function walkCategory(index: number): { label: string; color: string } {
+  if (index > 15.25) return { label: 'Most walkable', color: '#22c55e' }
+  if (index > 10.5) return { label: 'Above average', color: '#84cc16' }
+  if (index > 5.75) return { label: 'Below average', color: '#f59e0b' }
+  return { label: 'Least walkable', color: '#ef4444' }
+}
+
+// CDC's SVI quartiles
+export function sviBand(p: number): { label: string; color: string } {
+  if (p >= 0.75) return { label: 'High vulnerability', color: '#ef4444' }
+  if (p >= 0.5) return { label: 'Moderate-to-high vulnerability', color: '#f97316' }
+  if (p >= 0.25) return { label: 'Low-to-moderate vulnerability', color: '#eab308' }
+  return { label: 'Low vulnerability', color: '#22c55e' }
+}
+
+export const pct = (share: number) => `${Math.round(share * 100)} %`
 
 export const US_RISK_NOTE = 'Informational only — check the official FEMA flood map and local records before signing a lease or buying.'

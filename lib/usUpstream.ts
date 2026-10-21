@@ -16,13 +16,15 @@ export class UsLookupError extends Error {}
 
 export async function fetchUpstream(
   url: string,
-  opts: { timeoutMs?: number; headers?: Record<string, string> } = {}
+  opts: { timeoutMs?: number; headers?: Record<string, string>; method?: 'GET' | 'POST'; body?: string } = {}
 ): Promise<Response> {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), opts.timeoutMs ?? DEFAULT_TIMEOUT_MS)
   try {
     // no-store: caching happens once, on the parsed result
     const res = await fetch(url, {
+      method: opts.method ?? 'GET',
+      body: opts.body,
       signal: controller.signal,
       cache: 'no-store',
       headers: { 'User-Agent': USER_AGENT, ...opts.headers },

@@ -14,7 +14,7 @@ export default function PrivacyPage() {
       <SiteHeader />
       <div className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="text-3xl font-bold tracking-tight text-white">Privacy Policy</h1>
-        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 18, 2026</p>
+        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 21, 2026</p>
 
         <div className="mt-10 space-y-10 text-base leading-relaxed text-[#a0a0a0]">
           <p>
@@ -215,8 +215,12 @@ export default function PrivacyPage() {
                 EPA Air Quality System (air quality), the National Weather Service (alerts
                 and heat), the Bureau of Transportation Statistics (noise), the National
                 Laboratory of the Rockies (sunlight), FEMA (flood zones and the National
-                Risk Index, including wildfire), and the EPA
-                Facility Registry Service (Superfund, brownfield and toxic-release sites)
+                Risk Index, including wildfire), the EPA (Facility Registry Service sites and
+                the Smart Location Database walkability index), the Mobility Database
+                (transit agencies), the National Center for Education Statistics (schools),
+                the USDA Food Access Research Atlas, and the CDC (PLACES health estimates and
+                the Social Vulnerability Index). Broadband figures come from a county table
+                built from the FCC National Broadband Map, so no request is sent for them
               </li>
             </ul>
             <p>

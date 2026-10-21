@@ -485,6 +485,125 @@ export interface UsRisksResult {
   epa: UsEpaSitesResult
 }
 
+// ─── United States: mobility and daily life ─────────────────────────────────
+
+/** A mapped place near a US address (a stop, a shop, a school) */
+export interface UsPlace {
+  name: string | null
+  kind: string
+  distanceKm: number
+  lat: number
+  lng: number
+  /** Official record, when the source has one */
+  url?: string
+}
+
+/** Places within the radius; when there are none, the nearest beyond it */
+export interface UsNearby {
+  radiusKm: number
+  /** How many are within the radius (places may list only the nearest of them) */
+  count: number
+  places: UsPlace[]
+  /** Only set when places is empty and something was found farther out */
+  nearestOutside: UsPlace | null
+}
+
+export interface UsWalkabilityResult {
+  status: UsStatus
+  /** EPA National Walkability Index, 1 (least) to 20 (most walkable) */
+  index: number | null
+  score: number | null
+  /** The four inputs, each ranked 1-20 nationally (higher = more walkable) */
+  ranks: { intersectionDensity: number; transitProximity: number; employmentMix: number; employmentHousingMix: number } | null
+  blockGroup: string | null
+}
+
+export interface TransitFeed {
+  id: string
+  provider: string
+  feedName: string | null
+  official: boolean | null
+  url: string
+}
+
+export interface UsTransitResult {
+  /** OpenStreetMap stops */
+  status: UsStatus
+  stops: UsNearby | null
+  /** Rail stations among the stops */
+  stationCount: number
+  score: number | null
+  /** Mobility Database: GTFS feeds whose service area covers the address */
+  feedsStatus: UsStatus
+  feeds: TransitFeed[]
+}
+
+export interface UsSchoolsResult {
+  status: UsStatus
+  schools: UsNearby | null
+  /** NCES school years of the two datasets, e.g. "2024-2025" */
+  publicYear: string | null
+  privateYear: string | null
+}
+
+export interface UsFoodAccessResult {
+  /** OpenStreetMap supermarkets and grocery stores */
+  groceryStatus: UsStatus
+  grocery: UsNearby | null
+  /** USDA Food Access Research Atlas, for the census tract */
+  usdaStatus: UsStatus
+  usda: {
+    tract: string
+    urban: boolean
+    lowIncome: boolean
+    /** Low income and low access: 1 mile (urban) / 10 miles (rural) */
+    lila1And10: boolean
+    /** Low income and low access: ½ mile (urban) / 10 miles (rural) */
+    lilaHalfAnd10: boolean
+    /** Low access alone (any income): 1 mile (urban) / 10 miles (rural) */
+    lowAccess1And10: boolean
+    povertyRate: number | null
+  } | null
+}
+
+export interface BroadbandArea {
+  /** Residential units the shares are of */
+  units: number
+  wired100: number
+  wired1000: number
+  fiber100: number
+  terrestrial100: number
+}
+
+export interface UsBroadbandResult {
+  status: UsStatus
+  county: string | null
+  /** Which part of the county the figures describe */
+  area: 'urban' | 'rural' | 'total' | null
+  figures: BroadbandArea | null
+  asOf: string | null
+}
+
+export interface HealthMeasure {
+  id: string
+  label: string
+  /** Share of adults, % (model-based estimate) */
+  tract: number | null
+  county: number | null
+  /** true when a higher share is better (e.g. routine checkups) */
+  higherIsBetter: boolean
+}
+
+export interface UsHealthResult {
+  placesStatus: UsStatus
+  measures: HealthMeasure[]
+  placesYear: string | null
+  /** CDC/ATSDR Social Vulnerability Index, percentiles 0-1 */
+  sviStatus: UsStatus
+  svi: { overall: number; socioeconomic: number | null; household: number | null; minority: number | null; housing: number | null } | null
+  tract: string | null
+}
+
 export interface AddressMetrics {
   id: string
   address: string

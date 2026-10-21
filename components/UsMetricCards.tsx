@@ -42,13 +42,13 @@ import type {
 
 const MetricInfoMap = dynamic(() => import('./MetricInfoMap'), { ssr: false })
 
-const NEUTRAL = '#6b6b6b'
-const mi = (km: number | null | undefined) => formatDistanceFor(km, 'US')
+export const NEUTRAL = '#6b6b6b'
+export const mi = (km: number | null | undefined) => formatDistanceFor(km, 'US')
 
 type Center = { lat: number; lng: number }
 
 
-function Row({ label, value, color }: { label: React.ReactNode; value: React.ReactNode; color?: string }) {
+export function Row({ label, value, color }: { label: React.ReactNode; value: React.ReactNode; color?: string }) {
   return (
     <li className="flex items-baseline justify-between gap-3">
       <span>{label}</span>
@@ -58,7 +58,7 @@ function Row({ label, value, color }: { label: React.ReactNode; value: React.Rea
 }
 
 /** The muted card every metric falls back to when its source couldn't answer */
-function UnavailableCard({ icon, label, value = UNAVAILABLE, sub = 'Try again later.', footer }: {
+export function UnavailableCard({ icon, label, value = UNAVAILABLE, sub = 'Try again later.', footer }: {
   icon: typeof Wind; label: string; value?: string; sub?: string; footer: string
 }) {
   return <CardShell icon={icon} label={label} value={value} valueColor={MUTED} sub={sub} footer={footer} />
@@ -412,7 +412,7 @@ function FloodCard({ f, address }: { f: UsFloodResult; address: string }) {
 // ─── National Risk Index ─────────────────────────────────────────────────────
 
 /** Percentiles are truncated, not rounded: 99.96 is the 99th, never the "100th" */
-function ordinal(n: number): string {
+export function ordinal(n: number): string {
   const r = Math.min(99, Math.floor(n))
   const suffix = r % 100 >= 11 && r % 100 <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[r % 10] ?? 'th'
   return `${r}${suffix}`
@@ -658,7 +658,7 @@ interface Loaded {
   risks: UsRisksResult
 }
 
-function Skeleton({ count }: { count: number }) {
+export function Skeleton({ count }: { count: number }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-pulse">
       {[...Array(count)].map((_, i) => (
@@ -672,7 +672,7 @@ function Skeleton({ count }: { count: number }) {
   )
 }
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
+export function SectionTitle({ children }: { children: React.ReactNode }) {
   return <h3 style={{ color: MUTED }} className="text-xs font-medium uppercase tracking-wider">{children}</h3>
 }
 
