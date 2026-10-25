@@ -43,15 +43,16 @@ interface AirNowRow {
   hourObserved: string
   localTimeZone: string
   reportingAreaName: string
-  siteID: string
-  siteName: string
+  // Either can be null in the replacement service's output
+  siteID: string | null
+  siteName: string | null
   parameterName: string
   nowcastAQI: number
   aqiCategoryName?: string
 }
 
 interface AirNowSnapshot {
-  rows: Array<Pick<AirNowRow, 'siteID' | 'siteName' | 'parameterName' | 'nowcastAQI'>>
+  rows: Array<Pick<AirNowRow, 'siteID' | 'siteName' | 'parameterName' | 'nowcastAQI' | 'reportingAreaName'>>
   observedAt: string | null
   reportingArea: string | null
 }
@@ -73,7 +74,7 @@ async function lookupAirNow(lat: number, lng: number): Promise<AirNowSnapshot> {
   const rows = data.filter(r => typeof r.nowcastAQI === 'number' && r.nowcastAQI >= 0)
   const first = rows[0]
   return {
-    rows: rows.map(r => ({ siteID: r.siteID, siteName: r.siteName, parameterName: r.parameterName, nowcastAQI: r.nowcastAQI })),
+    rows: rows.map(r => ({ siteID: r.siteID, siteName: r.siteName, parameterName: r.parameterName, nowcastAQI: r.nowcastAQI, reportingAreaName: r.reportingAreaName })),
     observedAt: first ? `${first.dateObserved} ${first.hourObserved} ${first.localTimeZone}` : null,
     reportingArea: first?.reportingAreaName ?? null,
   }
@@ -81,7 +82,7 @@ async function lookupAirNow(lat: number, lng: number): Promise<AirNowSnapshot> {
 
 // ~2 km cells: AirNow answers with the closest monitor per pollutant, which
 // doesn't change across a few hundred metres
-const cachedAirNow = unstable_cache(lookupAirNow, ['us-airnow-v1'], { revalidate: AIRNOW_CACHE_SECONDS })
+const cachedAirNow = unstable_cache(lookupAirNow, ['us-airnow-v2'], { revalidate: AIRNOW_CACHE_SECONDS })
 
 // ─── AQS ─────────────────────────────────────────────────────────────────────
 
@@ -224,12 +225,12 @@ export async function getUsAirQuality(lat: number, lng: number): Promise<UsAirQu
   const sitesById = new Map((cell?.sites ?? []).map(s => [s.id, s]))
   const readings: UsAirReading[] = airnow.rows.map(r => {
     // AirNow IDs are 9 digits (state/county/site), sometimes behind a 3-digit country code
-    const site = sitesById.get(r.siteID.slice(-9))
+    const site = r.siteID ? sitesById.get(r.siteID.slice(-9)) : undefined
     return {
       pollutant: POLLUTANT_LABEL[r.parameterName] ?? r.parameterName,
       aqi: r.nowcastAQI,
       category: categoryFor(r.nowcastAQI),
-      siteName: r.siteName,
+      siteName: r.siteName?.trim() || r.reportingAreaName || 'Unnamed monitor',
       distanceKm: site ? Math.round(haversineKm(lat, lng, site.lat, site.lng) * 1000) / 1000 : null,
       ...(site && { lat: site.lat, lng: site.lng }),
     }

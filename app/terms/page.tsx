@@ -13,7 +13,7 @@ export default function TermsPage() {
       <SiteHeader />
       <div className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="text-3xl font-bold tracking-tight text-white">Terms of Use</h1>
-        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: August 13, 2026</p>
+        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 25, 2026</p>
 
         <div className="mt-10 space-y-10 text-base leading-relaxed text-[#a0a0a0]">
           <section className="space-y-3">
@@ -62,6 +62,14 @@ export default function TermsPage() {
               environmental advice. Scores related to air quality, noise, safety, or
               any other metric are not a substitute for professional inspection or
               advice. Decisions about where to live are yours alone.
+            </p>
+            <p>
+              The Monthly Budget, in Switzerland and in the United States, is an estimate
+              and is not tax or financial advice. US figures are computed from published
+              2026 federal and state income tax rules, FICA rates and HUD Fair Market Rents
+              under simplifying assumptions (wages only, the standard deduction, no local
+              income taxes or pre-tax savings); your actual tax and housing costs will
+              differ. Consult a qualified tax professional before relying on any figure.
             </p>
           </section>
 

@@ -1,14 +1,13 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import { Footprints, Bus, School, ShoppingBasket, Wifi, HeartPulse } from 'lucide-react'
 import MetricCard from './MetricCard'
 import MetricInfoModal from './MetricInfoModal'
 import { CardShell } from './RiskCards'
-import { mi, NEUTRAL, ordinal, Row, SectionTitle, UnavailableCard } from './UsMetricCards'
+import { CardSkeleton, mi, NEUTRAL, ordinal, Row, SectionTitle, UnavailableCard } from './UsMetricCards'
 import { METRIC_INFO } from '@/lib/metricInfo'
-import { dailyLifeProvidersFor } from '@/lib/providers'
 import { MUTED, pct, sviBand, UNAVAILABLE, walkCategory } from '@/lib/usMetrics'
 import type {
   GeoLocation,
@@ -509,50 +508,18 @@ function HealthCard({ h }: { h: UsHealthResult }) {
 
 // ─── section ─────────────────────────────────────────────────────────────────
 
-interface Loaded {
+type DailyData = Partial<{
   walk: UsWalkabilityResult
   transit: UsTransitResult
   schools: UsSchoolsResult
   food: UsFoodAccessResult
   broadband: UsBroadbandResult
   health: UsHealthResult
-}
+}>
 
-function CardSkeleton() {
-  return (
-    <div className="rounded-xl p-4 animate-pulse" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
-      <div className="h-3 w-24 rounded mb-3" style={{ backgroundColor: '#2a2a2a' }} />
-      <div className="h-6 w-32 rounded mb-2" style={{ backgroundColor: '#2a2a2a' }} />
-      <div className="h-2 w-full rounded" style={{ backgroundColor: '#2a2a2a' }} />
-    </div>
-  )
-}
-
-/** Mobility and daily-life cards for a US address, each from its own source and unscored overall */
-export default function UsDailyLifeCards({ location }: { location: GeoLocation }) {
-  // Each card renders as soon as its own source answers: the OpenStreetMap
-  // ones can take far longer than the rest when Overpass is busy
-  const [data, setData] = useState<Partial<Loaded>>({})
-  const { lat, lng } = location
-
-  useEffect(() => {
-    const p = dailyLifeProvidersFor('US')
-    if (!p) return
-    let cancelled = false
-    setData({})
-    const put = <K extends keyof Loaded>(key: K) => (value: Loaded[K]) => {
-      if (!cancelled) setData(prev => ({ ...prev, [key]: value }))
-    }
-    p.walkability(lat, lng).then(put('walk'))
-    p.transit(lat, lng).then(put('transit'))
-    p.schools(lat, lng).then(put('schools'))
-    p.foodAccess(lat, lng).then(put('food'))
-    p.broadband(lat, lng).then(put('broadband'))
-    p.health(lat, lng).then(put('health'))
-    return () => { cancelled = true }
-  }, [lat, lng])
-
-  const center = { lat, lng }
+/** Mobility and daily-life cards for a US address; each renders as soon as its source answers */
+export function UsDailyLifeSection({ data, location }: { data: DailyData; location: GeoLocation }) {
+  const center = { lat: location.lat, lng: location.lng }
   return (
     <div className="flex flex-col gap-4">
       <SectionTitle>Getting around &amp; daily life</SectionTitle>

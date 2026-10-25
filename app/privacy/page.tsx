@@ -14,7 +14,7 @@ export default function PrivacyPage() {
       <SiteHeader />
       <div className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="text-3xl font-bold tracking-tight text-white">Privacy Policy</h1>
-        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 21, 2026</p>
+        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 25, 2026</p>
 
         <div className="mt-10 space-y-10 text-base leading-relaxed text-[#a0a0a0]">
           <p>
@@ -77,6 +77,14 @@ export default function PrivacyPage() {
               Federal Tax Administration&apos;s public tax calculator. Its answer is cached
               for up to 30 days so others in the same bracket and commune get it without
               a new request; that cache holds no account or other personal link.
+            </p>
+            <p>
+              For US addresses, the Monthly Budget is calculated on our server from
+              published tax tables: your income, filing status and household size are
+              sent only in the body of an encrypted request, used for that calculation,
+              and neither stored nor logged nor sent to any third party. Only the
+              address&apos;s coordinates are used to look up the state and the HUD Fair
+              Market Rent.
             </p>
             <p>
               If you join the US launch waitlist, we store your email address, the US
@@ -219,8 +227,10 @@ export default function PrivacyPage() {
                 the Smart Location Database walkability index), the Mobility Database
                 (transit agencies), the National Center for Education Statistics (schools),
                 the USDA Food Access Research Atlas, and the CDC (PLACES health estimates and
-                the Social Vulnerability Index). Broadband figures come from a county table
-                built from the FCC National Broadband Map, so no request is sent for them
+                the Social Vulnerability Index), the FBI Crime Data Explorer, HUD Fair Market
+                Rents and the Census Bureau&apos;s American Community Survey. Broadband,
+                upward-mobility (Opportunity Atlas) and income tax figures come from tables
+                we build from public data, so no request is sent for them
               </li>
             </ul>
             <p>
@@ -241,8 +251,8 @@ export default function PrivacyPage() {
             <p>
               If you have entered a Monthly Budget household, AI Match also sends the
               budget estimates derived from it for each area (monthly tax, health
-              insurance, social contributions, rent and what is left over) so it can
-              answer questions about tax and take-home pay. Your income itself is not
+              insurance or FICA, social contributions, rent and what is left over) so it
+              can answer questions about tax and take-home pay. Your income itself is not
               included in that request.
             </p>
           </section>

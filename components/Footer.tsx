@@ -19,13 +19,28 @@ const DATA_SOURCES = [
   { label: "Google Maps Platform", href: "https://mapsplatform.google.com/" },
 ];
 
+// Added while US coverage is on
+const US_DATA_SOURCES = [
+  { label: "US Census Bureau", href: "https://www.census.gov/" },
+  { label: "US EPA (AirNow, AQS, Envirofacts, Smart Location)", href: "https://www.epa.gov/" },
+  { label: "NOAA National Weather Service", href: "https://www.weather.gov/" },
+  { label: "FEMA (Flood maps, National Risk Index)", href: "https://www.fema.gov/" },
+  { label: "HUD Fair Market Rents", href: "https://www.huduser.gov/portal/datasets/fmr.html" },
+  { label: "FBI Crime Data Explorer", href: "https://cde.ucr.cjis.gov/" },
+  { label: "CDC (PLACES, Social Vulnerability Index)", href: "https://www.cdc.gov/places/" },
+  { label: "NCES, USDA ERS, FCC, BTS, NLR", href: "/how-it-works" },
+  { label: "Opportunity Insights (Opportunity Atlas)", href: "https://www.opportunityatlas.org/" },
+];
+
 export default function Footer() {
   const year = new Date().getFullYear();
   // FOPH's radon attribution, verbatim, only while the radon feature is on
-  const { radon } = useFeatureFlags();
-  const dataSources = radon
-    ? [...DATA_SOURCES, { label: RADON_ATTRIBUTION, href: RADON_INFO_URL }]
-    : DATA_SOURCES;
+  const { radon, us } = useFeatureFlags();
+  const dataSources = [
+    ...DATA_SOURCES,
+    ...(radon ? [{ label: RADON_ATTRIBUTION, href: RADON_INFO_URL }] : []),
+    ...(us ? US_DATA_SOURCES : []),
+  ];
 
   return (
     <footer style={{ backgroundColor: "#0f0f0f", borderTop: "1px solid #2a2a2a" }}>
@@ -38,7 +53,7 @@ export default function Footer() {
             </Link>
             <p className="mt-2 max-w-xs text-sm text-[#a0a0a0]">
               Data-driven quality-of-life scores for cities and addresses
-              in Switzerland.
+              in Switzerland{us ? " and the United States" : ""}.
             </p>
           </div>
 

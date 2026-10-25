@@ -1,15 +1,14 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import dynamic from 'next/dynamic'
-import { Wind, CloudSun, Volume2, Sun, Waves, ShieldAlert, Flame, FlaskConical, TriangleAlert } from 'lucide-react'
+import { Wind, CloudSun, Volume2, Sun, Waves, ShieldAlert, Flame, FlaskConical } from 'lucide-react'
 import MetricCard from './MetricCard'
 import MetricInfoModal from './MetricInfoModal'
 import { CardShell, NoteBox } from './RiskCards'
 import type { LegendItem } from './MetricInfoMap'
 import { aqiColor, METRIC_INFO } from '@/lib/metricInfo'
 import { formatDistanceFor } from '@/lib/country'
-import { environmentProvidersFor } from '@/lib/providers'
 import {
   EPA_KIND_INFO,
   FLOOD_RISK_INFO,
@@ -648,26 +647,14 @@ function EpaSitesCard({ e, center }: { e: UsEpaSitesResult; center: Center }) {
   )
 }
 
-// ─── section ─────────────────────────────────────────────────────────────────
+// ─── sections ────────────────────────────────────────────────────────────────
 
-interface Loaded {
-  air: UsAirQualityResult
-  weather: UsWeatherResult
-  noise: UsNoiseResult
-  sunlight: UsSunlightResult
-  risks: UsRisksResult
-}
-
-export function Skeleton({ count }: { count: number }) {
+export function CardSkeleton() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-pulse">
-      {[...Array(count)].map((_, i) => (
-        <div key={i} className="rounded-xl p-4" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
-          <div className="h-3 w-24 rounded mb-3" style={{ backgroundColor: '#2a2a2a' }} />
-          <div className="h-6 w-32 rounded mb-2" style={{ backgroundColor: '#2a2a2a' }} />
-          <div className="h-2 w-full rounded" style={{ backgroundColor: '#2a2a2a' }} />
-        </div>
-      ))}
+    <div className="rounded-xl p-4 animate-pulse" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
+      <div className="h-3 w-24 rounded mb-3" style={{ backgroundColor: '#2a2a2a' }} />
+      <div className="h-6 w-32 rounded mb-2" style={{ backgroundColor: '#2a2a2a' }} />
+      <div className="h-2 w-full rounded" style={{ backgroundColor: '#2a2a2a' }} />
     </div>
   )
 }
@@ -676,55 +663,40 @@ export function SectionTitle({ children }: { children: React.ReactNode }) {
   return <h3 style={{ color: MUTED }} className="text-xs font-medium uppercase tracking-wider">{children}</h3>
 }
 
-/** Environment and risk cards for a US address, each from its own source and unscored overall */
-export default function UsMetricCards({ location }: { location: GeoLocation }) {
-  const [data, setData] = useState<Loaded | null>(null)
-  const { lat, lng } = location
+type EnvData = Partial<{ air: UsAirQualityResult; weather: UsWeatherResult; noise: UsNoiseResult; sunlight: UsSunlightResult; risks: UsRisksResult }>
 
-  useEffect(() => {
-    const providers = environmentProvidersFor('US')
-    if (!providers) return
-    let cancelled = false
-    setData(null)
-    Promise.all([
-      providers.airQuality(lat, lng),
-      providers.weather(lat, lng),
-      providers.noise(lat, lng),
-      providers.sunlight(lat, lng),
-      providers.risks(lat, lng),
-    ]).then(([air, weather, noise, sunlight, risks]) => {
-      if (!cancelled) setData({ air, weather, noise, sunlight, risks })
-    })
-    return () => { cancelled = true }
-  }, [lat, lng])
-
-  const center = { lat, lng }
+/** Environment cards for a US address; each renders as soon as its source answers */
+export function UsEnvironmentSection({ data, location }: { data: EnvData; location: GeoLocation }) {
+  const center = { lat: location.lat, lng: location.lng }
   return (
     <div className="flex flex-col gap-4">
       <SectionTitle>Environment</SectionTitle>
-      {data ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <AirQualityCard a={data.air} center={center} />
-          <WeatherCard w={data.weather} />
-          <NoiseCard n={data.noise} />
-          <SunlightCard s={data.sunlight} />
-        </div>
-      ) : <Skeleton count={4} />}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {data.air ? <AirQualityCard a={data.air} center={center} /> : <CardSkeleton />}
+        {data.weather ? <WeatherCard w={data.weather} /> : <CardSkeleton />}
+        {data.noise ? <NoiseCard n={data.noise} /> : <CardSkeleton />}
+        {data.sunlight ? <SunlightCard s={data.sunlight} /> : <CardSkeleton />}
+      </div>
+    </div>
+  )
+}
 
+/** Risk cards for a US address */
+export function UsRisksSection({ risks, location }: { risks: UsRisksResult | undefined; location: GeoLocation }) {
+  const center = { lat: location.lat, lng: location.lng }
+  return (
+    <div className="flex flex-col gap-4">
       <SectionTitle>Risks</SectionTitle>
-      {data ? (
+      {risks ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <FloodCard f={data.risks.flood} address={location.formattedAddress} />
-          <NriCard n={data.risks.nri} />
-          <WildfireCard w={data.risks.wildfire} countyName={data.risks.nri.county?.name ?? null} />
-          <EpaSitesCard e={data.risks.epa} center={center} />
+          <FloodCard f={risks.flood} address={location.formattedAddress} />
+          <NriCard n={risks.nri} />
+          <WildfireCard w={risks.wildfire} countyName={risks.nri.county?.name ?? null} />
+          <EpaSitesCard e={risks.epa} center={center} />
         </div>
-      ) : <Skeleton count={4} />}
-
-      <p className="text-xs flex gap-1.5" style={{ color: NEUTRAL }}>
-        <TriangleAlert size={12} className="shrink-0 mt-0.5" />
-        <span>Each card comes from its own public source and says so; nothing is estimated where a source has no data.</span>
-      </p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">{[0, 1, 2, 3].map(i => <CardSkeleton key={i} />)}</div>
+      )}
     </div>
   )
 }

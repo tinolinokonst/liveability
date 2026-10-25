@@ -1,0 +1,1838 @@
+{
+ "generated": "2026-10-25",
+ "method": "Each figure from Liveability's own US lookups at the anchor address (see scripts/build-us-areas.mts)",
+ "areas": [
+  {
+   "name": "Park Slope",
+   "city": "Brooklyn, New York",
+   "state": "NY",
+   "anchor": "Brooklyn Public Library, Central",
+   "address": "10 Grand Army Plz, Brooklyn, NY 11238, USA",
+   "lat": 40.6726787,
+   "lng": -73.9682466,
+   "liveabilityScore": 65,
+   "penalty": 0,
+   "scores": {
+    "walkability": 72,
+    "airQuality": 70,
+    "transit": null,
+    "grocery": null,
+    "schools": 100,
+    "safety": 43,
+    "quietness": 75,
+    "sunlight": 28
+   },
+   "facts": {
+    "annualPm25": 8.9,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "Academy Lines",
+     "Boxcar (Boxcar Commuter Bus)",
+     "Metropolitan Transit Authority (MTA) (Brooklyn Bus)",
+     "Metropolitan Transit Authority (MTA) (NYC Bus Company)"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 50,
+    "violentCrimePer100k": 660,
+    "propertyCrimePer100k": 2301,
+    "policeAgency": "New York City Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "50_55",
+    "medianHouseholdIncome": null,
+    "medianAge": null,
+    "peoplePerSqMi": 0,
+    "upwardMobilityPercentile": null,
+    "gigabitHomesShare": 0.674,
+    "floodZone": null,
+    "naturalHazardRating": "Very Low",
+    "wildfireRating": "Very Low"
+   },
+   "rent": {
+    "byBedrooms": [
+     3610,
+     3790,
+     4160,
+     5210,
+     5660
+    ],
+    "level": "zip",
+    "label": "ZIP 11238",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Upper West Side",
+   "city": "Manhattan, New York",
+   "state": "NY",
+   "anchor": "American Museum of Natural History",
+   "address": "200 Central Prk W, New York, NY 10024, USA",
+   "lat": 40.781135,
+   "lng": -73.9736037,
+   "liveabilityScore": 80,
+   "scores": {
+    "walkability": 96,
+    "airQuality": 75,
+    "transit": 100,
+    "grocery": 100,
+    "schools": 100,
+    "safety": 43,
+    "quietness": 95,
+    "sunlight": 25
+   },
+   "facts": {
+    "annualPm25": 7.4,
+    "transitStopsHalfMile": 65,
+    "railStations": 5,
+    "transitAgencies": [
+     "Boxcar (Boxcar Commuter Bus)",
+     "Metro-North Railroad",
+     "Metropolitan Transit Authority (MTA) (Brooklyn Bus)",
+     "Metropolitan Transit Authority (MTA) (Manhattan Bus)"
+    ],
+    "groceryStoresOneMile": 26,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 66,
+    "violentCrimePer100k": 660,
+    "propertyCrimePer100k": 2301,
+    "policeAgency": "New York City Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "below_45",
+    "medianHouseholdIncome": 213661,
+    "medianAge": 45.4,
+    "peoplePerSqMi": 89972,
+    "upwardMobilityPercentile": 40.8,
+    "gigabitHomesShare": 0.474,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively Low",
+    "wildfireRating": "No Rating"
+   },
+   "rent": {
+    "byBedrooms": [
+     3800,
+     3990,
+     4370,
+     5470,
+     5950
+    ],
+    "level": "zip",
+    "label": "ZIP 10024",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Astoria",
+   "city": "Queens, New York",
+   "state": "NY",
+   "anchor": "Museum of the Moving Image",
+   "address": "36-01 35th Ave, Queens, NY 11106, USA",
+   "lat": 40.7563454,
+   "lng": -73.9239496,
+   "liveabilityScore": 69,
+   "penalty": 0,
+   "scores": {
+    "walkability": 81,
+    "airQuality": 74,
+    "transit": null,
+    "grocery": null,
+    "schools": 100,
+    "safety": 43,
+    "quietness": 75,
+    "sunlight": 25
+   },
+   "facts": {
+    "annualPm25": 7.8,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "Metro-North Railroad",
+     "Metropolitan Transit Authority (MTA) (Brooklyn Bus)",
+     "Metropolitan Transit Authority (MTA) (Manhattan Bus)",
+     "Metropolitan Transit Authority (MTA) (NYC Bus Company)"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 33,
+    "violentCrimePer100k": 660,
+    "propertyCrimePer100k": 2301,
+    "policeAgency": "New York City Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "50_55",
+    "medianHouseholdIncome": 94142,
+    "medianAge": 34.4,
+    "peoplePerSqMi": 44023,
+    "upwardMobilityPercentile": 47.3,
+    "gigabitHomesShare": 0.803,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively Low",
+    "wildfireRating": "No Rating"
+   },
+   "rent": {
+    "byBedrooms": [
+     2890,
+     3030,
+     3320,
+     4160,
+     4520
+    ],
+    "level": "zip",
+    "label": "ZIP 11106",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Lincoln Park",
+   "city": "Chicago",
+   "state": "IL",
+   "anchor": "Lincoln Park Zoo",
+   "address": "2001 N Clark St, Chicago, IL 60614, USA",
+   "lat": 41.9187761,
+   "lng": -87.635446,
+   "liveabilityScore": 72,
+   "penalty": 0,
+   "scores": {
+    "walkability": 87,
+    "airQuality": 68,
+    "transit": null,
+    "grocery": null,
+    "schools": 100,
+    "safety": 54,
+    "quietness": 95,
+    "sunlight": 22
+   },
+   "facts": {
+    "annualPm25": 10.1,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "Chicago Transit Authority (CTA)",
+     "Chicago Water Taxi",
+     "Pace Bus"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 15,
+    "violentCrimePer100k": 420,
+    "propertyCrimePer100k": 2956,
+    "policeAgency": "Chicago Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "below_45",
+    "medianHouseholdIncome": 113581,
+    "medianAge": 35.8,
+    "peoplePerSqMi": 17984,
+    "upwardMobilityPercentile": 39.5,
+    "gigabitHomesShare": 0.699,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively Low",
+    "wildfireRating": "No Rating"
+   },
+   "rent": {
+    "byBedrooms": [
+     2220,
+     2370,
+     2670,
+     3440,
+     3980
+    ],
+    "level": "zip",
+    "label": "ZIP 60614",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Logan Square",
+   "city": "Chicago",
+   "state": "IL",
+   "anchor": "Logan Square Branch Library",
+   "address": "3030 W Fullerton Ave, Chicago, IL 60647, USA",
+   "lat": 41.9250976,
+   "lng": -87.70346260000001,
+   "liveabilityScore": 68,
+   "penalty": 0,
+   "scores": {
+    "walkability": 81,
+    "airQuality": 68,
+    "transit": null,
+    "grocery": null,
+    "schools": 100,
+    "safety": 54,
+    "quietness": 58,
+    "sunlight": 22
+   },
+   "facts": {
+    "annualPm25": 10.1,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "Chicago Transit Authority (CTA)",
+     "Pace Bus"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 14,
+    "violentCrimePer100k": 420,
+    "propertyCrimePer100k": 2956,
+    "policeAgency": "Chicago Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "55_60",
+    "medianHouseholdIncome": 102552,
+    "medianAge": 34.3,
+    "peoplePerSqMi": 21724,
+    "upwardMobilityPercentile": 41.3,
+    "gigabitHomesShare": 0.699,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively Low",
+    "wildfireRating": "No Rating"
+   },
+   "rent": {
+    "byBedrooms": [
+     1840,
+     1970,
+     2220,
+     2860,
+     3310
+    ],
+    "level": "zip",
+    "label": "ZIP 60647",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Hyde Park",
+   "city": "Chicago",
+   "state": "IL",
+   "anchor": "University of Chicago",
+   "address": "5801 S Ellis Ave, Chicago, IL 60637, USA",
+   "lat": 41.7895737,
+   "lng": -87.6009163,
+   "liveabilityScore": 67,
+   "penalty": 0,
+   "scores": {
+    "walkability": 68,
+    "airQuality": 71,
+    "transit": null,
+    "grocery": null,
+    "schools": 100,
+    "safety": 54,
+    "quietness": 92,
+    "sunlight": 24
+   },
+   "facts": {
+    "annualPm25": 8.6,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "Chicago Transit Authority (CTA)",
+     "Pace Bus",
+     "South Shore Line",
+     "University of Chicago"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 17,
+    "violentCrimePer100k": 420,
+    "propertyCrimePer100k": 2956,
+    "policeAgency": "Chicago Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "45_50",
+    "medianHouseholdIncome": 158889,
+    "medianAge": 19.7,
+    "peoplePerSqMi": 7260,
+    "upwardMobilityPercentile": 36.5,
+    "gigabitHomesShare": 0.699,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively Low",
+    "wildfireRating": "No Rating"
+   },
+   "rent": {
+    "byBedrooms": [
+     1270,
+     1360,
+     1530,
+     1970,
+     2280
+    ],
+    "level": "zip",
+    "label": "ZIP 60637",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Mission District",
+   "city": "San Francisco",
+   "state": "CA",
+   "anchor": "Mission Branch Library",
+   "address": "300 Bartlett St, San Francisco, CA 94110, USA",
+   "lat": 37.751969,
+   "lng": -122.4198708,
+   "liveabilityScore": 78,
+   "penalty": 0,
+   "scores": {
+    "walkability": 95,
+    "airQuality": 77,
+    "transit": null,
+    "grocery": null,
+    "schools": 100,
+    "safety": 50,
+    "quietness": 95,
+    "sunlight": 42
+   },
+   "facts": {
+    "annualPm25": 6.7,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "Alameda-Contra Costa Transit District (AC Transit)",
+     "Bay Area Rapid Transit (BART)",
+     "Caltrain",
+     "Capitol Corridor Joint Powers Authority (Capitol Corridor)"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 32,
+    "violentCrimePer100k": 486,
+    "propertyCrimePer100k": 2960,
+    "policeAgency": "San Francisco Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "below_45",
+    "medianHouseholdIncome": 96250,
+    "medianAge": 38.4,
+    "peoplePerSqMi": 31029,
+    "upwardMobilityPercentile": 44.8,
+    "gigabitHomesShare": 0.627,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively High",
+    "wildfireRating": "No Rating"
+   },
+   "rent": {
+    "byBedrooms": [
+     2120,
+     2540,
+     3080,
+     3930,
+     4080
+    ],
+    "level": "zip",
+    "label": "ZIP 94110",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Civic Center / Hayes Valley",
+   "city": "San Francisco",
+   "state": "CA",
+   "anchor": "San Francisco City Hall",
+   "address": "1 Dr Carlton B Goodlett Pl, San Francisco, CA 94102, USA",
+   "lat": 37.7792891,
+   "lng": -122.4192458,
+   "liveabilityScore": 76,
+   "penalty": 0,
+   "scores": {
+    "walkability": 91,
+    "airQuality": 77,
+    "transit": null,
+    "grocery": null,
+    "schools": 100,
+    "safety": 50,
+    "quietness": 75,
+    "sunlight": 42
+   },
+   "facts": {
+    "annualPm25": 6.7,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "Alameda-Contra Costa Transit District (AC Transit)",
+     "Bay Area Rapid Transit (BART)",
+     "Caltrain",
+     "Capitol Corridor Joint Powers Authority (Capitol Corridor)"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 26,
+    "violentCrimePer100k": 486,
+    "propertyCrimePer100k": 2960,
+    "policeAgency": "San Francisco Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "50_55",
+    "medianHouseholdIncome": 113665,
+    "medianAge": 32.6,
+    "peoplePerSqMi": 33024,
+    "upwardMobilityPercentile": 50.3,
+    "gigabitHomesShare": 0.627,
+    "floodZone": null,
+    "naturalHazardRating": "Very High",
+    "wildfireRating": "No Rating"
+   },
+   "rent": {
+    "byBedrooms": [
+     2050,
+     2510,
+     2990,
+     3740,
+     3960
+    ],
+    "level": "zip",
+    "label": "ZIP 94102",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Rockridge",
+   "city": "Oakland",
+   "state": "CA",
+   "anchor": "Rockridge Branch Library",
+   "address": "5366 College Ave, Oakland, CA 94618, USA",
+   "lat": 37.8400065,
+   "lng": -122.2511202,
+   "liveabilityScore": 68,
+   "penalty": 0,
+   "scores": {
+    "walkability": 84,
+    "airQuality": 74,
+    "transit": null,
+    "grocery": null,
+    "schools": 100,
+    "safety": 8,
+    "quietness": 92,
+    "sunlight": 61
+   },
+   "facts": {
+    "annualPm25": 7.7,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "Alameda-Contra Costa Transit District (AC Transit)",
+     "Bay Area Rapid Transit (BART)",
+     "Capitol Corridor Joint Powers Authority (Capitol Corridor)",
+     "San Francisco Bay Area Water Emergency Transportation Authority (WETA)"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 12,
+    "violentCrimePer100k": 1475,
+    "propertyCrimePer100k": 5255,
+    "policeAgency": "Oakland Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "45_50",
+    "medianHouseholdIncome": 176618,
+    "medianAge": 41,
+    "peoplePerSqMi": 13966,
+    "upwardMobilityPercentile": 41.9,
+    "gigabitHomesShare": 0.896,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively High",
+    "wildfireRating": "No Rating"
+   },
+   "rent": {
+    "byBedrooms": [
+     2520,
+     2810,
+     3430,
+     4390,
+     5200
+    ],
+    "level": "zip",
+    "label": "ZIP 94618",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Silver Lake",
+   "city": "Los Angeles",
+   "state": "CA",
+   "anchor": "Silver Lake Branch Library",
+   "address": "2411 Glendale Blvd, Los Angeles, CA 90039, USA",
+   "lat": 34.1003525,
+   "lng": -118.2594232,
+   "liveabilityScore": 65,
+   "penalty": 0,
+   "scores": {
+    "walkability": 69,
+    "airQuality": 65,
+    "transit": null,
+    "grocery": null,
+    "schools": 100,
+    "safety": 43,
+    "quietness": 33,
+    "sunlight": 80
+   },
+   "facts": {
+    "annualPm25": 12.7,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "City of Santa Clarita Transit",
+     "Foothill Transit",
+     "Los Angeles County Department of Public Works (the LINK and shuttles)",
+     "Los Angeles County Metropolitan Transportation Authority (LA Metro) (Bus)"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 6,
+    "violentCrimePer100k": 670,
+    "propertyCrimePer100k": 2258,
+    "policeAgency": "Los Angeles Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "60_70",
+    "medianHouseholdIncome": 168333,
+    "medianAge": 49.1,
+    "peoplePerSqMi": 8055,
+    "upwardMobilityPercentile": 45.6,
+    "gigabitHomesShare": 0.509,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively High",
+    "wildfireRating": "Very Low"
+   },
+   "rent": {
+    "byBedrooms": [
+     2010,
+     2250,
+     2800,
+     3550,
+     3950
+    ],
+    "level": "zip",
+    "label": "ZIP 90039",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Downtown Santa Monica",
+   "city": "Santa Monica",
+   "state": "CA",
+   "anchor": "Santa Monica Main Library",
+   "address": "601 Santa Monica Blvd, Santa Monica, CA 90401, USA",
+   "lat": 34.0184316,
+   "lng": -118.4934215,
+   "liveabilityScore": 75,
+   "penalty": 0,
+   "scores": {
+    "walkability": 93,
+    "airQuality": 65,
+    "transit": null,
+    "grocery": null,
+    "schools": 100,
+    "safety": 38,
+    "quietness": 92,
+    "sunlight": 78
+   },
+   "facts": {
+    "annualPm25": 12.7,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "Big Blue Bus",
+     "Los Angeles County Department of Public Works (the LINK and shuttles)",
+     "Los Angeles County Metropolitan Transportation Authority (LA Metro) (Bus)",
+     "Los Angeles County Metropolitan Transportation Authority (LA Metro) (Rail)"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 9,
+    "violentCrimePer100k": 618,
+    "propertyCrimePer100k": 4112,
+    "policeAgency": "Santa Monica Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "45_50",
+    "medianHouseholdIncome": 107583,
+    "medianAge": 35.7,
+    "peoplePerSqMi": 8104,
+    "upwardMobilityPercentile": 49.7,
+    "gigabitHomesShare": 0.509,
+    "floodZone": null,
+    "naturalHazardRating": "Very High",
+    "wildfireRating": "No Rating"
+   },
+   "rent": {
+    "byBedrooms": [
+     2660,
+     2980,
+     3720,
+     4720,
+     5250
+    ],
+    "level": "zip",
+    "label": "ZIP 90401",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Old Pasadena / Civic Center",
+   "city": "Pasadena",
+   "state": "CA",
+   "anchor": "Pasadena City Hall",
+   "address": "100 Garfield Ave, Pasadena, CA 91101, USA",
+   "lat": 34.1478966,
+   "lng": -118.1438875,
+   "liveabilityScore": 77,
+   "penalty": 0,
+   "scores": {
+    "walkability": 90,
+    "airQuality": 66,
+    "transit": null,
+    "grocery": null,
+    "schools": 100,
+    "safety": 57,
+    "quietness": 95,
+    "sunlight": 78
+   },
+   "facts": {
+    "annualPm25": 11.7,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "Foothill Transit",
+     "Los Angeles County Department of Public Works (the LINK and shuttles)",
+     "Los Angeles County Metropolitan Transportation Authority (LA Metro) (Bus)",
+     "Los Angeles County Metropolitan Transportation Authority (LA Metro) (Rail)"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 10,
+    "violentCrimePer100k": 419,
+    "propertyCrimePer100k": 2358,
+    "policeAgency": "Pasadena Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "below_45",
+    "medianHouseholdIncome": 104750,
+    "medianAge": 35.6,
+    "peoplePerSqMi": 7317,
+    "upwardMobilityPercentile": 33.7,
+    "gigabitHomesShare": 0.509,
+    "floodZone": null,
+    "naturalHazardRating": "Very High",
+    "wildfireRating": "No Rating"
+   },
+   "rent": {
+    "byBedrooms": [
+     2460,
+     2750,
+     3430,
+     4350,
+     4840
+    ],
+    "level": "zip",
+    "label": "ZIP 91101",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Capitol Hill",
+   "city": "Seattle",
+   "state": "WA",
+   "anchor": "Capitol Hill Branch Library",
+   "address": "425 Harvard Ave E, Seattle, WA 98102, USA",
+   "lat": 47.6230182,
+   "lng": -122.3224541,
+   "liveabilityScore": 72,
+   "penalty": 0,
+   "scores": {
+    "walkability": 84,
+    "airQuality": 77,
+    "transit": null,
+    "grocery": 100,
+    "schools": 100,
+    "safety": 33,
+    "quietness": 92,
+    "sunlight": 6
+   },
+   "facts": {
+    "annualPm25": 7,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "Community Transit (CT)",
+     "King County Metro",
+     "Metro Transit, Intercity Transit, City of Seattle, Community Transit, Pierce Transit, Sound Transit, Washington State… (Puget Sound Consolidated GTFS)",
+     "Pierce Transit"
+    ],
+    "groceryStoresOneMile": 14,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 15,
+    "violentCrimePer100k": 706,
+    "propertyCrimePer100k": 4461,
+    "policeAgency": "Seattle Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "45_50",
+    "medianHouseholdIncome": 106846,
+    "medianAge": 32,
+    "peoplePerSqMi": 64357,
+    "upwardMobilityPercentile": 35.7,
+    "gigabitHomesShare": 0.86,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively Low",
+    "wildfireRating": "No Rating"
+   },
+   "rent": {
+    "byBedrooms": [
+     2410,
+     2500,
+     2910,
+     3810,
+     4480
+    ],
+    "level": "zip",
+    "label": "ZIP 98102",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Ballard",
+   "city": "Seattle",
+   "state": "WA",
+   "anchor": "Ballard Branch Library",
+   "address": "5614 22nd Ave NW, Seattle, WA 98107, USA",
+   "lat": 47.669874,
+   "lng": -122.3843863,
+   "liveabilityScore": 76,
+   "penalty": 0,
+   "scores": {
+    "walkability": 98,
+    "airQuality": 77,
+    "transit": null,
+    "grocery": 100,
+    "schools": 100,
+    "safety": 33,
+    "quietness": 95,
+    "sunlight": 6
+   },
+   "facts": {
+    "annualPm25": 7,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "Community Transit (CT)",
+     "King County Metro",
+     "Metro Transit, Intercity Transit, City of Seattle, Community Transit, Pierce Transit, Sound Transit, Washington State… (Puget Sound Consolidated GTFS)",
+     "Sound Transit"
+    ],
+    "groceryStoresOneMile": 10,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 8,
+    "violentCrimePer100k": 706,
+    "propertyCrimePer100k": 4461,
+    "policeAgency": "Seattle Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "below_45",
+    "medianHouseholdIncome": 102708,
+    "medianAge": 34.5,
+    "peoplePerSqMi": 15620,
+    "upwardMobilityPercentile": 39.9,
+    "gigabitHomesShare": 0.86,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively High",
+    "wildfireRating": "No Rating"
+   },
+   "rent": {
+    "byBedrooms": [
+     2480,
+     2570,
+     2990,
+     3910,
+     4600
+    ],
+    "level": "zip",
+    "label": "ZIP 98107",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Back Bay",
+   "city": "Boston",
+   "state": "MA",
+   "anchor": "Boston Public Library, Central",
+   "address": "700 Boylston St, Boston, MA 02116, USA",
+   "lat": 42.3492855,
+   "lng": -71.078283,
+   "liveabilityScore": 73,
+   "penalty": 0,
+   "scores": {
+    "walkability": 86,
+    "airQuality": 78,
+    "transit": null,
+    "grocery": null,
+    "schools": 100,
+    "safety": 49,
+    "quietness": 75,
+    "sunlight": 22
+   },
+   "facts": {
+    "annualPm25": 6.4,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "Blue Apple Bus Company",
+     "Boston Express",
+     "Massachusetts Bay Transportation Authority (MBTA)",
+     "Massport"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 18,
+    "violentCrimePer100k": 583,
+    "propertyCrimePer100k": 1931,
+    "policeAgency": "Boston Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "50_55",
+    "medianHouseholdIncome": 118710,
+    "medianAge": 43.5,
+    "peoplePerSqMi": 25116,
+    "upwardMobilityPercentile": 32.2,
+    "gigabitHomesShare": 0.761,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively Low",
+    "wildfireRating": "Very Low"
+   },
+   "rent": {
+    "byBedrooms": [
+     3340,
+     3510,
+     4170,
+     5000,
+     5520
+    ],
+    "level": "zip",
+    "label": "ZIP 02116",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Central Square",
+   "city": "Cambridge",
+   "state": "MA",
+   "anchor": "Cambridge City Hall",
+   "address": "795 Massachusetts Ave, Cambridge, MA 02139, USA",
+   "lat": 42.36722899999999,
+   "lng": -71.10572789999999,
+   "liveabilityScore": 76,
+   "penalty": 0,
+   "scores": {
+    "walkability": 90,
+    "airQuality": 78,
+    "transit": null,
+    "grocery": null,
+    "schools": 100,
+    "safety": 55,
+    "quietness": 92,
+    "sunlight": 20
+   },
+   "facts": {
+    "annualPm25": 6.4,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "Blue Apple Bus Company",
+     "Boston Express",
+     "Massachusetts Bay Transportation Authority (MBTA)",
+     "Massport"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 18,
+    "violentCrimePer100k": 436,
+    "propertyCrimePer100k": 2600,
+    "policeAgency": "Cambridge Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "45_50",
+    "medianHouseholdIncome": 150221,
+    "medianAge": 33.6,
+    "peoplePerSqMi": 30108,
+    "upwardMobilityPercentile": 38.2,
+    "gigabitHomesShare": 0.89,
+    "floodZone": null,
+    "naturalHazardRating": "Very Low",
+    "wildfireRating": "No Rating"
+   },
+   "rent": {
+    "byBedrooms": [
+     3210,
+     3370,
+     4000,
+     4800,
+     5300
+    ],
+    "level": "zip",
+    "label": "ZIP 02139",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Jamaica Plain",
+   "city": "Boston",
+   "state": "MA",
+   "anchor": "Jamaica Plain Branch Library",
+   "address": "30 South St, Jamaica Plain, MA 02130, USA",
+   "lat": 42.3086226,
+   "lng": -71.1149683,
+   "liveabilityScore": 74,
+   "penalty": 0,
+   "scores": {
+    "walkability": 90,
+    "airQuality": 80,
+    "transit": null,
+    "grocery": null,
+    "schools": 100,
+    "safety": 49,
+    "quietness": 75,
+    "sunlight": 20
+   },
+   "facts": {
+    "annualPm25": 5.7,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "Blue Apple Bus Company",
+     "Massachusetts Bay Transportation Authority (MBTA)",
+     "Massport"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 14,
+    "violentCrimePer100k": 583,
+    "propertyCrimePer100k": 1931,
+    "policeAgency": "Boston Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "50_55",
+    "medianHouseholdIncome": 179289,
+    "medianAge": 37.4,
+    "peoplePerSqMi": 17954,
+    "upwardMobilityPercentile": 40.9,
+    "gigabitHomesShare": 0.761,
+    "floodZone": null,
+    "naturalHazardRating": "Very Low",
+    "wildfireRating": "No Rating"
+   },
+   "rent": {
+    "byBedrooms": [
+     2740,
+     2870,
+     3410,
+     4090,
+     4510
+    ],
+    "level": "zip",
+    "label": "ZIP 02130",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Capitol Hill",
+   "city": "Washington, DC",
+   "state": "DC",
+   "anchor": "Library of Congress",
+   "address": "101 Independence Ave SE, Washington, DC 20540, USA",
+   "lat": 38.8874878,
+   "lng": -77.0047285,
+   "liveabilityScore": 75,
+   "penalty": 0,
+   "scores": {
+    "walkability": 89,
+    "airQuality": 78,
+    "transit": 100,
+    "grocery": null,
+    "schools": 100,
+    "safety": 36,
+    "quietness": 58,
+    "sunlight": 34
+   },
+   "facts": {
+    "annualPm25": 6.4,
+    "transitStopsHalfMile": 23,
+    "railStations": 7,
+    "transitAgencies": [
+     "Maryland Transit Administration (Commuter Bus)",
+     "Maryland Transit Administration (MARC Train)",
+     "OmniRide",
+     "Prince George's County (The Bus)"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 20,
+    "violentCrimePer100k": 750,
+    "propertyCrimePer100k": 3098,
+    "policeAgency": "Washington Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "55_60",
+    "medianHouseholdIncome": null,
+    "medianAge": null,
+    "peoplePerSqMi": 7,
+    "upwardMobilityPercentile": null,
+    "gigabitHomesShare": 0.797,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively High",
+    "wildfireRating": "Very Low"
+   },
+   "rent": {
+    "byBedrooms": [
+     1910,
+     1970,
+     2200,
+     2780,
+     3260
+    ],
+    "level": "zip",
+    "label": "ZIP 20540",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Mount Pleasant",
+   "city": "Washington, DC",
+   "state": "DC",
+   "anchor": "Mount Pleasant Neighborhood Library",
+   "address": "3160 16th St NW, Washington, DC 20010, USA",
+   "lat": 38.9305282,
+   "lng": -77.03724369999999,
+   "liveabilityScore": 77,
+   "penalty": 0,
+   "scores": {
+    "walkability": 83,
+    "airQuality": 76,
+    "transit": 100,
+    "grocery": 100,
+    "schools": 100,
+    "safety": 36,
+    "quietness": 92,
+    "sunlight": 34
+   },
+   "facts": {
+    "annualPm25": 7.3,
+    "transitStopsHalfMile": 57,
+    "railStations": 1,
+    "transitAgencies": [
+     "Arlington Transit",
+     "Fairfax Connector",
+     "Maryland Transit Administration (Commuter Bus)",
+     "Maryland Transit Administration (MARC Train)"
+    ],
+    "groceryStoresOneMile": 16,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 17,
+    "violentCrimePer100k": 750,
+    "propertyCrimePer100k": 3098,
+    "policeAgency": "Washington Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "45_50",
+    "medianHouseholdIncome": 132768,
+    "medianAge": 33.4,
+    "peoplePerSqMi": 32652,
+    "upwardMobilityPercentile": 40.2,
+    "gigabitHomesShare": 0.797,
+    "floodZone": null,
+    "naturalHazardRating": "Very Low",
+    "wildfireRating": "Very Low"
+   },
+   "rent": {
+    "byBedrooms": [
+     2060,
+     2130,
+     2370,
+     2990,
+     3520
+    ],
+    "level": "zip",
+    "label": "ZIP 20010",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Clarendon / Ballston",
+   "city": "Arlington, VA",
+   "state": "VA",
+   "anchor": "Arlington Central Library",
+   "address": "1015 N Quincy St, Arlington, VA 22201, USA",
+   "lat": 38.8837858,
+   "lng": -77.1072677,
+   "liveabilityScore": 80,
+   "penalty": 0,
+   "scores": {
+    "walkability": 89,
+    "airQuality": 77,
+    "transit": null,
+    "grocery": null,
+    "schools": 100,
+    "safety": 73,
+    "quietness": 95,
+    "sunlight": 35
+   },
+   "facts": {
+    "annualPm25": 6.7,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "Arlington Transit",
+     "Fairfax Connector",
+     "Maryland Transit Administration (Commuter Bus)",
+     "OmniRide"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 9,
+    "violentCrimePer100k": 280,
+    "propertyCrimePer100k": 1727,
+    "policeAgency": "Arlington County Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "below_45",
+    "medianHouseholdIncome": 133674,
+    "medianAge": 32.2,
+    "peoplePerSqMi": 35386,
+    "upwardMobilityPercentile": 51.5,
+    "gigabitHomesShare": 0.969,
+    "floodZone": null,
+    "naturalHazardRating": "Very Low",
+    "wildfireRating": "Very Low"
+   },
+   "rent": {
+    "byBedrooms": [
+     2930,
+     3020,
+     3370,
+     4250,
+     5000
+    ],
+    "level": "zip",
+    "label": "ZIP 22201",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Downtown",
+   "city": "Austin",
+   "state": "TX",
+   "anchor": "Austin Central Library",
+   "address": "710 W Cesar Chavez St, Austin, TX 78701, USA",
+   "lat": 30.2657085,
+   "lng": -97.7519092,
+   "liveabilityScore": 71,
+   "penalty": 0,
+   "scores": {
+    "walkability": 82,
+    "airQuality": 73,
+    "transit": null,
+    "grocery": null,
+    "schools": 100,
+    "safety": 53,
+    "quietness": 33,
+    "sunlight": 58
+   },
+   "facts": {
+    "annualPm25": 8.1,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "Capital Metro"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 5,
+    "violentCrimePer100k": 423,
+    "propertyCrimePer100k": 3101,
+    "policeAgency": "Austin Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "60_70",
+    "medianHouseholdIncome": 151786,
+    "medianAge": 40.5,
+    "peoplePerSqMi": 7206,
+    "upwardMobilityPercentile": 42.7,
+    "gigabitHomesShare": 0.789,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively Moderate",
+    "wildfireRating": "Very Low"
+   },
+   "rent": {
+    "byBedrooms": [
+     2210,
+     2350,
+     2780,
+     3520,
+     4140
+    ],
+    "level": "zip",
+    "label": "ZIP 78701",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Downtown",
+   "city": "Houston",
+   "state": "TX",
+   "anchor": "Houston Central Library",
+   "address": "500 McKinney St, Houston, TX 77002, USA",
+   "lat": 29.7595164,
+   "lng": -95.36999209999999,
+   "liveabilityScore": 70,
+   "penalty": 0,
+   "scores": {
+    "walkability": 93,
+    "airQuality": 67,
+    "transit": null,
+    "grocery": null,
+    "schools": 100,
+    "safety": 28,
+    "quietness": 75,
+    "sunlight": 50
+   },
+   "facts": {
+    "annualPm25": 11.4,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "METRO Houston"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 8,
+    "violentCrimePer100k": 888,
+    "propertyCrimePer100k": 3837,
+    "policeAgency": "Houston Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "50_55",
+    "medianHouseholdIncome": 90972,
+    "medianAge": 36.1,
+    "peoplePerSqMi": 4264,
+    "upwardMobilityPercentile": 40.4,
+    "gigabitHomesShare": 0.915,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively High",
+    "wildfireRating": "No Rating"
+   },
+   "rent": {
+    "byBedrooms": [
+     1920,
+     1980,
+     2360,
+     3170,
+     3960
+    ],
+    "level": "zip",
+    "label": "ZIP 77002",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Civic Center / Capitol Hill",
+   "city": "Denver",
+   "state": "CO",
+   "anchor": "Denver Central Library",
+   "address": "10 W 14th Ave Pkwy, Denver, CO 80204, USA",
+   "lat": 39.7383613,
+   "lng": -104.9877099,
+   "liveabilityScore": 81,
+   "penalty": 0,
+   "scores": {
+    "walkability": 98,
+    "airQuality": 79,
+    "transit": 100,
+    "grocery": 100,
+    "schools": 100,
+    "safety": 27,
+    "quietness": 75,
+    "sunlight": 61
+   },
+   "facts": {
+    "annualPm25": 6.2,
+    "transitStopsHalfMile": 63,
+    "railStations": 0,
+    "transitAgencies": [
+     "Regional Transportation District (Flex v2 included)"
+    ],
+    "groceryStoresOneMile": 7,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 16,
+    "violentCrimePer100k": 882,
+    "propertyCrimePer100k": 4144,
+    "policeAgency": "Denver Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "50_55",
+    "medianHouseholdIncome": 93730,
+    "medianAge": 34.7,
+    "peoplePerSqMi": 14113,
+    "upwardMobilityPercentile": null,
+    "gigabitHomesShare": 0.933,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively Moderate",
+    "wildfireRating": "Very Low"
+   },
+   "rent": {
+    "byBedrooms": [
+     1750,
+     1870,
+     2230,
+     2920,
+     3250
+    ],
+    "level": "zip",
+    "label": "ZIP 80204",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Logan Square / Center City",
+   "city": "Philadelphia",
+   "state": "PA",
+   "anchor": "Free Library of Philadelphia, Parkway Central",
+   "address": "1901 Vine St, Philadelphia, PA 19103, USA",
+   "lat": 39.9596635,
+   "lng": -75.17104570000001,
+   "liveabilityScore": 69,
+   "penalty": 0,
+   "scores": {
+    "walkability": 94,
+    "airQuality": 71,
+    "transit": null,
+    "grocery": null,
+    "schools": 100,
+    "safety": 29,
+    "quietness": 58,
+    "sunlight": 29
+   },
+   "facts": {
+    "annualPm25": 8.6,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "PATCO Speedline",
+     "PHLASH (Philly PHLASH)",
+     "Southeastern Pennsylvania Transportation Authority (SEPTA) (Bus)",
+     "Southeastern Pennsylvania Transportation Authority (SEPTA) (Rail)"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 23,
+    "violentCrimePer100k": 831,
+    "propertyCrimePer100k": 4355,
+    "policeAgency": "Philadelphia Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "55_60",
+    "medianHouseholdIncome": 94564,
+    "medianAge": 32.7,
+    "peoplePerSqMi": 18798,
+    "upwardMobilityPercentile": 36.8,
+    "gigabitHomesShare": 0.84,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively Moderate",
+    "wildfireRating": "No Rating"
+   },
+   "rent": {
+    "byBedrooms": [
+     2100,
+     2280,
+     2720,
+     3260,
+     3640
+    ],
+    "level": "zip",
+    "label": "ZIP 19103",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Midtown",
+   "city": "Atlanta",
+   "state": "GA",
+   "anchor": "Woodruff Arts Center",
+   "address": "1280 Peachtree St NE, Atlanta, GA 30309, USA",
+   "lat": 33.7898561,
+   "lng": -84.38614910000001,
+   "liveabilityScore": 71,
+   "penalty": 0,
+   "scores": {
+    "walkability": 79,
+    "airQuality": 71,
+    "transit": 100,
+    "grocery": null,
+    "schools": 67,
+    "safety": 37,
+    "quietness": 92,
+    "sunlight": 48
+   },
+   "facts": {
+    "annualPm25": 8.7,
+    "transitStopsHalfMile": 10,
+    "railStations": 1,
+    "transitAgencies": [
+     "CobbLinc",
+     "Georgia Tech Stinger Bus"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 2,
+    "violentCrimePer100k": 736,
+    "propertyCrimePer100k": 3119,
+    "policeAgency": "Atlanta Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "45_50",
+    "medianHouseholdIncome": 150481,
+    "medianAge": 41.7,
+    "peoplePerSqMi": 3200,
+    "upwardMobilityPercentile": 50.5,
+    "gigabitHomesShare": 0.9,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively Low",
+    "wildfireRating": "Very Low"
+   },
+   "rent": {
+    "byBedrooms": [
+     2380,
+     2490,
+     2730,
+     3270,
+     3910
+    ],
+    "level": "zip",
+    "label": "ZIP 30309",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Coral Gables",
+   "city": "Miami area",
+   "state": "FL",
+   "anchor": "Coral Gables City Hall",
+   "address": "405 Biltmore Way, Coral Gables, FL 33134, USA",
+   "lat": 25.7492281,
+   "lng": -80.2635377,
+   "liveabilityScore": 84,
+   "penalty": 0,
+   "scores": {
+    "walkability": 98,
+    "airQuality": 73,
+    "transit": null,
+    "grocery": 60,
+    "schools": 100,
+    "safety": 100,
+    "quietness": 75,
+    "sunlight": 72
+   },
+   "facts": {
+    "annualPm25": 8,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "Miami-Dade Transit"
+    ],
+    "groceryStoresOneMile": 3,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 9,
+    "violentCrimePer100k": 61,
+    "propertyCrimePer100k": 999,
+    "policeAgency": "Coral Gables Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "50_55",
+    "medianHouseholdIncome": 114258,
+    "medianAge": 44.2,
+    "peoplePerSqMi": 7320,
+    "upwardMobilityPercentile": 45.5,
+    "gigabitHomesShare": 0.906,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively Low",
+    "wildfireRating": "No Rating"
+   },
+   "rent": {
+    "byBedrooms": [
+     2170,
+     2370,
+     2890,
+     3710,
+     4290
+    ],
+    "level": "zip",
+    "label": "ZIP 33134",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Downtown",
+   "city": "Portland, OR",
+   "state": "OR",
+   "anchor": "Multnomah County Central Library",
+   "address": "801 SW 10th Ave, Portland, OR 97205, USA",
+   "lat": 45.5191246,
+   "lng": -122.6830841,
+   "liveabilityScore": 74,
+   "penalty": 0,
+   "scores": {
+    "walkability": 97,
+    "airQuality": 79,
+    "transit": null,
+    "grocery": 100,
+    "schools": 100,
+    "safety": 31,
+    "quietness": 58,
+    "sunlight": 9
+   },
+   "facts": {
+    "annualPm25": 6.3,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "C-TRAN (Clark County Public Transportation Benefit Area)",
+     "Caravan Airport Transportation",
+     "Central Oregon Breeze",
+     "Columbia County Rider"
+    ],
+    "groceryStoresOneMile": 7,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 6,
+    "violentCrimePer100k": 702,
+    "propertyCrimePer100k": 5113,
+    "policeAgency": "Portland Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "55_60",
+    "medianHouseholdIncome": 50455,
+    "medianAge": 40.7,
+    "peoplePerSqMi": 21202,
+    "upwardMobilityPercentile": 42.9,
+    "gigabitHomesShare": 0.837,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively Moderate",
+    "wildfireRating": "No Rating"
+   },
+   "rent": {
+    "byBedrooms": [
+     1470,
+     1580,
+     1800,
+     2470,
+     2900
+    ],
+    "level": "zip",
+    "label": "ZIP 97205",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Downtown",
+   "city": "Minneapolis",
+   "state": "MN",
+   "anchor": "Minneapolis Central Library",
+   "address": "300 Nicollet Mall, Minneapolis, MN 55401, USA",
+   "lat": 44.9804301,
+   "lng": -93.2699359,
+   "liveabilityScore": 72,
+   "penalty": 0,
+   "scores": {
+    "walkability": 93,
+    "airQuality": 73,
+    "transit": null,
+    "grocery": 100,
+    "schools": 100,
+    "safety": 22,
+    "quietness": 75,
+    "sunlight": 20
+   },
+   "facts": {
+    "annualPm25": 8.2,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "Metro Transit",
+     "Metro Transit (Metro Micro Service Schedule (Flex))",
+     "Minnesota Valley Transit Authority (MVTA)"
+    ],
+    "groceryStoresOneMile": 5,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 15,
+    "violentCrimePer100k": 1005,
+    "propertyCrimePer100k": 4519,
+    "policeAgency": "Minneapolis Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "50_55",
+    "medianHouseholdIncome": 123750,
+    "medianAge": 32.9,
+    "peoplePerSqMi": 12267,
+    "upwardMobilityPercentile": 40.3,
+    "gigabitHomesShare": 0.829,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively High",
+    "wildfireRating": "No Rating"
+   },
+   "rent": {
+    "byBedrooms": [
+     1860,
+     2100,
+     2560,
+     3390,
+     3790
+    ],
+    "level": "zip",
+    "label": "ZIP 55401",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Downtown",
+   "city": "Phoenix",
+   "state": "AZ",
+   "anchor": "Phoenix City Hall",
+   "address": "200 W Washington St, Phoenix, AZ 85003, USA",
+   "lat": 33.4489367,
+   "lng": -112.0772548,
+   "liveabilityScore": 73,
+   "penalty": 0,
+   "scores": {
+    "walkability": 80,
+    "airQuality": 68,
+    "transit": null,
+    "grocery": null,
+    "schools": 100,
+    "safety": 43,
+    "quietness": 75,
+    "sunlight": 99
+   },
+   "facts": {
+    "annualPm25": 10,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "Valley Metro (VM)"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 11,
+    "violentCrimePer100k": 697,
+    "propertyCrimePer100k": 2052,
+    "policeAgency": "Phoenix Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "50_55",
+    "medianHouseholdIncome": 76705,
+    "medianAge": 37.3,
+    "peoplePerSqMi": 6515,
+    "upwardMobilityPercentile": 37.8,
+    "gigabitHomesShare": 0.68,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively High",
+    "wildfireRating": "No Rating"
+   },
+   "rent": {
+    "byBedrooms": [
+     1370,
+     1490,
+     1730,
+     2310,
+     2560
+    ],
+    "level": "zip",
+    "label": "ZIP 85003",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Downtown",
+   "city": "Nashville",
+   "state": "TN",
+   "anchor": "Nashville Public Library, Main",
+   "address": "615 Church St, Nashville, TN 37219, USA",
+   "lat": 36.1615798,
+   "lng": -86.781832,
+   "liveabilityScore": 63,
+   "penalty": 0,
+   "scores": {
+    "walkability": 82,
+    "airQuality": 73,
+    "transit": null,
+    "grocery": null,
+    "schools": 67,
+    "safety": 26,
+    "quietness": 58,
+    "sunlight": 38
+   },
+   "facts": {
+    "annualPm25": 8.1,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "Nashville MTA WeGo Public Transit"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 2,
+    "violentCrimePer100k": 962,
+    "propertyCrimePer100k": 3873,
+    "policeAgency": "Metropolitan Nashville Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "55_60",
+    "medianHouseholdIncome": 111057,
+    "medianAge": 32.4,
+    "peoplePerSqMi": 4682,
+    "upwardMobilityPercentile": null,
+    "gigabitHomesShare": 0.946,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively High",
+    "wildfireRating": "Very Low"
+   },
+   "rent": {
+    "byBedrooms": [
+     2130,
+     2230,
+     2440,
+     3120,
+     3800
+    ],
+    "level": "zip",
+    "label": "ZIP 37219",
+    "fiscalYear": "FY2026"
+   }
+  },
+  {
+   "name": "Downtown",
+   "city": "Salt Lake City",
+   "state": "UT",
+   "anchor": "Salt Lake City Public Library, Main",
+   "address": "210 E 400 S, Salt Lake City, UT 84111, USA",
+   "lat": 40.7600464,
+   "lng": -111.8845724,
+   "liveabilityScore": 68,
+   "penalty": 0,
+   "scores": {
+    "walkability": 75,
+    "airQuality": 77,
+    "transit": null,
+    "grocery": null,
+    "schools": 100,
+    "safety": 26,
+    "quietness": 75,
+    "sunlight": 56
+   },
+   "facts": {
+    "annualPm25": 6.8,
+    "transitStopsHalfMile": null,
+    "railStations": null,
+    "transitAgencies": [
+     "High Valley Transit",
+     "Utah Transit Authority (UTA)"
+    ],
+    "groceryStoresOneMile": null,
+    "lowIncomeLowAccessTract": false,
+    "schoolsOneMile": 10,
+    "violentCrimePer100k": 863,
+    "propertyCrimePer100k": 4771,
+    "policeAgency": "Salt Lake City Police Department",
+    "crimeYear": 2025,
+    "noiseBand": "50_55",
+    "medianHouseholdIncome": 27446,
+    "medianAge": 34.6,
+    "peoplePerSqMi": 9665,
+    "upwardMobilityPercentile": 35.6,
+    "gigabitHomesShare": 0.957,
+    "floodZone": null,
+    "naturalHazardRating": "Relatively High",
+    "wildfireRating": "No Rating"
+   },
+   "rent": {
+    "byBedrooms": [
+     1260,
+     1460,
+     1750,
+     2340,
+     2670
+    ],
+    "level": "zip",
+    "label": "ZIP 84111",
+    "fiscalYear": "FY2026"
+   }
+  }
+ ]
+}

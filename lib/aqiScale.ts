@@ -29,3 +29,24 @@ export function scoreForAqi(aqi: number): number {
   // still have shown a Fair badge.
   return Math.max(0, Math.min(100, Math.floor(raw)))
 }
+
+// EPA PM2.5 AQI breakpoints (µg/m³), as revised in 2024 with the 9.0 annual standard
+const PM25_BREAKPOINTS: Array<[number, number, number, number]> = [
+  [0.0, 9.0, 0, 50],
+  [9.1, 35.4, 51, 100],
+  [35.5, 55.4, 101, 150],
+  [55.5, 125.4, 151, 200],
+  [125.5, 225.4, 201, 300],
+  [225.5, 325.4, 301, 500],
+]
+
+/**
+ * The AQI for a PM2.5 concentration. Applied to an annual mean (AI Match's
+ * area pool) it gives a long-run air index rather than today's reading.
+ */
+export function aqiFromPm25(concentration: number): number {
+  const c = Math.floor(concentration * 10) / 10
+  const bp = PM25_BREAKPOINTS.find(([lo, hi]) => c >= lo && c <= hi) ?? PM25_BREAKPOINTS[PM25_BREAKPOINTS.length - 1]
+  const [cLo, cHi, iLo, iHi] = bp
+  return Math.round(((iHi - iLo) / (cHi - cLo)) * (Math.min(c, cHi) - cLo) + iLo)
+}

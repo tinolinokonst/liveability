@@ -6,22 +6,35 @@ import { MATCHABLE_AREAS, areaDisplayName } from '@/lib/neighborhoods'
 import { AiMatchListingsState, AiRentListing } from '@/lib/types'
 import { useHousehold } from './HouseholdContext'
 import { HouseholdForm, formatChf } from './MonthlyBudget'
+import { useFeatureFlags } from './FeatureFlags'
+import { useVisitorCountry } from './VisitorCountry'
 import { capture, SENSITIVE_TEXT } from '@/lib/analytics'
+import { findUsArea } from '@/lib/usAreaIndex'
+import { usd } from '@/lib/usMetrics'
+
+type Region = 'CH' | 'US'
 
 export type { AiMatchListingsState, AiRentListing }
 
-const STATUS_MESSAGES = [
-  'Analyzing your preferences...',
-  'Matching against Swiss data...',
-  'Generating recommendations...',
-]
+const STATUS_MESSAGES: Record<Region, string[]> = {
+  CH: ['Analyzing your preferences...', 'Matching against Swiss data...', 'Generating recommendations...'],
+  US: ['Analyzing your preferences...', 'Matching against US data...', 'Generating recommendations...'],
+}
 
-const EXAMPLE_PROMPTS = [
-  "I work from home and want a quiet area with good coffee shops and parks within walking distance. Budget around CHF 1,800/month.",
-  "Young professional commuting to the office, love restaurants and nightlife, don't have a car so transit is essential. Can spend up to CHF 2,500.",
-  "Family with two kids, safety and good schools are the top priority. We need a grocery store nearby and prefer a quieter area. Budget CHF 1,600.",
-  "Retired couple looking for clean air, green spaces, and easy access to healthcare. Prefer quiet streets and walkable amenities.",
-]
+const EXAMPLE_PROMPTS: Record<Region, string[]> = {
+  CH: [
+    "I work from home and want a quiet area with good coffee shops and parks within walking distance. Budget around CHF 1,800/month.",
+    "Young professional commuting to the office, love restaurants and nightlife, don't have a car so transit is essential. Can spend up to CHF 2,500.",
+    "Family with two kids, safety and good schools are the top priority. We need a grocery store nearby and prefer a quieter area. Budget CHF 1,600.",
+    "Retired couple looking for clean air, green spaces, and easy access to healthcare. Prefer quiet streets and walkable amenities.",
+  ],
+  US: [
+    "Moving without a car: I need great transit and a walkable neighborhood with groceries nearby. Rent up to $2,800/month for a one-bedroom.",
+    "Family with two kids, safety and schools come first, and we'd like low state income tax. Budget around $3,000/month for a 3-bedroom.",
+    "Remote worker who loves sunshine and quiet streets, open to any metro. Keep rent under $2,000.",
+    "Young professional who wants nightlife and restaurants, with good upward mobility for the long run.",
+  ],
+}
 
 function escapeHtml(text: string): string {
   return text
@@ -47,7 +60,11 @@ function parseNeighborhoodNames(text: string): string[] {
   return matches.map(m => m[1].trim()).filter(Boolean)
 }
 
-function findNeighborhoodCoords(name: string): { lat: number; lng: number } | null {
+function findNeighborhoodCoords(name: string, region: Region = 'CH'): { lat: number; lng: number } | null {
+  if (region === 'US') {
+    const a = findUsArea(name)
+    return a ? { lat: a.lat, lng: a.lng } : null
+  }
   const lower = name.toLowerCase()
   // Collect all fuzzy matches and prefer the longest name, so a heading like
   // "Breitenrain/Lorraine, Bern" never resolves to Basel's shorter "Breite"
@@ -64,8 +81,8 @@ function findNeighborhoodCoords(name: string): { lat: number; lng: number } | nu
   return { lat: match.lat, lng: match.lng }
 }
 
-function neighborhoodExists(name: string): boolean {
-  return findNeighborhoodCoords(name) !== null
+function neighborhoodExists(name: string, region: Region): boolean {
+  return findNeighborhoodCoords(name, region) !== null
 }
 
 interface AiMatchProps {
@@ -93,6 +110,10 @@ export default function AiMatch({
   const [statusIdx, setStatusIdx] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const { household } = useHousehold()
+  const flags = useFeatureFlags()
+  const visitorCountry = useVisitorCountry()
+  // Which pool to match against: US visitors start on the US one once it's live
+  const [region, setRegion] = useState<Region>(() => (flags.us && visitorCountry === 'US' ? 'US' : 'CH'))
   const [showHousehold, setShowHousehold] = useState(false)
   const responseRef = useRef<HTMLDivElement>(null)
   const listingsFetchedRef = useRef(false)
@@ -100,7 +121,7 @@ export default function AiMatch({
   // Cycle status messages while loading
   useEffect(() => {
     if (!loading) { setStatusIdx(0); return }
-    const id = setInterval(() => setStatusIdx(prev => (prev + 1) % STATUS_MESSAGES.length), 2500)
+    const id = setInterval(() => setStatusIdx(prev => (prev + 1) % STATUS_MESSAGES.CH.length), 2500)
     return () => clearInterval(id)
   }, [loading])
 
@@ -119,6 +140,8 @@ export default function AiMatch({
   // After streaming completes, fetch listings for the top matched neighborhood
   useEffect(() => {
     if (loading || !response || listingsState !== null || listingsFetchedRef.current) return
+    // No rental-listings source for the US pool
+    if (region === 'US') return
 
     const names = parseNeighborhoodNames(response)
     if (names.length === 0) return
@@ -167,6 +190,7 @@ export default function AiMatch({
         // Household only when an income is entered; it is used for this answer and not stored
         body: JSON.stringify({
           description: description.trim(),
+          country: region,
           ...(household.grossIncome && {
             household: {
               grossIncome: household.grossIncome,
@@ -213,7 +237,14 @@ export default function AiMatch({
   }
 
   const parsedNeighborhoods = response ? parseNeighborhoodNames(response) : []
-  const knownNeighborhoods = parsedNeighborhoods.filter(neighborhoodExists)
+  const knownNeighborhoods = parsedNeighborhoods.filter(n => neighborhoodExists(n, region))
+  const money = region === 'US' ? usd : formatChf
+
+  function chooseRegion(r: Region) {
+    if (r === region) return
+    setRegion(r)
+    reset()
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -227,8 +258,26 @@ export default function AiMatch({
         <p className="text-sm leading-relaxed" style={{ color: '#a0a0a0' }}>
           Tell us what matters to you — air quality, green space, safety, schools,
           walkability, budget, anything — in your own words. Our AI will match your
-          description against real Swiss data and find your best-fit areas.
+          description against real {region === 'US' ? 'US' : 'Swiss'} data and find your best-fit areas.
         </p>
+        {flags.us && (
+          <div className="grid grid-cols-2 gap-1 p-1 rounded-xl self-start" style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }} role="radiogroup" aria-label="Country to match in">
+            {([['CH', 'Switzerland'], ['US', 'United States']] as const).map(([r, label]) => (
+              <button
+                key={r}
+                type="button"
+                role="radio"
+                aria-checked={region === r}
+                onClick={() => chooseRegion(r)}
+                disabled={loading}
+                className="h-9 px-4 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
+                style={region === r ? { backgroundColor: '#f97316', color: 'white' } : { color: '#a0a0a0' }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Example prompts — only shown before results */}
@@ -239,7 +288,7 @@ export default function AiMatch({
               Try an example
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {EXAMPLE_PROMPTS.map((p, i) => (
+              {EXAMPLE_PROMPTS[region].map((p, i) => (
                 <button
                   key={i}
                   onClick={() => onDescriptionChange(p)}
@@ -266,7 +315,7 @@ export default function AiMatch({
         <div className="flex flex-col items-center justify-center gap-4 py-12">
           <Loader2 size={28} className="animate-spin" style={{ color: '#f97316' }} />
           <p className="text-sm font-medium transition-opacity" style={{ color: '#a0a0a0' }}>
-            {STATUS_MESSAGES[statusIdx]}
+            {STATUS_MESSAGES[region][statusIdx]}
           </p>
         </div>
       )}
@@ -306,7 +355,10 @@ export default function AiMatch({
                         key={name}
                         onClick={() => {
                           capture('ai_match_result_clicked', { rank: i + 1 })
-                          onViewNeighborhood(name)
+                          // US areas open their anchor address in the US address view
+                          const us = region === 'US' ? findUsArea(name) : null
+                          if (us) onViewAddress(us.address)
+                          else onViewNeighborhood(name)
                         }}
                         className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all"
                         style={{ backgroundColor: '#1a1a1a', color: '#f97316', border: '1px solid #f9731633' }}
@@ -453,7 +505,7 @@ export default function AiMatch({
               <span className="text-sm font-semibold text-white shrink-0">Household budget</span>
               <span className={`text-xs truncate ${SENSITIVE_TEXT}`} style={{ color: '#6b6b6b' }}>
                 {household.grossIncome
-                  ? `${formatChf(household.grossIncome)}/yr · ${household.status} · ${household.adults + household.children} ${household.adults + household.children === 1 ? 'person' : 'people'}`
+                  ? `${money(household.grossIncome)}/yr · ${household.status} · ${household.adults + household.children} ${household.adults + household.children === 1 ? 'person' : 'people'}`
                   : 'optional — ask about tax or what’s left over'}
               </span>
             </span>
@@ -461,7 +513,8 @@ export default function AiMatch({
           </button>
           {showHousehold && (
             <div className="px-4 pb-4">
-              <HouseholdForm />
+              <HouseholdForm currency={region === 'US' ? 'USD' : 'CHF'} />
+              {region === 'US' && <p className="text-xs mt-2" style={{ color: '#6b6b6b' }}>US figures are estimates, not tax or financial advice.</p>}
             </div>
           )}
         </div>

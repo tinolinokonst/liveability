@@ -18,6 +18,7 @@ import {
 // nothing persistent is written to the browser. Dismissing (or signing up)
 // hides the banner for the rest of this tab.
 const DISMISS_KEY = 'liveability:us-waitlist-dismissed'
+const LIVE_DISMISS_KEY = 'liveability:us-live-dismissed'
 
 type Status = 'idle' | 'sending' | 'sent' | 'error'
 
@@ -26,15 +27,62 @@ const INPUT_CLASS =
   'px-3 py-2.5 rounded-xl text-base sm:text-sm text-white outline-none focus:ring-2 focus:ring-[#f97316] disabled:opacity-50 placeholder:text-[#6b6b6b]'
 const INPUT_STYLE = { backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }
 
+/** Once US coverage is on, US visitors see this instead of the waitlist */
+function UsLiveBanner({ className }: { className: string }) {
+  const [visible, setVisible] = useState(false)
+  useEffect(() => {
+    let dismissed = false
+    try { dismissed = sessionStorage.getItem(LIVE_DISMISS_KEY) === '1' } catch { /* storage blocked: show it */ }
+    setVisible(!dismissed)
+  }, [])
+  if (!visible) return null
+  return (
+    <section
+      aria-label="Now live in the US"
+      className={`relative rounded-2xl p-4 sm:p-5 ${className}`}
+      style={{ backgroundColor: '#1a1a1a', border: '1px solid #f9731640' }}
+    >
+      <button
+        onClick={() => {
+          try { sessionStorage.setItem(LIVE_DISMISS_KEY, '1') } catch { /* hides until reload */ }
+          setVisible(false)
+        }}
+        aria-label="Dismiss"
+        className="absolute top-3 right-3 p-1.5 rounded-lg transition-colors hover:bg-[#2a2a2a]"
+        style={{ color: '#a0a0a0' }}
+      >
+        <X size={15} />
+      </button>
+      <div className="flex items-start gap-3 pr-8">
+        <span className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#f973161a', color: '#f97316' }}>
+          <MapPin size={15} />
+        </span>
+        <div>
+          <p className="text-white font-semibold">Now live in the US</p>
+          <p className="text-sm mt-0.5" style={{ color: '#a0a0a0' }}>
+            Search any US address for its Liveability Score, monthly budget, transit, schools, safety, flood risk and more.
+          </p>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 /**
  * Waitlist prompt for visitors outside Switzerland, to gauge US demand.
- * Renders nothing for Swiss visitors or when the country is unknown.
+ * Renders nothing for Swiss visitors or when the country is unknown. Once
+ * US coverage is live it becomes a "Now live in the US" note for US visitors.
  */
 export default function UsWaitlistBanner({ className = '' }: { className?: string }) {
   const country = useVisitorCountry()
   const { us: usLive } = useFeatureFlags()
-  // Once US coverage is switched on, "coming to the US" would contradict the copy
-  const eligible = country !== null && country !== 'CH' && !usLive
+  if (usLive) return country === 'US' ? <UsLiveBanner className={className} /> : null
+  return <WaitlistBanner className={className} country={country} />
+}
+
+function WaitlistBanner({ className, country }: { className: string; country: string | null }) {
+  // Only rendered while US coverage is off (see UsWaitlistBanner)
+  const eligible = country !== null && country !== 'CH'
 
   // Hidden until mounted so a banner dismissed earlier in this tab doesn't
   // flash in during hydration

@@ -36,6 +36,11 @@ export type MetricKey =
   | 'usFood'
   | 'broadband'
   | 'usHealth'
+  | 'usCommunity'
+  | 'usMobility'
+  | 'usSafety'
+  | 'usRent'
+  | 'usScore'
 
 // AQI category colors (US EPA category names)
 export function aqiColor(category: string): string {
@@ -346,5 +351,43 @@ export const METRIC_INFO: Record<MetricKey, MetricInfo> = {
       { label: 'CDC PLACES: Local Data for Better Health (2025 release)', url: 'https://www.cdc.gov/places/' },
       { label: 'CDC/ATSDR Social Vulnerability Index 2022', url: 'https://www.atsdr.cdc.gov/place-health/php/svi/' },
     ],
+  },
+  usCommunity: {
+    label: 'Community',
+    description:
+      "Median household income, median rent, median age and population for this census tract from the Census Bureau's American Community Survey 5-year estimates, next to the county and the US.",
+    source: 'US Census Bureau, American Community Survey (5-year)',
+    sourceUrl: 'https://www.census.gov/programs-surveys/acs',
+  },
+  usMobility: {
+    label: 'Upward Mobility',
+    description:
+      "From the Opportunity Atlas: the average adult household income rank of children who grew up in this neighbourhood in lower-income families (parents at the 25th percentile), based on tax records for children born 1978–1983.",
+    source: 'Opportunity Insights, The Opportunity Atlas',
+    sourceUrl: 'https://www.opportunityatlas.org/',
+  },
+  usSafety: {
+    label: 'Safety',
+    description:
+      "Violent and property offenses per 100,000 residents reported to the FBI by the police department of this address's city (or the county sheriff outside a city), for the latest full year. City/agency level, not address level.",
+    source: 'FBI Crime Data Explorer',
+    sourceUrl: 'https://cde.ucr.cjis.gov/',
+  },
+  usRent: {
+    label: 'Rent',
+    description:
+      "HUD Fair Market Rent by bedroom count: the Small Area FMR for this ZIP code where HUD publishes one, otherwise the metro or county FMR. A market estimate for a modest unit including basic utilities, not a listing price.",
+    source: 'US Department of Housing and Urban Development (HUD)',
+    sourceUrl: 'https://www.huduser.gov/portal/datasets/fmr.html',
+    sources: [
+      { label: 'HUD Small Area Fair Market Rents (HUD Open Data)', url: 'https://hudgis-hud.opendata.arcgis.com/' },
+      { label: 'HUD Fair Market Rents', url: 'https://www.huduser.gov/portal/datasets/fmr.html' },
+    ],
+  },
+  usScore: {
+    label: 'Liveability Score',
+    description: 'A weighted average of the scored US metrics, minus penalties for risks found at the address.',
+    source: 'Liveability, from the sources on each card',
+    sourceUrl: '/how-it-works',
   },
 }

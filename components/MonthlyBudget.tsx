@@ -137,7 +137,7 @@ function Stepper({ label, value, min, max, onChange }: {
 }
 
 /** onEdit fires on any change, so a parent can keep the form open while it is in use */
-export function HouseholdForm({ onEdit }: { onEdit?: () => void } = {}) {
+export function HouseholdForm({ onEdit, currency = 'CHF' }: { onEdit?: () => void; currency?: 'CHF' | 'USD' } = {}) {
   const { household, setHousehold: setShared } = useHousehold()
   function setHousehold(update: Partial<Household>) {
     onEdit?.()
@@ -170,15 +170,15 @@ export function HouseholdForm({ onEdit }: { onEdit?: () => void } = {}) {
         {/* Blocked from session replay outright (not just masked), so not even
             the number of digits typed is recorded */}
         <div className={`flex items-center rounded-xl px-3 focus-within:ring-2 focus-within:ring-[#f97316] ${SENSITIVE_BLOCK}`} style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}>
-          <span className="text-sm shrink-0" style={{ color: '#a0a0a0' }}>CHF</span>
+          <span className="text-sm shrink-0" style={{ color: '#a0a0a0' }}>{currency === 'USD' ? '$' : 'CHF'}</span>
           <input
             type="text"
             inputMode="numeric"
             autoComplete="off"
             value={incomeText}
             onChange={e => onIncome(e.target.value)}
-            placeholder="e.g. 120000"
-            aria-label="Gross annual household income in CHF"
+            placeholder={currency === 'USD' ? 'e.g. 95000' : 'e.g. 120000'}
+            aria-label={`Gross annual household income in ${currency}`}
             className="flex-1 min-w-0 bg-transparent px-2 h-11 text-base text-white outline-none"
           />
           <span className="text-xs shrink-0" style={{ color: '#6b6b6b' }}>/ year</span>
@@ -187,7 +187,7 @@ export function HouseholdForm({ onEdit }: { onEdit?: () => void } = {}) {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <div className="col-span-2 sm:col-span-1 flex flex-col gap-1.5">
-          <span className="text-xs" style={{ color: '#a0a0a0' }}>Status</span>
+          <span className="text-xs" style={{ color: '#a0a0a0' }}>{currency === 'USD' ? 'Filing status' : 'Status'}</span>
           <div className="grid grid-cols-2 gap-1 p-1 rounded-xl" style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }} role="radiogroup" aria-label="Marital status">
             {(['single', 'married'] as const).map(s => (
               <button

@@ -3,16 +3,15 @@
 import { MapPin } from 'lucide-react'
 import { COUNTRIES, countryOf } from '@/lib/country'
 import type { GeoLocation } from '@/lib/types'
-import UsDailyLifeCards from './UsDailyLifeCards'
-import UsMetricCards from './UsMetricCards'
+import UsResults from './UsResults'
 
 const MUTED = '#a0a0a0'
 
 /**
- * Shown instead of results when an address resolves in a country whose
- * metrics aren't all available yet. It says what we know — the resolved
- * address, for the US its Census geographies, and the environment and risk
- * metrics that do have a source — and claims nothing else: no overall score.
+ * Results for an address outside Switzerland. For the US: the resolved
+ * address, its Census geographies, and the US results (score, budget and
+ * every card, components/UsResults.tsx). Any other country would show only
+ * what is known about it — none resolves today.
  */
 export default function CoverageComingSoon({ location }: { location: GeoLocation }) {
   const country = COUNTRIES[countryOf(location)]
@@ -43,17 +42,16 @@ export default function CoverageComingSoon({ location }: { location: GeoLocation
         )
       )}
 
-      {country.code === 'US' && <UsDailyLifeCards location={location} />}
-      {country.code === 'US' && <UsMetricCards location={location} />}
-
-      <p className="text-sm" style={{ color: MUTED }}>
-        {country.code === 'US'
-          ? <>An overall Liveability score for addresses in the {country.name} is on its way — safety, housing costs and community
-            data come next. Until then each card stands on its own.</>
-          : <>Liveability scores for addresses in the {country.name} are on their way — we&apos;re adding the data sources
-            now.</>}{' '}
-        Distances are shown in {country.distanceUnit === 'mi' ? 'miles' : 'kilometres'} and costs in {country.currency}.
-      </p>
+      {country.code === 'US' ? (
+        <UsResults location={location} />
+      ) : (
+        <p className="text-sm" style={{ color: MUTED }}>
+          Liveability scores for addresses in the {country.name} are on their way — we&apos;re adding the data sources now.
+        </p>
+      )}
+      {country.code === 'US' && (
+        <p className="text-xs" style={{ color: MUTED }}>Distances are in miles and costs in US dollars.</p>
+      )}
     </section>
   )
 }

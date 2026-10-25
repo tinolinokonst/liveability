@@ -1,4 +1,5 @@
 import { AQIResult } from './airquality'
+import { compositeScore } from './composite'
 import { riskPenalty } from './risks'
 import { providersFor } from './providers'
 import { COUNTRIES, countryOf } from './country'
@@ -26,17 +27,8 @@ const WEIGHTS = {
   noise: 0.04,
 } as const
 
-/**
- * Weighted mean over whichever metrics resolved, renormalised so a missing
- * source (sunlight outside Solar API coverage, say) redistributes its weight
- * rather than dragging the score toward zero.
- */
-export function compositeScore(parts: Array<[number | null | undefined, number]>): number {
-  const available = parts.filter((p): p is [number, number] => p[0] != null)
-  if (available.length === 0) return 0
-  const totalWeight = available.reduce((sum, [, w]) => sum + w, 0)
-  return Math.round(available.reduce((sum, [v, w]) => sum + v * w, 0) / totalWeight)
-}
+// Shared with the US score (lib/usScore.ts)
+export { compositeScore }
 
 export function buildMetrics(
   address: string,

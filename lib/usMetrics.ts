@@ -3,6 +3,9 @@
 // lib/us*Source(s).ts. A failed request becomes an 'error' result, never a value.
 
 import type {
+  UsCommunityResult,
+  UsRentResult,
+  UsSafetyResult,
   UsBroadbandResult,
   UsFoodAccessResult,
   UsHealthResult,
@@ -68,6 +71,22 @@ export const fetchUsSchools = (lat: number, lng: number) => getJson('schools', l
 export const fetchUsFoodAccess = (lat: number, lng: number) => getJson('food', lat, lng, FOOD_ERROR)
 export const fetchUsBroadband = (lat: number, lng: number) => getJson('broadband', lat, lng, BROADBAND_ERROR)
 export const fetchUsHealth = (lat: number, lng: number) => getJson('health', lat, lng, HEALTH_ERROR)
+
+// Community, safety, rent
+const COMMUNITY_ERROR: UsCommunityResult = {
+  status: 'error', acsPeriod: null, tract: null, county: null, us: null, densityPerSqMi: null, tractName: null, countyName: null, mobilityStatus: 'error', mobility: null,
+}
+const SAFETY_ERROR: UsSafetyResult = { status: 'error', agency: null, matchedBy: null, year: null, rates: null, stateRates: null, usRates: null, stateName: null, score: null }
+const RENT_ERROR: UsRentResult = { status: 'error', byBedrooms: null, level: null, zip: null, areaName: null, fiscalYear: 'FY2026' }
+
+export const fetchUsCommunity = (lat: number, lng: number) => getJson('community', lat, lng, COMMUNITY_ERROR)
+export const fetchUsSafety = (lat: number, lng: number) => getJson('safety', lat, lng, SAFETY_ERROR)
+export const fetchUsRent = (lat: number, lng: number) => getJson('rent', lat, lng, RENT_ERROR)
+
+export const usd = (n: number) => `${n < 0 ? '−' : ''}$${Math.abs(Math.round(n)).toLocaleString('en-US')}`
+
+export const HUD_RENT_LABEL = 'HUD Fair Market Rent — a market estimate, not a listing price'
+export const SAFETY_LEVEL_LABEL = 'City/agency level, not address level'
 
 // ─── wording ─────────────────────────────────────────────────────────────────
 

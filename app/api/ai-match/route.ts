@@ -4,6 +4,8 @@ import { MATCHABLE_AREAS, SWISS_DISTRICTS, areaDisplayName } from '@/lib/neighbo
 import { guardRequest } from '@/lib/apiGuard'
 import { readJsonBody, MAX_DESCRIPTION_LENGTH } from '@/lib/validate'
 import { areaMonthlyBudgets, HouseholdInput, parseHousehold } from '@/lib/budget'
+import { usEnabled } from '@/lib/flags'
+import { usAreaSummaries, usSystemPrompt } from '@/lib/usAiMatch'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -66,7 +68,7 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  const body = parsed.value as { description?: unknown; household?: unknown } | null
+  const body = parsed.value as { description?: unknown; household?: unknown; country?: unknown } | null
   if (!body?.description || typeof body.description !== 'string') {
     return new Response(JSON.stringify({ error: 'description is required' }), {
       status: 400,
@@ -99,7 +101,9 @@ export async function POST(request: NextRequest) {
     }
     household = h.value
   }
-  const areaData = household ? await withMonthlyBudgets(household) : AREA_SUMMARY
+  // The US pool only while US coverage is on; anything else is the Swiss pool
+  const us = body.country === 'US' && usEnabled()
+  const areaData = us ? usAreaSummaries(household) : household ? await withMonthlyBudgets(household) : AREA_SUMMARY
   const hasBudgets = areaData.some(a => 'monthlyBudget' in a)
 
   const budgetGuidance = hasBudgets
@@ -112,7 +116,7 @@ No household budget data is attached. If the user asks about income tax, take-ho
     ? `\n**Monthly budget:** tax ~**CHF [incomeTax]**/mo · left over ~**CHF [leftOver]**/mo`
     : ''
 
-  const systemPrompt = `You are a Switzerland relocation expert helping someone find their ideal area to live in. ${COVERAGE_SENTENCE}
+  const systemPrompt = us ? usSystemPrompt(areaData, hasBudgets) : `You are a Switzerland relocation expert helping someone find their ideal area to live in. ${COVERAGE_SENTENCE}
 You have data for each area with scores (0-100) for walkability, air quality, green space, grocery access, transit, safety, education, healthcare, dining, and quietness, plus average rent in CHF.
 ${budgetGuidance}
 

@@ -604,6 +604,69 @@ export interface UsHealthResult {
   tract: string | null
 }
 
+// ─── United States: community, safety, rent ─────────────────────────────────
+
+/** Census ACS 5-year estimates for the tract, with county and US for context */
+export interface AcsFigures {
+  medianHouseholdIncome: number | null
+  medianGrossRent: number | null
+  medianAge: number | null
+  population: number | null
+}
+
+export interface UsCommunityResult {
+  status: UsStatus
+  /** e.g. "2020–2024" */
+  acsPeriod: string | null
+  tract: AcsFigures | null
+  county: AcsFigures | null
+  us: AcsFigures | null
+  /** People per square mile of land */
+  densityPerSqMi: number | null
+  tractName: string | null
+  countyName: string | null
+  /** Opportunity Atlas, on 2010 tract boundaries */
+  mobilityStatus: UsStatus
+  mobility: {
+    /** Adult household income percentile of children raised here by parents at the 25th percentile */
+    p25: number
+    nationalP25: number
+    children: number
+    tract2010: string
+  } | null
+}
+
+export interface CrimeRates {
+  /** Offenses per 100,000 people over the year */
+  violent: number | null
+  property: number | null
+}
+
+export interface UsSafetyResult {
+  status: UsStatus
+  agency: { ori: string; name: string; type: string } | null
+  /** How the agency was matched: the address's city, or its county */
+  matchedBy: 'city' | 'county' | null
+  year: number | null
+  rates: CrimeRates | null
+  stateRates: CrimeRates | null
+  usRates: CrimeRates | null
+  stateName: string | null
+  score: number | null
+  message?: string
+}
+
+export interface UsRentResult {
+  status: UsStatus
+  /** Monthly rent by bedrooms, 0 (studio) to 4 */
+  byBedrooms: [number, number, number, number, number] | null
+  /** 'zip': Small Area FMR for the ZIP code; 'area': the metro or county FMR */
+  level: 'zip' | 'area' | null
+  zip: string | null
+  areaName: string | null
+  fiscalYear: string
+}
+
 export interface AddressMetrics {
   id: string
   address: string

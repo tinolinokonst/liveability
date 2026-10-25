@@ -19,6 +19,7 @@ import {
   Check,
 } from 'lucide-react'
 import SiteHeader from '@/components/SiteHeader'
+import { useFeatureFlags } from '@/components/FeatureFlags'
 import BackgroundDecor from '@/components/BackgroundDecor'
 import Reveal from '@/components/Reveal'
 
@@ -45,11 +46,63 @@ const METHODOLOGY = [
   },
 ]
 
+// United States (shown while US coverage is on). Every US card names its own source.
+const METHODOLOGY_US = [
+  {
+    icon: Wind,
+    title: 'Environment',
+    desc: 'Current air quality from AirNow and annual averages from the EPA Air Quality System; weather alerts and heat risk from the National Weather Service; modeled transportation noise from the Bureau of Transportation Statistics; sunlight from the National Laboratory of the Rockies (formerly NREL).',
+  },
+  {
+    icon: Footprints,
+    title: 'Getting around & daily life',
+    desc: 'EPA’s National Walkability Index; transit stops from OpenStreetMap and transit agencies from the Mobility Database; schools from NCES; grocery stores from OpenStreetMap with the USDA Food Access Research Atlas; county broadband availability from the FCC; health estimates from CDC PLACES and the CDC/ATSDR Social Vulnerability Index.',
+  },
+  {
+    icon: Shield,
+    title: 'Safety, community & cost',
+    desc: 'FBI Crime Data Explorer rates for the city’s police department (or county sheriff) — clearly labeled city/agency level, not address level. Census ACS tract figures, Opportunity Atlas upward mobility, HUD Fair Market Rents, and a monthly budget from 2026 federal and state income tax rules.',
+  },
+  {
+    icon: Database,
+    title: 'Risks',
+    desc: 'FEMA flood zones and National Risk Index ratings (including wildfire), and EPA-listed Superfund, brownfield and toxic-release sites within a mile.',
+  },
+]
+
+const FRESHNESS_US = [
+  { icon: Wind, title: 'Air & weather (US)', desc: 'AirNow and NWS alerts are near real time; EPA annual air data, crime figures (FBI, latest full year) and Census ACS (5-year, latest release) update yearly.' },
+  { icon: Footprints, title: 'Rent & tax (US)', desc: 'HUD Fair Market Rents for the current federal fiscal year; federal and state income tax rules for 2026.' },
+]
+
 const FRESHNESS = [
   { icon: Wind, title: 'Air quality', desc: 'BAFU annual pollution modeling, updated yearly; Open-Meteo real-time data as fallback.' },
   { icon: Shield, title: 'Crime data', desc: 'FSO Police Crime Statistics, published annually (currently 2024 data).' },
   { icon: Footprints, title: 'OpenStreetMap amenities', desc: 'Community-maintained, generally accurate but can lag for very recent openings or closures.' },
   { icon: Newspaper, title: 'News', desc: 'Pulled live every time you search.' },
+]
+
+const FAQ_US = [
+  {
+    q: 'Which countries are covered?',
+    a: 'Switzerland and the United States. Swiss addresses use federal and cantonal open data; US addresses use federal sources such as the Census Bureau, EPA, FEMA, NWS, HUD, the FBI and the CDC, plus OpenStreetMap.',
+  },
+  {
+    q: 'Is Liveability free?',
+    a: 'Yes. Searching addresses, comparing them, exploring areas, and saving addresses to your account are all free.',
+  },
+  {
+    q: 'How accurate is the data?',
+    a: 'Every number comes from its named source at the time of your search, and each card says whether it describes the address, the neighbourhood (census tract) or a whole city or county. US crime figures, for example, are city/agency level, not address level.',
+  },
+  {
+    q: 'Is the US Monthly Budget tax advice?',
+    a: 'No. It is an estimate from 2026 federal and state income tax rules, FICA and HUD Fair Market Rents, assuming wages only and the standard deduction. Local income taxes and pre-tax savings are not included. It is not tax or financial advice.',
+  },
+  {
+    q: 'What if a data point seems wrong?',
+    a: 'Click any metric to see its source and a link to the underlying data. If something looks off, it likely reflects the source data itself — OpenStreetMap in particular can be edited by anyone, so feel free to correct it there.',
+  },
 ]
 
 const FAQ = [
@@ -114,6 +167,9 @@ const cardHover = {
 } as const
 
 export default function HowItWorks() {
+  const { us } = useFeatureFlags()
+  const freshness = us ? [...FRESHNESS, ...FRESHNESS_US] : FRESHNESS
+  const faq = us ? FAQ_US : FAQ
   return (
     <div className="min-h-screen relative" style={{ backgroundColor: '#0f0f0f' }}>
       <BackgroundDecor />
@@ -270,6 +326,28 @@ export default function HowItWorks() {
               ))}
             </div>
           </div>
+          {us && (
+            <div className="mt-12 flex flex-col gap-6">
+              <Reveal>
+                <h3 className="text-2xl font-black text-white tracking-tight">In the United States</h3>
+                <p style={{ color: '#a0a0a0' }} className="text-sm mt-2 max-w-2xl leading-relaxed">
+                  US addresses use federal open data. Each card names its source and says whether it describes the
+                  address, the census tract, or a whole city or county.
+                </p>
+              </Reveal>
+              {METHODOLOGY_US.map((m, i) => (
+                <Reveal key={m.title} delay={i * 0.08}>
+                  <motion.div className="rounded-2xl p-6 flex gap-4 items-start" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }} {...cardHover}>
+                    <m.icon size={18} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
+                    <div className="flex-1">
+                      <h3 className="text-white font-bold text-base mb-1.5">{m.title}</h3>
+                      <p style={{ color: '#a0a0a0' }} className="text-sm leading-relaxed">{m.desc}</p>
+                    </div>
+                  </motion.div>
+                </Reveal>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Scores */}
@@ -302,6 +380,17 @@ export default function HowItWorks() {
                   density — fewer reported incidents nearby means a higher score.
                 </p>
               </div>
+              {us && (
+                <div className="flex items-start gap-4">
+                  <Calculator size={22} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
+                  <p style={{ color: '#a0a0a0' }} className="text-sm sm:text-base leading-relaxed">
+                    <span className="text-white font-semibold">US addresses</span> use the same method and weights:
+                    air quality, walkability, grocery stores, transit, schools, safety (city level), sunlight and quiet,
+                    re-weighted over whichever have data. A FEMA high-risk flood zone (−8, or −15 on the coast) or a
+                    Superfund site within a quarter mile (−4) lowers the score.
+                  </p>
+                </div>
+              )}
               <div className="flex items-start gap-4">
                 <Link2 size={22} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
                 <p style={{ color: '#a0a0a0' }} className="text-sm sm:text-base leading-relaxed">
@@ -319,7 +408,7 @@ export default function HowItWorks() {
             <h2 className="text-4xl sm:text-5xl font-black text-white mb-10 tracking-tight">Data freshness</h2>
           </Reveal>
           <div className="grid sm:grid-cols-2 gap-6">
-            {FRESHNESS.map((f, i) => (
+            {freshness.map((f, i) => (
               <Reveal key={f.title} delay={i * 0.05}>
                 <motion.div
                   className="rounded-2xl p-6 flex gap-4 h-full"
@@ -360,7 +449,7 @@ export default function HowItWorks() {
             </div>
           </Reveal>
           <div className="flex flex-col gap-3">
-            {FAQ.map((item, i) => (
+            {faq.map((item, i) => (
               <Reveal key={item.q} delay={i * 0.04}>
                 <FaqItem q={item.q} a={item.a} />
               </Reveal>

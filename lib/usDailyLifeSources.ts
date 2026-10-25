@@ -143,7 +143,8 @@ async function overpass(query: string): Promise<OsmElement[]> {
   for (const url of OVERPASS) {
     try {
       const res = await fetchUpstream(url, {
-        timeoutMs: 15000,
+        // Build scripts (scripts/build-us-areas.mts) may wait longer than a request should
+        timeoutMs: Number(process.env.OVERPASS_TIMEOUT_MS) || 15000,
         method: 'POST',
         body: new URLSearchParams({ data: query }).toString(),
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

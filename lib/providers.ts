@@ -26,6 +26,9 @@ import { nearestArea } from './neighborhoods'
 import {
   fetchUsAirQuality,
   fetchUsBroadband,
+  fetchUsCommunity,
+  fetchUsRent,
+  fetchUsSafety,
   fetchUsFoodAccess,
   fetchUsHealth,
   fetchUsNoise,
@@ -48,6 +51,9 @@ import type {
   TransitCHResult,
   UsAirQualityResult,
   UsBroadbandResult,
+  UsCommunityResult,
+  UsRentResult,
+  UsSafetyResult,
   UsFoodAccessResult,
   UsHealthResult,
   UsNoiseResult,
@@ -128,6 +134,22 @@ const UNITED_STATES_DAILY_LIFE: UsDailyLifeProviders = {
   health: fetchUsHealth, // CDC PLACES + CDC/ATSDR SVI
 }
 
+export interface UsCommunityProviders {
+  community(lat: number, lng: number): Promise<UsCommunityResult>
+  safety(lat: number, lng: number): Promise<UsSafetyResult>
+  rent(lat: number, lng: number): Promise<UsRentResult>
+}
+
+const UNITED_STATES_COMMUNITY: UsCommunityProviders = {
+  community: fetchUsCommunity, // Census ACS + Opportunity Atlas
+  safety: fetchUsSafety, // FBI Crime Data Explorer (city/agency level)
+  rent: fetchUsRent, // HUD Fair Market Rents (Small Area where published)
+}
+
+export function communityProvidersFor(country: CountryCode): UsCommunityProviders | null {
+  return country === 'US' ? UNITED_STATES_COMMUNITY : null
+}
+
 /** The per-card US mobility and daily-life metrics; null for other countries */
 export function dailyLifeProvidersFor(country: CountryCode): UsDailyLifeProviders | null {
   return country === 'US' ? UNITED_STATES_DAILY_LIFE : null
@@ -155,8 +177,8 @@ export function providersFor(country: CountryCode): MetricProviders | null {
 }
 
 /** Metrics that already have a provider for this country (for "coming soon" messaging) */
-export function availableMetrics(country: CountryCode): Array<keyof MetricProviders | keyof UsEnvironmentProviders | keyof UsDailyLifeProviders> {
-  const perCard = { ...environmentProvidersFor(country), ...dailyLifeProvidersFor(country) }
+export function availableMetrics(country: CountryCode): Array<keyof MetricProviders | keyof UsEnvironmentProviders | keyof UsDailyLifeProviders | keyof UsCommunityProviders> {
+  const perCard = { ...environmentProvidersFor(country), ...dailyLifeProvidersFor(country), ...communityProvidersFor(country) }
   const scored = REQUIRED.filter(k => typeof PROVIDERS[country][k] === 'function')
-  return [...new Set([...scored, ...(Object.keys(perCard) as Array<keyof UsEnvironmentProviders | keyof UsDailyLifeProviders>)])]
+  return [...new Set([...scored, ...(Object.keys(perCard) as Array<keyof UsEnvironmentProviders | keyof UsDailyLifeProviders | keyof UsCommunityProviders>)])]
 }
