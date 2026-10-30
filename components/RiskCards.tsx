@@ -20,10 +20,15 @@ import {
 import {
   RADON_ATTRIBUTION,
   RADON_BAND_INFO,
+  RADON_CHECK_URL,
+  RADON_CLASS_SOURCE,
   RADON_CONFIDENCE_LABEL,
+  RADON_CONFIDENCE_TEXT,
   RADON_INFO_URL,
   RADON_MEASUREMENT_URL,
+  RADON_NO_ESTIMATE,
   RADON_NOTE,
+  RADON_WEGLEITUNG_URL,
   radonPenalty,
   RadonResult,
 } from '@/lib/radon'
@@ -326,9 +331,9 @@ function RadonCard({ r, center }: { r: RadonResult; center: { lat: number; lng: 
       <CardShell
         icon={Radiation}
         label="Radon"
-        value={r.status === 'no_data' ? 'No data for this area' : 'Temporarily unavailable'}
+        value={r.status === 'no_data' ? RADON_NO_ESTIMATE : 'Temporarily unavailable'}
         valueColor={MUTED}
-        sub={r.status === 'no_data' ? 'The radon map has no value for this location.' : 'Try again later.'}
+        sub={r.status === 'no_data' ? 'The radon map has no estimate in its probability classes here.' : 'Try again later.'}
         footer={RADON_ATTRIBUTION}
       />
     )
@@ -336,7 +341,7 @@ function RadonCard({ r, center }: { r: RadonResult; center: { lat: number; lng: 
 
   const band = RADON_BAND_INFO[r.band]
   const confidence = RADON_CONFIDENCE_LABEL[r.confidence]
-  const value = `${band.label} · ${r.probability} %`
+  const value = band.label
 
   return (
     <>
@@ -345,7 +350,7 @@ function RadonCard({ r, center }: { r: RadonResult; center: { lat: number; lng: 
         label="Radon"
         value={value}
         valueColor={band.color}
-        sub={`${r.probability} % probability that homes in this 1 km area exceed 300 Bq/m³ · confidence: ${confidence.toLowerCase()}`}
+        sub={`${r.probability}% probability that homes in this 1 km area exceed 300 Bq/m³ · confidence: ${confidence.toLowerCase()}`}
         onOpen={() => setOpen(true)}
         footer={RADON_ATTRIBUTION}
       />
@@ -356,23 +361,31 @@ function RadonCard({ r, center }: { r: RadonResult; center: { lat: number; lng: 
           detail={
             <>
               <p>
-                <strong className="text-white">{r.probability} % probability</strong> that homes in this 1 km area
+                <strong className="text-white">{r.probability}% probability</strong> that homes in this 1 km area
                 exceed the reference level of <strong className="text-white">300 Bq/m³</strong>.
               </p>
               <ul className="flex flex-col gap-1.5">
                 <li className="flex items-baseline justify-between gap-3">
                   <span>Probability class</span>
-                  <span className="text-xs font-semibold text-right" style={{ color: band.color }}>{band.label} ({band.range})</span>
+                  <span className="text-xs font-semibold text-right" style={{ color: band.color }}>{band.label}</span>
                 </li>
                 <li className="flex items-baseline justify-between gap-3">
                   <span>Confidence index</span>
                   <span className="text-xs font-semibold text-right text-white">{confidence}</span>
                 </li>
               </ul>
-              <p className="text-xs">
-                The confidence index says how reliable the estimate is for this area, based on the measurements
-                behind it. The figure describes the 1 km area shown on the map, not this building.
-              </p>
+              <p className="text-xs">{RADON_CONFIDENCE_TEXT}</p>
+              <div className="rounded-xl px-3 py-2.5 text-xs leading-relaxed" style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}>
+                <span className="text-white">{band.guidance}</span>
+                {band.radonCheck && (
+                  <>
+                    {' '}
+                    <a href={RADON_CHECK_URL} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: '#f97316' }}>
+                      BAG Radon-Check
+                    </a>
+                  </>
+                )}
+              </div>
               <div
                 className="rounded-xl px-3 py-2.5 text-xs leading-relaxed flex gap-2"
                 style={{ backgroundColor: '#f973161a', border: '1px solid #f9731633', color: '#f97316' }}
@@ -381,7 +394,7 @@ function RadonCard({ r, center }: { r: RadonResult; center: { lat: number; lng: 
                 <span>
                   {RADON_NOTE}{' '}
                   <a href={RADON_MEASUREMENT_URL} target="_blank" rel="noopener noreferrer" className="underline">
-                    Approved measuring services
+                    Recognised measurement services
                   </a>
                 </span>
               </div>
@@ -395,7 +408,7 @@ function RadonCard({ r, center }: { r: RadonResult; center: { lat: number; lng: 
               areaPolygon={r.pixel?.length ? {
                 positions: r.pixel,
                 color: band.color,
-                label: `1 km area of the radon map: ${r.probability} % probability of exceeding 300 Bq/m³`,
+                label: `1 km area of the radon map: ${r.probability}% probability of exceeding 300 Bq/m³ (class ${band.label})`,
               } : undefined}
               legend={[
                 { color: '#f97316', label: 'This address' },
@@ -403,7 +416,11 @@ function RadonCard({ r, center }: { r: RadonResult; center: { lat: number; lng: 
               ]}
             />
           }
-          sources={[{ label: RADON_ATTRIBUTION, url: RADON_INFO_URL }]}
+          sources={[
+            { label: RADON_CLASS_SOURCE, url: RADON_WEGLEITUNG_URL },
+            // FOPH's required attribution, verbatim
+            { label: RADON_ATTRIBUTION, url: RADON_INFO_URL },
+          ]}
           onClose={() => setOpen(false)}
         />
       )}

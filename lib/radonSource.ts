@@ -54,11 +54,14 @@ async function lookupPixel(px: number, py: number): Promise<RadonResult> {
   if (!hit || typeof probability !== 'number' || typeof confidence !== 'number') {
     return { status: 'no_data', probability: null, band: null, confidence: null }
   }
+  // A value outside the map's classes is no estimate, never a guessed class
+  const band = radonBand(probability)
+  if (!band) return { status: 'no_data', probability: null, band: null, confidence: null }
   const ring = hit.geometry.type === 'Polygon' ? hit.geometry.coordinates[0] : []
   return {
     status: 'ok',
     probability,
-    band: radonBand(probability),
+    band,
     confidence: radonConfidence(confidence),
     // sr=2056 means LV95 coordinates back; the map wants lat/lng
     pixel: ring.map(([pe, pn]) => {
@@ -68,7 +71,7 @@ async function lookupPixel(px: number, py: number): Promise<RadonResult> {
   }
 }
 
-const cachedPixel = unstable_cache(lookupPixel, ['radon-pixel-v1'], { revalidate: CACHE_SECONDS })
+const cachedPixel = unstable_cache(lookupPixel, ['radon-pixel-v2'], { revalidate: CACHE_SECONDS })
 
 export async function getRadon(lat: number, lng: number): Promise<RadonResult> {
   try {

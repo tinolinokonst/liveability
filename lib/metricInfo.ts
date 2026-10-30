@@ -205,7 +205,7 @@ export const METRIC_INFO: Record<MetricKey, MetricInfo> = {
   radon: {
     label: 'Radon',
     description:
-      "The probability that homes in this 1 km area exceed the radon reference level of 300 Bq/m³, with a confidence index, from the Federal Office of Public Health's Swiss Radon Map. It describes the area, not a specific building: radon levels vary from building to building, and only a measurement can determine the concentration in a specific home.",
+      "The probability that homes in this 1 km area exceed the radon reference level of 300 Bq/m³, with a confidence index, from the Federal Office of Public Health's Swiss Radon Map, in the map's classes from the BAG Wegleitung Radon V2.3 (2023). It describes the area, not a specific building: radon varies from building to building; only a measurement by a recognised radon measurement service is definitive.",
     source: RADON_ATTRIBUTION,
     sourceUrl: RADON_INFO_URL,
   },

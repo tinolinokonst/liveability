@@ -13,7 +13,19 @@
 export const RADON_ATTRIBUTION = 'Source: Federal Office of Public Health, 2025 (Quelle: Bundesamt für Gesundheit, 2025)'
 
 export const RADON_NOTE =
-  'Radon levels vary from building to building — only a measurement can determine the radon concentration in a specific home.'
+  'Radon varies from building to building; only a measurement by a recognised radon measurement service is definitive.'
+
+/** BAG's wording, verbatim. Do not edit. */
+export const RADON_CONFIDENCE_TEXT =
+  'The confidence index is a measure of the reliability of the estimate for this area based on official measurements in the surroundings.'
+
+export const RADON_NO_ESTIMATE = 'No estimate available for this location'
+
+/** Source of the class bands and guidance */
+export const RADON_CLASS_SOURCE =
+  'Federal Office of Public Health (FOPH/BAG), Radon map of Switzerland; classes per BAG Wegleitung Radon V2.3 (2023)'
+export const RADON_WEGLEITUNG_URL = 'https://www.bag.admin.ch/dam/de/sd-web/eYh7M3dNFDW-/wegleitungradon.pdf'
+export const RADON_CHECK_URL = 'https://www.bag.admin.ch/de/radonkarte-der-schweiz'
 
 export const RADON_INFO_URL =
   'https://www.bag.admin.ch/bag/de/home/gesund-leben/umwelt-und-gesundheit/strahlung-radioaktivitaet-schall/radon/radongebiete-ch.html'
@@ -32,8 +44,12 @@ export interface RadonResult {
   pixel?: [number, number][]
 }
 
-// FOPH's own legend classes for the map: ≤1 %, 2–10 %, 11–20 %, >20 %
-export function radonBand(probability: number): RadonBand {
+// The radon map classes of the BAG Wegleitung Radon V2.3 (2.2.2023), Figure 1 /
+// Table 1: probability of exceeding 300 Bq/m³ of ≤ 1 %, 2–10 %, 11–20 %, > 20 %.
+// Anything that isn't a percentage (negative, over 100, not a number) gets no
+// class at all, so the card says there is no estimate instead of guessing.
+export function radonBand(probability: number): RadonBand | null {
+  if (!Number.isFinite(probability) || probability < 0 || probability > 100) return null
   if (probability <= 1) return 'very_low'
   if (probability <= 10) return 'low'
   if (probability <= 20) return 'moderate'
@@ -51,11 +67,16 @@ export function radonConfidence(raw: number): RadonConfidence {
   return 'very_low'
 }
 
-export const RADON_BAND_INFO: Record<RadonBand, { label: string; color: string; range: string }> = {
-  very_low: { label: 'Very low', color: '#22c55e', range: '≤ 1 %' },
-  low: { label: 'Low', color: '#84cc16', range: '2–10 %' },
-  moderate: { label: 'Moderate', color: '#f59e0b', range: '11–20 %' },
-  high: { label: 'High', color: '#ef4444', range: '> 20 %' },
+// Guidance per class from the Wegleitung's Tables 1 and 2. The middle classes'
+// priority depends on the building, which we don't know, so none is computed.
+const DEPENDS_ON_BUILDING =
+  'The priority depends on the building. A measurement becomes more important if the building has rooms in contact with the ground where people spend time, a cellar with a natural floor or other obvious leaks to the ground, was built before 1980, or had its envelope sealed during renovation (especially new windows).'
+
+export const RADON_BAND_INFO: Record<RadonBand, { label: string; color: string; guidance: string; radonCheck: boolean }> = {
+  very_low: { label: '≤ 1%', color: '#22c55e', guidance: 'Priority 0: a radon measurement can be considered.', radonCheck: false },
+  low: { label: '2–10%', color: '#84cc16', guidance: DEPENDS_ON_BUILDING, radonCheck: true },
+  moderate: { label: '11–20%', color: '#f59e0b', guidance: DEPENDS_ON_BUILDING, radonCheck: true },
+  high: { label: '> 20%', color: '#ef4444', guidance: 'Priority 5: a radon measurement is strongly recommended.', radonCheck: false },
 }
 
 export const RADON_CONFIDENCE_LABEL: Record<RadonConfidence, string> = {
