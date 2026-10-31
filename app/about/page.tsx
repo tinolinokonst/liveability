@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
+import { usEnabled } from "@/lib/flags";
+import { coverageName, pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "About | Liveability",
-  description:
-    "Learn what Liveability is, who it's for, and how it scores areas and addresses in Switzerland.",
-};
+// A function rather than a constant so the coverage follows US_ENABLED
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    path: "/about",
+    title: "About | Liveability",
+    description: `Learn what Liveability is, who it's for, and how it scores areas and addresses in ${coverageName()}.`,
+  });
+}
 
 export default function AboutPage() {
+  const us = usEnabled();
   return (
     <>
       <SiteHeader />
@@ -18,10 +24,10 @@ export default function AboutPage() {
         <p>
           Liveability helps people figure out where to live by scoring
           areas and specific addresses on the things that actually shape
-          daily life — not just rent. We currently cover Switzerland, and we pull
+          daily life — not just rent. We currently cover {coverageName()}, and we pull
           data that is usually scattered across a dozen sites into one
           place: air quality, noise, walkability, green space, transit access,
-          sunlight, grocery access, and safety.
+          sunlight, grocery access, and safety{us ? ", plus natural hazards and a monthly budget" : ""}.
         </p>
 
         <p>
@@ -42,13 +48,22 @@ export default function AboutPage() {
         </p>
 
         <p>
-          We pull from public, authoritative sources wherever possible: the
-          Swiss Federal Office for the Environment (BAFU) for air quality and
-          road noise, the Federal Office of Topography swisstopo for commune
-          boundaries, the Federal Statistical Office for crime statistics,
-          OpenStreetMap for walkability and amenities, and Google&apos;s Solar and
-          Maps platforms for sunlight and geocoding. Where data is unavailable
-          or incomplete, we say so rather than guess.
+          We pull from public, authoritative sources wherever possible. In
+          Switzerland: the Federal Office for the Environment (BAFU) for air
+          quality and road noise, the Federal Office of Topography swisstopo for
+          commune boundaries, the Federal Statistical Office for crime
+          statistics, and Google&apos;s Solar and Maps platforms for sunlight and
+          geocoding.{us && (
+            <>
+              {" "}In the United States: the EPA and AirNow for air quality and
+              pollution sites, the Census Bureau for geocoding and community
+              figures, FEMA for flood zones and natural hazards, the Bureau of
+              Transportation Statistics for noise, the FBI for crime rates, and
+              HUD for rents.
+            </>
+          )}{" "}OpenStreetMap covers walkability and amenities
+          {us ? " in both countries" : ""}. Where data is unavailable or
+          incomplete, we say so rather than guess.
         </p>
 
         <p className="text-sm" style={{ color: '#6b6b6b' }}>

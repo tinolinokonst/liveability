@@ -19,6 +19,8 @@ const DATA_SOURCES = [
   { label: "Google Maps Platform", href: "https://mapsplatform.google.com/" },
 ];
 
+const USGS_NATIONAL_MAP_URL = "https://www.usgs.gov/programs/national-geospatial-program/national-map";
+
 // Added while US coverage is on
 const US_DATA_SOURCES = [
   { label: "US Census Bureau", href: "https://www.census.gov/" },
@@ -30,6 +32,7 @@ const US_DATA_SOURCES = [
   { label: "CDC (PLACES, Social Vulnerability Index)", href: "https://www.cdc.gov/places/" },
   { label: "NCES, USDA ERS, FCC, BTS, NLR", href: "/how-it-works" },
   { label: "Opportunity Insights (Opportunity Atlas)", href: "https://www.opportunityatlas.org/" },
+  { label: "USGS The National Map (US map tiles)", href: USGS_NATIONAL_MAP_URL },
 ];
 
 export default function Footer() {
@@ -106,6 +109,19 @@ export default function Footer() {
           <span className="text-xs">
             Geodata — Source: Federal Office of Topography swisstopo
           </span>
+          {us && (
+            <span className="text-xs">
+              US map tiles — Source:{" "}
+              <a
+                href={USGS_NATIONAL_MAP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-colors hover:text-[#f97316]"
+              >
+                USGS The National Map
+              </a>
+            </span>
+          )}
         </div>
       </div>
     </footer>

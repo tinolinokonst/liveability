@@ -1,22 +1,27 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import { usEnabled } from "@/lib/flags";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Cookie Policy | Liveability",
-  description:
-    "Liveability sets one cookie — a sign-in session cookie. No analytics, advertising, or tracking cookies.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    path: "/cookie-policy",
+    title: "Cookie Policy | Liveability",
+    description: "Liveability sets one cookie — a sign-in session cookie. No analytics, advertising, or tracking cookies.",
+  });
+}
 
 const ROW_BORDER = "1px solid #2a2a2a";
 
 export default function CookiePolicyPage() {
+  const us = usEnabled();
   return (
     <>
       <SiteHeader />
       <div className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="text-3xl font-bold tracking-tight text-white">Cookie Policy</h1>
-        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 18, 2026</p>
+        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 31, 2026</p>
 
         <div className="mt-10 space-y-10 text-base leading-relaxed text-[#a0a0a0]">
           <p>
@@ -83,10 +88,21 @@ export default function CookiePolicyPage() {
                   <code className="text-[#f97316]">liveability:household</code>: the income,
                   marital status and household size you enter for the Monthly Budget, so it
                   survives switching tabs and reloading.{" "}
-                  <code className="text-[#f97316]">liveability:us-waitlist-dismissed</code>:
-                  set only if you close or complete the US waitlist banner (shown to
-                  visitors outside Switzerland), so it stays hidden; it holds no personal
-                  data. Your browser deletes both when you close the tab, neither is sent
+                  {us ? (
+                    <>
+                      <code className="text-[#f97316]">liveability:us-live-dismissed</code>:
+                      set only if you close the &ldquo;Now live in the US&rdquo; note
+                      (shown to visitors in the US), so it stays hidden; it holds no
+                      personal data.
+                    </>
+                  ) : (
+                    <>
+                      <code className="text-[#f97316]">liveability:us-waitlist-dismissed</code>:
+                      set only if you close or complete the US waitlist banner (shown to
+                      visitors outside Switzerland), so it stays hidden; it holds no personal
+                      data.
+                    </>
+                  )} Your browser deletes both when you close the tab, neither is sent
                   to our database, and each is strictly necessary for something you chose
                   to do, so no consent is required. Everything
                   else you do in a session — your metric weightings, comparison list, and

@@ -9,7 +9,7 @@ import { capture } from '@/lib/analytics'
 // and never attached to AddressMetrics, which is what saved addresses persist.
 
 export interface Household {
-  /** Gross annual household income, CHF; null until the user enters one */
+  /** Gross annual household income, in CHF or US$ depending on the budget it is entered in (one figure shared by both); null until the user enters one */
   grossIncome: number | null
   status: MaritalStatus
   adults: number

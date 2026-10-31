@@ -188,7 +188,7 @@ export function HouseholdForm({ onEdit, currency = 'CHF' }: { onEdit?: () => voi
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <div className="col-span-2 sm:col-span-1 flex flex-col gap-1.5">
           <span className="text-xs" style={{ color: '#a0a0a0' }}>{currency === 'USD' ? 'Filing status' : 'Status'}</span>
-          <div className="grid grid-cols-2 gap-1 p-1 rounded-xl" style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }} role="radiogroup" aria-label="Marital status">
+          <div className="grid grid-cols-2 gap-1 p-1 rounded-xl" style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }} role="radiogroup" aria-label={currency === 'USD' ? 'Filing status' : 'Marital status'}>
             {(['single', 'married'] as const).map(s => (
               <button
                 key={s}

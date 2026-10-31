@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate public/og.png — the 1200x630 Open Graph card used for link previews.
+Generate public/og-v2.png — the 1200x630 Open Graph card used for link previews.
 
 Run:  python3 scripts/generate-og-image.py
 
@@ -33,10 +33,14 @@ FONT_PATH = "/System/Library/Fonts/Avenir Next.ttc"
 FONT_HEAVY, FONT_MEDIUM, FONT_DEMI = 8, 5, 2  # face indices within the .ttc
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / "public" / "og.png"
+# Versioned filename: social platforms cache preview images by URL, so new
+# artwork needs a new name to replace existing previews. public/og.png (the
+# Switzerland-only card) stays for links already shared with it.
+OUT = ROOT / "public" / "og-v2.png"
 
 WORDMARK = "Liveability"
-TAGLINE = "Real data on where you're moving in Switzerland"
+# The no-break space keeps the dash on the first line instead of opening the second
+TAGLINE = "Real data on where you're moving\u00a0— Switzerland & United States"
 
 
 def cubic(p0, p1, p2, p3, steps=120):
@@ -114,7 +118,7 @@ def text_width(draw, text, font):
 
 def wrap_to_width(draw, text, font, max_width):
     """Greedy word wrap so the tagline can never overflow the canvas."""
-    words, lines, current = text.split(), [], ""
+    words, lines, current = text.split(" "), [], ""
     for word in words:
         trial = f"{current} {word}".strip()
         if current and text_width(draw, trial, font) > max_width:
@@ -131,10 +135,10 @@ def balanced_wrap(draw, text, font, max_width):
     """
     Wrap into the same number of lines greedy would use, but choose the break
     points that make the lines most even — so we get
-    "Real data on where you're / moving in Switzerland" rather than orphaning
-    a single word like "Switzerland" on its own line.
+    "Real data on where you're moving — / Switzerland & United States" rather
+    than orphaning a single word on its own line.
     """
-    words = text.split()
+    words = text.split(" ")  # not split(): that breaks at no-break spaces too
     target_lines = len(wrap_to_width(draw, text, font, max_width))
     if target_lines <= 1:
         return [text]

@@ -76,8 +76,8 @@ const FRESHNESS_US = [
 ]
 
 const FRESHNESS = [
-  { icon: Wind, title: 'Air quality', desc: 'BAFU annual pollution modeling, updated yearly; Open-Meteo real-time data as fallback.' },
-  { icon: Shield, title: 'Crime data', desc: 'FSO Police Crime Statistics, published annually (currently 2024 data).' },
+  { icon: Wind, title: 'Air quality', swiss: true, desc: 'BAFU annual pollution modeling, updated yearly; Open-Meteo real-time data as fallback.' },
+  { icon: Shield, title: 'Crime data', swiss: true, desc: 'FSO Police Crime Statistics, published annually (currently 2024 data).' },
   { icon: Footprints, title: 'OpenStreetMap amenities', desc: 'Community-maintained, generally accurate but can lag for very recent openings or closures.' },
   { icon: Newspaper, title: 'News', desc: 'Pulled live every time you search.' },
 ]
@@ -168,7 +168,8 @@ const cardHover = {
 
 export default function HowItWorks() {
   const { us } = useFeatureFlags()
-  const freshness = us ? [...FRESHNESS, ...FRESHNESS_US] : FRESHNESS
+  // With both countries shown, the Swiss-only rows say so like the US ones do
+  const freshness = us ? [...FRESHNESS.map(f => (f.swiss ? { ...f, title: `${f.title} (CH)` } : f)), ...FRESHNESS_US] : FRESHNESS
   const faq = us ? FAQ_US : FAQ
   return (
     <div className="min-h-screen relative" style={{ backgroundColor: '#0f0f0f' }}>
@@ -195,8 +196,8 @@ export default function HowItWorks() {
             style={{ color: '#a0a0a0' }}
           >
             Liveability shows verified, address-level data on air quality, safety, walkability,
-            and nearby amenities for Switzerland — pulled straight from official sources for
-            the exact coordinates of the address you search.
+            and nearby amenities for {us ? 'Switzerland and the United States' : 'Switzerland'} — pulled
+            straight from official sources for the exact coordinates of the address you search.
           </motion.p>
         </section>
 
@@ -268,7 +269,9 @@ export default function HowItWorks() {
                   </li>
                   <li className="flex items-start gap-3">
                     <Check size={18} className="shrink-0 mt-0.5" style={{ color: '#22c55e' }} />
-                    Pulled from Swiss federal sources (BAFU, swisstopo, FSO), OpenStreetMap, and Google
+                    {us
+                      ? 'Pulled from official sources in each country — Swiss federal offices (BAFU, swisstopo, FSO) and US agencies (EPA, Census Bureau, FEMA, FBI, HUD) — plus OpenStreetMap and Google'
+                      : 'Pulled from Swiss federal sources (BAFU, swisstopo, FSO), OpenStreetMap, and Google'}
                   </li>
                   <li className="flex items-start gap-3">
                     <Check size={18} className="shrink-0 mt-0.5" style={{ color: '#22c55e' }} />
@@ -295,6 +298,11 @@ export default function HowItWorks() {
               Each metric comes from a specific, named source.
             </p>
           </Reveal>
+          {us && (
+            <Reveal>
+              <h3 className="text-2xl font-black text-white tracking-tight mb-6">In Switzerland</h3>
+            </Reveal>
+          )}
           <div className="relative">
             <div
               className="hidden sm:block absolute left-[27px] top-12 bottom-12 w-px"
@@ -357,12 +365,16 @@ export default function HowItWorks() {
           </Reveal>
           <Reveal>
             <div className="rounded-2xl p-6 sm:p-8 flex flex-col gap-6" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
+              {us && (
+                <h3 className="text-white font-bold text-base">Swiss addresses</h3>
+              )}
               <div className="flex items-start gap-4">
                 <Calculator size={22} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
                 <p style={{ color: '#a0a0a0' }} className="text-sm sm:text-base leading-relaxed">
                   <span className="text-white font-semibold">Amenity scores</span> (grocery, transit, parks,
                   schools, healthcare, dining, libraries, banks, worship, parking) are based on how many
-                  of each are found, and how close they are, within the radius you select.
+                  of each are found, and how close they are, within the radius you select. Where live Swiss
+                  departures are available, transit is scored on distance and departure frequency instead.
                 </p>
               </div>
               <div className="flex items-start gap-4">
@@ -376,20 +388,36 @@ export default function HowItWorks() {
               <div className="flex items-start gap-4">
                 <Calculator size={22} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
                 <p style={{ color: '#a0a0a0' }} className="text-sm sm:text-base leading-relaxed">
-                  <span className="text-white font-semibold">Safety score</span> is inverse to incident
-                  density — fewer reported incidents nearby means a higher score.
+                  <span className="text-white font-semibold">Safety score</span> is inverse to the canton&apos;s
+                  offence rate per 1,000 residents in the FSO Police Crime Statistics — fewer offences means a
+                  higher score. It describes the whole canton, not the street.
+                </p>
+              </div>
+              <div className="flex items-start gap-4">
+                <Calculator size={22} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
+                <p style={{ color: '#a0a0a0' }} className="text-sm sm:text-base leading-relaxed">
+                  <span className="text-white font-semibold">Liveability Score</span> is a weighted average of
+                  eleven metrics: air quality, walkability, grocery, transit, green space, schools, healthcare,
+                  dining, safety, sunlight and quiet, re-weighted over whichever have data. A natural hazard zone
+                  (−3 low, −8 medium, −15 high) or a contaminated site at or near the address lowers it.
                 </p>
               </div>
               {us && (
-                <div className="flex items-start gap-4">
-                  <Calculator size={22} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
-                  <p style={{ color: '#a0a0a0' }} className="text-sm sm:text-base leading-relaxed">
-                    <span className="text-white font-semibold">US addresses</span> use the same method and weights:
-                    air quality, walkability, grocery stores, transit, schools, safety (city level), sunlight and quiet,
-                    re-weighted over whichever have data. A FEMA high-risk flood zone (−8, or −15 on the coast) or a
-                    Superfund site within a quarter mile (−4) lowers the score.
-                  </p>
-                </div>
+                <>
+                  <h3 className="text-white font-bold text-base pt-2">US addresses</h3>
+                  <div className="flex items-start gap-4">
+                    <Calculator size={22} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
+                    <p style={{ color: '#a0a0a0' }} className="text-sm sm:text-base leading-relaxed">
+                      <span className="text-white font-semibold">Liveability Score</span> uses the same method and
+                      the Swiss weights for the eight metrics both countries share: air quality (EPA AQI),
+                      walkability (EPA National Walkability Index), grocery stores, transit, schools, safety (FBI
+                      rates for the city, not the street), sunlight and quiet, re-weighted over whichever have data.
+                      Green space, healthcare and dining aren&apos;t measured for US addresses yet. A FEMA high-risk
+                      flood zone (−8, or −15 on the coast) or a Superfund site within a quarter mile (−4) lowers the
+                      score.
+                    </p>
+                  </div>
+                </>
               )}
               <div className="flex items-start gap-4">
                 <Link2 size={22} className="shrink-0 mt-0.5" style={{ color: '#f97316' }} />
@@ -457,14 +485,6 @@ export default function HowItWorks() {
           </div>
         </section>
       </div>
-
-      {/* Footer */}
-      <footer className="max-w-5xl mx-auto px-6 py-8" style={{ borderTop: '1px solid #1a1a1a' }}>
-        <div className="flex items-center justify-between text-xs" style={{ color: '#a0a0a0' }}>
-          <span>Liveability · Switzerland</span>
-          <span>Data: BAFU · swisstopo · FSO · OpenStreetMap · Google Maps</span>
-        </div>
-      </footer>
     </div>
   )
 }

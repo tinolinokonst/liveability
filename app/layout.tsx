@@ -11,45 +11,35 @@ import { FeatureFlagsProvider } from "@/components/FeatureFlags";
 import { radonEnabled, usEnabled } from "@/lib/flags";
 
 import { SITE_URL } from "@/lib/site";
+import { coverageName, ogImage } from "@/lib/seo";
 
 // Re-exported for convenience; the source of truth is lib/site.ts, which
 // sitemap.ts and robots.ts also import.
 export { SITE_URL };
 
-const OG_IMAGE = {
-  url: "/og.png",
-  width: 1200,
-  height: 630,
-  alt: "Liveability — real data on where you're moving in Switzerland",
-};
-
-// A function rather than a constant so the coverage line follows US_ENABLED
+// Site-wide defaults. Each public page sets its own title, description,
+// canonical and social tags (lib/seo.ts); the signed-in and auth routes keep
+// these and no canonical, rather than all claiming the homepage's.
 export async function generateMetadata(): Promise<Metadata> {
-  const coverage = usEnabled()
-    ? "Currently available for Switzerland and the United States."
-    : "Currently available for Switzerland.";
+  const description = `Find where to live beyond just rent. Currently available for ${coverageName()}.`;
+  const image = ogImage();
   return {
     metadataBase: new URL(SITE_URL),
     title: "Liveability — Find where to live",
-    description:
-      `Browse area rankings and address-level scores for air quality, walkability, green space, grocery access, and transit. ${coverage}`,
-    alternates: {
-      canonical: "/",
-    },
+    description,
     openGraph: {
       type: "website",
       siteName: "Liveability",
       locale: "en_US",
-      url: "/",
       title: "Liveability — Find where to live",
-      description: `Find where to live beyond just rent. ${coverage}`,
-      images: [OG_IMAGE],
+      description,
+      images: [image],
     },
     twitter: {
       card: "summary_large_image",
       title: "Liveability — Find where to live",
-      description: `Find where to live beyond just rent. ${coverage}`,
-      images: [OG_IMAGE.url],
+      description,
+      images: [{ url: image.url, alt: image.alt }],
     },
   };
 }

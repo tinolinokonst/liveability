@@ -1,20 +1,25 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import { usEnabled } from "@/lib/flags";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Privacy Policy | Liveability",
-  description:
-    "How Liveability collects, uses, and protects your personal information.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    path: "/privacy",
+    title: "Privacy Policy | Liveability",
+    description: "How Liveability collects, uses, and protects your personal information.",
+  });
+}
 
 export default function PrivacyPage() {
+  const us = usEnabled();
   return (
     <>
       <SiteHeader />
       <div className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="text-3xl font-bold tracking-tight text-white">Privacy Policy</h1>
-        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 25, 2026</p>
+        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 31, 2026</p>
 
         <div className="mt-10 space-y-10 text-base leading-relaxed text-[#a0a0a0]">
           <p>
@@ -140,7 +145,8 @@ export default function PrivacyPage() {
               cookie is set at all until you do. We do not use analytics, advertising,
               or tracking cookies, and we write nothing to your browser&apos;s local
               storage. The only other things kept in your browser are the Monthly Budget
-              household you enter and, if you dismiss the US waitlist banner, a flag
+              household you enter and, if you dismiss the{" "}
+              {us ? "\u201cNow live in the US\u201d note" : "US waitlist banner"}, a flag
               to keep it hidden — both in the tab&apos;s session storage.
             </p>
             <p>

@@ -14,12 +14,14 @@ import FeedbackButton from '@/components/FeedbackButton'
 import UsWaitlistBanner from '@/components/UsWaitlistBanner'
 import CoverageNote, { AddressKind } from '@/components/CoverageNote'
 import { HouseholdProvider } from '@/components/HouseholdContext'
+import { useFeatureFlags } from '@/components/FeatureFlags'
 import { AddressMetrics, AiMatchListingsState } from '@/lib/types'
 
 type Tab = 'search' | 'neighborhoods' | 'saved' | 'ai-match'
 
 function Dashboard() {
   const router = useRouter()
+  const { us } = useFeatureFlags()
   const [userId, setUserId] = useState<string | null>(null)
   const [tab, setTab] = useState<Tab>('search')
   const [compared, setCompared] = useState<AddressMetrics[]>([])
@@ -219,7 +221,8 @@ function Dashboard() {
               <>
                 <h2 className="text-white font-bold mb-1">Areas</h2>
                 <p style={{ color: '#a0a0a0' }} className="text-xs mb-6">
-                  Adjust the sliders to rank areas based on what matters to you. Currently covering Switzerland.
+                  Adjust the sliders to rank areas based on what matters to you.{' '}
+                  {us ? 'Area rankings cover Switzerland; for US neighborhoods, try AI Match.' : 'Currently covering Switzerland.'}
                 </p>
               </>
             )}

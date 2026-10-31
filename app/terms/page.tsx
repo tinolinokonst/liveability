@@ -1,19 +1,24 @@
 import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
+import { usEnabled } from "@/lib/flags";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Terms of Use | Liveability",
-  description:
-    "The terms and conditions that apply to your access to and use of Liveability.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    path: "/terms",
+    title: "Terms of Use | Liveability",
+    description: "The terms and conditions that apply to your access to and use of Liveability.",
+  });
+}
 
 export default function TermsPage() {
+  const us = usEnabled();
   return (
     <>
       <SiteHeader />
       <div className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="text-3xl font-bold tracking-tight text-white">Terms of Use</h1>
-        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 25, 2026</p>
+        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 31, 2026</p>
 
         <div className="mt-10 space-y-10 text-base leading-relaxed text-[#a0a0a0]">
           <section className="space-y-3">
@@ -124,8 +129,20 @@ export default function TermsPage() {
               Liveability relies on data from third-party and public sources, including
               the Swiss Federal Office for the Environment (BAFU), the Federal Office of
               Topography swisstopo, the Swiss Federal Statistical Office,
-              transport.opendata.ch, OpenStreetMap, and Google Maps Platform. The AI
-              Match feature is powered by Anthropic. We do not control these sources and
+              transport.opendata.ch, OpenStreetMap, and Google Maps Platform{us && (
+                <>
+                  ; and, for US addresses, the US Census Bureau, the Environmental
+                  Protection Agency (including AirNow), the National Weather Service,
+                  the Federal Emergency Management Agency (FEMA), the Department of
+                  Housing and Urban Development (HUD), the FBI Crime Data Explorer, the
+                  Centers for Disease Control and Prevention (CDC), the National Center
+                  for Education Statistics, the USDA Economic Research Service, the
+                  Federal Communications Commission, the Bureau of Transportation
+                  Statistics, the National Laboratory of the Rockies, Opportunity
+                  Insights, the Mobility Database, and the US Geological Survey (The
+                  National Map)
+                </>
+              )}. The AI Match feature is powered by Anthropic. We do not control these sources and
               are not responsible for the accuracy, completeness, or availability of
               their data. The Service may also contain links to third-party sites we do
               not operate; we are not responsible for their content, and such links are
@@ -133,7 +150,7 @@ export default function TermsPage() {
             </p>
             <p>
               Geodata is used under the terms of its respective providers. Source:
-              Federal Office of Topography swisstopo.
+              Federal Office of Topography swisstopo{us ? "; US map tiles: USGS The National Map" : ""}.
             </p>
           </section>
 

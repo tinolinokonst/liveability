@@ -8,10 +8,19 @@ export default function CoverageNote({ suffix = '' }: { suffix?: string }) {
   return <>{us ? 'Currently covering Switzerland and the United States' : 'Currently covering Switzerland'}{suffix}</>
 }
 
-/** Area rankings stay Swiss-only, so say so once US addresses are searchable */
-export function RankingsKind() {
+/**
+ * What can be searched and browsed. Area rankings stay Swiss-only; in the US,
+ * AI Match suggests neighborhoods from its own pool instead.
+ */
+export function BrowseKind() {
   const { us } = useFeatureFlags()
-  return <>{us ? 'Swiss city rankings' : 'city rankings'}</>
+  return (
+    <>
+      {us
+        ? 'Search any Swiss or US address, browse Swiss area rankings, or let AI Match suggest neighborhoods in either country'
+        : 'Search any Swiss address or browse city rankings'}
+    </>
+  )
 }
 
 /** "Swiss address" / "Swiss or US address" for inline copy */
