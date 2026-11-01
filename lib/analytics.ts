@@ -30,7 +30,6 @@ export interface AnalyticsEvents {
   ai_match_result_clicked: { rank: number }
   /** Fires when an income is first entered. Never carries the value. */
   budget_income_entered: undefined
-  waitlist_signup: { city: string; state: string }
 }
 
 /**

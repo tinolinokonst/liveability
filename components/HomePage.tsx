@@ -13,7 +13,7 @@ import SiteHeader from '@/components/SiteHeader'
 import BackgroundDecor from '@/components/BackgroundDecor'
 import Reveal from '@/components/Reveal'
 import MotionLink from '@/components/MotionLink'
-import UsWaitlistBanner from '@/components/UsWaitlistBanner'
+import UsLiveBanner from '@/components/UsLiveBanner'
 import CoverageNote, { BrowseKind } from '@/components/CoverageNote'
 import { useFeatureFlags } from '@/components/FeatureFlags'
 
@@ -58,9 +58,9 @@ export default function HomePage() {
       <BackgroundDecor />
       <SiteHeader />
 
-      {/* Non-Swiss visitors only; renders nothing otherwise */}
+      {/* US visitors only, while US coverage is on; renders nothing otherwise */}
       <div className="max-w-5xl mx-auto px-6 pt-6 empty:hidden">
-        <UsWaitlistBanner className="max-w-2xl" />
+        <UsLiveBanner className="max-w-2xl" />
       </div>
 
       {/* Hero */}

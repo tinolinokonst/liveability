@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-import { usEnabled } from "@/lib/flags";
 import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -13,13 +12,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function PrivacyPage() {
-  const us = usEnabled();
   return (
     <>
       <SiteHeader />
       <div className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="text-3xl font-bold tracking-tight text-white">Privacy Policy</h1>
-        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: October 31, 2026</p>
+        <p className="mt-2 text-sm text-[#6b6b6b]">Last updated: November 1, 2026</p>
 
         <div className="mt-10 space-y-10 text-base leading-relaxed text-[#a0a0a0]">
           <p>
@@ -92,23 +90,22 @@ export default function PrivacyPage() {
               Market Rent.
             </p>
             <p>
-              If you join the US launch waitlist, we store your email address, the US
-              city and state you are moving to, anything you write under &ldquo;What
-              matters most to you?&rdquo;, the time, and the country your request came
-              from (taken from your IP address by our host, Vercel). You do not need an
-              account to join. We use your email for one purpose only: to tell you when
-              Liveability launches in the US. It is never shared with anyone, never
-              added to other mailing lists, and is readable only by us. To be removed,
-              email us at the address below and we will delete your entry.
+              Before the US launch we ran a waitlist. It is now closed and takes no new
+              signups. For people who joined, we hold the email address, the US city and
+              state they were moving to, anything they wrote under &ldquo;What matters
+              most to you?&rdquo;, the time, and the country the request came from (taken
+              from the IP address by our host, Vercel). We use the email for one purpose
+              only: to send a single message that Liveability has launched in the US. It
+              is never shared with anyone, never added to other mailing lists, and is
+              readable only by us. We delete the waitlist once that message has been
+              sent; to be removed sooner, email us at the address below.
             </p>
             <p>
               We use Vercel Web Analytics to count page views in aggregate. It records
               the page visited, the referring site, and your country, browser, and
               device type. It sets no cookies, writes nothing to your browser, and is
               not linked to your account; Vercel identifies a visit using a hash of the
-              request that is discarded within 24 hours. When someone joins the US
-              waitlist we also count that signup with the city and state chosen — never
-              the email address.
+              request that is discarded within 24 hours.
             </p>
             <p>
               To improve the product we use{" "}
@@ -145,9 +142,8 @@ export default function PrivacyPage() {
               cookie is set at all until you do. We do not use analytics, advertising,
               or tracking cookies, and we write nothing to your browser&apos;s local
               storage. The only other things kept in your browser are the Monthly Budget
-              household you enter and, if you dismiss the{" "}
-              {us ? "\u201cNow live in the US\u201d note" : "US waitlist banner"}, a flag
-              to keep it hidden — both in the tab&apos;s session storage.
+              household you enter and, if you dismiss the &ldquo;Now live in the US&rdquo;
+              note, a flag to keep it hidden — both in the tab&apos;s session storage.
             </p>
             <p>
               Three third-party services load in your browser — the Google Maps
@@ -168,14 +164,15 @@ export default function PrivacyPage() {
               <li>Provide and operate the Service, including generating scores</li>
               <li>Authenticate your account and keep it secure</li>
               <li>Apply per-account rate limits so the Service stays available (and, for
-                the account-free US waitlist, a per-IP limit stored only as a keyed hash)</li>
+                the account-free unsubscribe link in construction watch emails, a per-IP
+                limit stored only as a keyed hash)</li>
               <li>Understand, in aggregate, which pages are used, to improve them</li>
               <li>
                 Study how people use the product, through PostHog events and session
                 replays, to find and fix what is confusing
               </li>
               <li>Read the feedback you send, and respond to your questions or requests</li>
-              <li>Email you once about the US launch, if you joined the waitlist</li>
+              <li>Email you once about the US launch, if you joined the waitlist before it closed</li>
               <li>Email you about new building permits near addresses you chose to watch</li>
             </ul>
           </section>

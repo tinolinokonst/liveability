@@ -56,8 +56,8 @@ export default async function RootLayout({
 
   // Set by Vercel's edge from the client IP (a client-sent value is
   // overwritten), so it can't be spoofed in production. Absent locally;
-  // DEV_VISITOR_COUNTRY stands in for it under `next dev` to test the US
-  // waitlist banner.
+  // DEV_VISITOR_COUNTRY stands in for it under `next dev` to test the
+  // "Now live in the US" note.
   const rawCountry =
     (await headers()).get("x-vercel-ip-country") ??
     (process.env.NODE_ENV === "development" ? process.env.DEV_VISITOR_COUNTRY : undefined);

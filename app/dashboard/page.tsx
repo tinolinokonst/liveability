@@ -11,7 +11,7 @@ import SavedAddresses from '@/components/SavedAddresses'
 import AiMatch from '@/components/AiMatch'
 import AppHeader from '@/components/AppHeader'
 import FeedbackButton from '@/components/FeedbackButton'
-import UsWaitlistBanner from '@/components/UsWaitlistBanner'
+import UsLiveBanner from '@/components/UsLiveBanner'
 import CoverageNote, { AddressKind } from '@/components/CoverageNote'
 import { HouseholdProvider } from '@/components/HouseholdContext'
 import { useFeatureFlags } from '@/components/FeatureFlags'
@@ -124,8 +124,8 @@ function Dashboard() {
           </p>
         </div>
 
-        {/* Non-Swiss visitors only; renders nothing otherwise */}
-        <UsWaitlistBanner className="mb-8" />
+        {/* US visitors only, while US coverage is on; renders nothing otherwise */}
+        <UsLiveBanner className="mb-8" />
 
         {/* Tabs */}
         <div
