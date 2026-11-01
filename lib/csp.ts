@@ -5,8 +5,7 @@
 // (framework, page chunks, inline RSC payload) when it finds it in the
 // request's CSP header; scripts those trusted scripts create at runtime — the
 // Google Maps loader in lib/googleMaps.ts, Vercel Analytics, any extension
-// PostHog loads from its EU asset host — are allowed by
-// 'strict-dynamic'. Anything injected any other way (an XSS payload) is not.
+// PostHog loads through /ingest — are allowed by 'strict-dynamic'. Anything injected any other way (an XSS payload) is not.
 // The host list after 'strict-dynamic' is ignored by modern browsers and only
 // serves CSP Level 2 browsers that lack 'strict-dynamic'.
 //
@@ -18,9 +17,9 @@
 // Scope note: only four third parties run in the browser — the Google Maps JS
 // SDK (Places autocomplete, dashboard only), swisstopo map tiles, cantonal
 // hazard-map tiles from geodienste.ch (img-src only), and PostHog
-// (EU cloud, product analytics + session replay; see lib/analytics.ts). The
-// replay recorder is bundled, so PostHog needs connect-src for ingestion and
-// its asset host only as a fallback for remotely enabled extensions. Every data
+// (EU cloud, product analytics + session replay; see lib/analytics.ts). PostHog
+// is reached through /ingest on our own origin (next.config.ts rewrites), so
+// 'self' covers it and no PostHog host is listed. Every data
 // API (geo.admin.ch, geodienste.ch hazard/cadastre queries, Overpass, transport.opendata.ch, Open-Meteo, ESTV) is
 // called server-side through /api/* routes, so those origins deliberately do
 // NOT appear in connect-src: the browser never contacts them, and listing them
@@ -32,10 +31,6 @@
 // server-only keys, so they need no connect-src entry. The only US origin the
 // BROWSER loads is the USGS base map (img-src).
 
-// PostHog EU cloud only — a US-region key would be blocked by the policy
-const POSTHOG_INGEST = 'https://eu.i.posthog.com'
-const POSTHOG_ASSETS = 'https://eu-assets.i.posthog.com'
-
 export function buildCsp(nonce: string, opts: { allowEval: boolean }): string {
   return [
     "default-src 'self'",
@@ -46,7 +41,6 @@ export function buildCsp(nonce: string, opts: { allowEval: boolean }): string {
       // React uses eval in development for error stacks; never in production
       opts.allowEval ? "'unsafe-eval'" : '',
       'https://maps.googleapis.com https://maps.gstatic.com',
-      POSTHOG_ASSETS,
     ].filter(Boolean).join(' '),
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self' data:",
@@ -56,10 +50,10 @@ export function buildCsp(nonce: string, opts: { allowEval: boolean }): string {
     // hazard-map overlay in the Risks modal, also as <img> tiles.
     // US addresses use the USGS National Map base map, also <img> tiles.
     "img-src 'self' data: blob: https://wmts.geo.admin.ch https://geodienste.ch https://basemap.nationalmap.gov https://*.googleapis.com https://*.gstatic.com",
-    // Browser-initiated requests only: our own API routes, Supabase (auth +
-    // database via the browser SDK), Google Places autocomplete XHR, and
-    // PostHog EU ingestion (events, replay snapshots, remote config).
-    `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://maps.googleapis.com ${POSTHOG_INGEST} ${POSTHOG_ASSETS}`,
+    // Browser-initiated requests only: our own API routes and PostHog proxy
+    // ('self'), Supabase (auth + database via the browser SDK), and Google
+    // Places autocomplete XHR.
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://maps.googleapis.com",
     "worker-src 'self' blob:",
     "frame-ancestors 'none'",
     "base-uri 'self'",

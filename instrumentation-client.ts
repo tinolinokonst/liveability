@@ -11,10 +11,9 @@ const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
 
 if (key) {
   try {
-    posthog.init(key, {
-      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://eu.i.posthog.com',
-      ...POSTHOG_CONFIG,
-    })
+    // api_host and ui_host are in POSTHOG_CONFIG: requests go through our own
+    // /ingest proxy (next.config.ts), never straight to PostHog
+    posthog.init(key, POSTHOG_CONFIG)
   } catch (err) {
     // Analytics must never break the app
     console.error('[analytics] PostHog init failed', err)

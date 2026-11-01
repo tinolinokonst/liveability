@@ -7,6 +7,15 @@ const PROTECTED_PREFIXES = ['/dashboard', '/settings']
 export async function proxy(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl
 
+  // next.config.ts turns off Next's own trailing-slash redirect so PostHog's
+  // /ingest/e/ style paths survive; pages keep it, so /about/ still 308s to /about
+  if (pathname.length > 1 && pathname.endsWith('/')) {
+    // A plain URL: a cloned nextUrl re-adds the trailing slash it was parsed with
+    const url = new URL(request.url)
+    url.pathname = pathname.replace(/\/+$/, '') || '/'
+    return NextResponse.redirect(url, 308)
+  }
+
   // Fallback for confirmation emails sent before /auth/callback existed: those
   // links point at the site root with ?code=... Forward them (params intact) so
   // the code still gets exchanged instead of being silently dropped.
@@ -73,6 +82,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   // Every page needs the per-request CSP nonce, so match everything except API
-  // routes (JSON, no scripts), build assets and static files.
-  matcher: ['/((?!api/|_next/static|_next/image|_vercel|.*\\.(?:ico|png|jpg|jpeg|svg|webp|txt|xml|webmanifest)$).*)'],
+  // routes (JSON, no scripts), the PostHog proxy, build assets and static files.
+  matcher: ['/((?!api/|ingest/|_next/static|_next/image|_vercel|.*\\.(?:ico|png|jpg|jpeg|svg|webp|txt|xml|webmanifest)$).*)'],
 }

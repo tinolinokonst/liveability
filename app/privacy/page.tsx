@@ -117,7 +117,8 @@ export default function PrivacyPage() {
               >
                 PostHog
               </a>
-              , hosted in its EU cloud (Frankfurt). It records which pages you visit and a
+              , hosted in its EU cloud (Frankfurt) and reached through our own domain
+              (liveability.live/ingest). It records which pages you visit and a
               fixed set of product events — for example that a search finished, a metric
               was opened, the amenity radius changed, an address was saved, or a comparison
               was viewed. Those events carry no personal data: never the address you
@@ -130,7 +131,7 @@ export default function PrivacyPage() {
               request contents are not captured, so your income is never captured in any
               form. PostHog runs cookieless: it sets no cookies and writes nothing to your
               browser&apos;s storage, so a new visit starts anonymous. If your browser
-              sends Do Not Track, PostHog records nothing.
+              sends Do Not Track or Global Privacy Control, PostHog records nothing.
             </p>
           </section>
 

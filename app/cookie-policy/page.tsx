@@ -155,8 +155,10 @@ export default function CookiePolicyPage() {
                 <span className="text-white">PostHog (EU cloud)</span> — product analytics
                 and session replays, used to improve the product. It runs in cookieless mode:
                 its identifiers live only in the page&apos;s memory and are gone when you
-                reload or close the tab. It sends data to <code>eu.i.posthog.com</code> in
-                the EU. If your browser sends Do Not Track, PostHog records nothing. See the{" "}
+                reload or close the tab. Its data goes through our own domain
+                (<code>liveability.live/ingest</code>) to PostHog&apos;s EU cloud. If your
+                browser sends Do Not Track or Global Privacy Control, PostHog records
+                nothing. See the{" "}
                 <Link href="/privacy" className="text-[#f97316] underline">
                   Privacy Policy
                 </Link>{" "}
@@ -192,7 +194,7 @@ export default function CookiePolicyPage() {
               We also use PostHog, described above, without cookies or browser storage.
               Because we set no non-essential cookies and store nothing non-essential in your
               browser, there is no cookie banner. To opt out of PostHog, turn on Do Not
-              Track in your browser.
+              Track or Global Privacy Control in your browser.
             </p>
           </section>
 

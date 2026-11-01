@@ -11,7 +11,12 @@
 //   Network bodies and query strings are dropped before a replay is sent.
 // - Autocapture is off: it records clicked elements' text, which could
 //   include budget figures. Only the events below are sent.
-// - Do Not Track is respected: with DNT on, nothing is captured or recorded.
+// - Do Not Track and Global Privacy Control are respected: with either on,
+//   nothing is captured or recorded (posthog-js respect_dnt checks both).
+// - Requests go to /ingest on our own domain, which next.config.ts rewrites to
+//   PostHog's EU cloud. Tracker blocklists match *.posthog.com, and blocked
+//   visitors sent neither events nor replays; the browser now only ever talks
+//   to liveability.live. DNT/GPC above stay the opt-out.
 
 import posthog from 'posthog-js'
 import type { CapturedNetworkRequest, CaptureResult, PostHogConfig } from 'posthog-js'
@@ -84,6 +89,8 @@ function maskNetworkRequest(req: CapturedNetworkRequest): CapturedNetworkRequest
 }
 
 export const POSTHOG_CONFIG: Partial<PostHogConfig> = {
+  api_host: '/ingest',
+  // Links from the SDK (toolbar, replay URLs) still point at PostHog's EU app
   ui_host: 'https://eu.posthog.com',
   defaults: '2026-08-30',
   persistence: 'memory',

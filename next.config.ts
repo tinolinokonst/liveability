@@ -14,6 +14,21 @@ const nextConfig: NextConfig = {
   // configured.
   images: { unoptimized: true },
 
+  // PostHog's endpoints end in a slash (/e/, /s/, /flags/), which Next's
+  // default redirect would strip before the /ingest rewrite below. proxy.ts
+  // keeps the old slash-stripping redirect for pages.
+  skipTrailingSlashRedirect: true,
+
+  async rewrites() {
+    // PostHog (lib/analytics.ts) through our own domain: EU cloud only. The
+    // asset host serves remote config and lazily loaded SDK extensions.
+    return [
+      { source: '/ingest/static/:path*', destination: 'https://eu-assets.i.posthog.com/static/:path*' },
+      { source: '/ingest/array/:path*', destination: 'https://eu-assets.i.posthog.com/array/:path*' },
+      { source: '/ingest/:path*', destination: 'https://eu.i.posthog.com/:path*' },
+    ]
+  },
+
   async redirects() {
     // The legal pages briefly existed at two URLs each. These are the retired
     // duplicates; 308 so search engines and any existing links consolidate onto
