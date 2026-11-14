@@ -59,6 +59,12 @@ interface MetricInfoMapProps {
   areaPolygon?: { positions: [number, number][]; color: string; label: ReactNode }
   /** swisstopo only covers Switzerland; US addresses use the USGS National Map */
   basemap?: 'ch' | 'us'
+  /**
+   * Frame a circle of this radius around the centre. MapContainer ignores
+   * `bounds` whenever `center` and `zoom` are set (as they always are here),
+   * so without this the map opens at zoom 14 — too close for a 10-mile radius.
+   */
+  fitRadiusMeters?: number
 }
 
 const POLYGON_STYLE: Record<string, { fillOpacity: number; opacity: number }> = {
@@ -93,6 +99,14 @@ function MapScrollController({ enabled }: { enabled: boolean }) {
     if (enabled) map.scrollWheelZoom.enable()
     else map.scrollWheelZoom.disable()
   }, [map, enabled])
+  return null
+}
+
+function FitRadius({ center, radiusMeters }: { center: { lat: number; lng: number }; radiusMeters: number }) {
+  const map = useMap()
+  useEffect(() => {
+    map.fitBounds(L.latLng(center.lat, center.lng).toBounds(radiusMeters * 2), { padding: [8, 8] })
+  }, [map, center.lat, center.lng, radiusMeters])
   return null
 }
 
@@ -159,6 +173,7 @@ export default function MetricInfoMap({
   markersFromOsm = true,
   areaPolygon,
   basemap = 'ch',
+  fitRadiusMeters,
 }: MetricInfoMapProps) {
   const [fullscreen, setFullscreen] = useState(false)
 
@@ -382,6 +397,7 @@ export default function MetricInfoMap({
         >
           <MapScrollController enabled={fullscreen} />
           <MapResizer trigger={fullscreen} />
+          {fitRadiusMeters !== undefined && <FitRadius center={center} radiusMeters={fitRadiusMeters} />}
           {mapChildren}
         </MapContainer>
 

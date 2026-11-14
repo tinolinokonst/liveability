@@ -23,6 +23,9 @@ import type { NearestAmenity } from '@/lib/types'
 const MetricInfoMap = dynamic(() => import('./MetricInfoMap'), { ssr: false })
 
 const NEUTRAL = '#6b6b6b'
+// Ashburn has over 200 within 10 miles: list the nearest, the rest on request,
+// so the map below the list stays in reach
+const LIST_LIMIT = 20
 const mi = (km: number) => formatDistanceFor(km, 'US')
 
 function displayName(f: NearbyDataCenter): string {
@@ -44,6 +47,7 @@ function formatDate(iso: string): string {
  */
 export default function UsDataCentersCard({ d, center }: { d: UsDataCentersResult; center: { lat: number; lng: number } }) {
   const [open, setOpen] = useState(false)
+  const [showAll, setShowAll] = useState(false)
   const ft = d.fracTracker
   const label = ft ? 'Data centers nearby' : 'Operating data centers nearby'
   const note = dataCentersNote(ft)
@@ -86,6 +90,7 @@ export default function UsDataCentersCard({ d, center }: { d: UsDataCentersResul
       {open && (
         <MetricInfoModal
           metricKey="dataCenters"
+          title={label}
           value={value}
           detail={
             <>
@@ -99,7 +104,7 @@ export default function UsDataCentersCard({ d, center }: { d: UsDataCentersResul
               </p>
               {n > 0 && (
                 <ul className="flex flex-col gap-2">
-                  {d.facilities.map(f => (
+                  {(showAll ? d.facilities : d.facilities.slice(0, LIST_LIMIT)).map(f => (
                     <li key={f.id} className="rounded-xl px-3 py-2.5 flex flex-col gap-0.5" style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}>
                       <span className="flex items-baseline justify-between gap-3">
                         <span className="text-white text-sm font-semibold">{displayName(f)}</span>
@@ -120,6 +125,18 @@ export default function UsDataCentersCard({ d, center }: { d: UsDataCentersResul
                       </span>
                     </li>
                   ))}
+                  {!showAll && n > LIST_LIMIT && (
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => setShowAll(true)}
+                        className="w-full rounded-xl px-3 py-2 text-xs font-semibold transition-colors hover:border-[#f97316]"
+                        style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a', color: '#f97316' }}
+                      >
+                        Show all {n} (nearest {LIST_LIMIT} shown)
+                      </button>
+                    </li>
+                  )}
                 </ul>
               )}
               {ft && (
@@ -156,6 +173,7 @@ export default function UsDataCentersCard({ d, center }: { d: UsDataCentersResul
               markers={markers}
               markersFromOsm={hasPnnl}
               searchRadiusMeters={d.radiusMiles * 1609.344}
+              fitRadiusMeters={d.radiusMiles * 1609.344}
               legend={legend}
             />
           }
@@ -166,7 +184,8 @@ export default function UsDataCentersCard({ d, center }: { d: UsDataCentersResul
             { label: '© OpenStreetMap contributors (ODbL)', url: 'https://www.openstreetmap.org/copyright' },
             ...(ft ? [{ label: SOURCE_INFO.fractracker.label, url: SOURCE_INFO.fractracker.url }] : []),
           ]}
-          onClose={() => setOpen(false)}
+          // Reopening starts with the short list again
+          onClose={() => { setOpen(false); setShowAll(false) }}
         />
       )}
     </>

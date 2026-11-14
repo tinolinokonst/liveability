@@ -90,10 +90,12 @@ interface MetricInfoModalProps {
   map?: React.ReactNode
   /** Replaces the metric's default sources, e.g. per-canton attribution */
   sources?: Array<{ label: string; url?: string }>
+  /** Replaces the metric's default title, e.g. when a flag narrows what the card shows */
+  title?: string
   onClose: () => void
 }
 
-export default function MetricInfoModal({ metricKey, value, score, places, center, category, crimeIncidents, searchRadius, detail, comparison, nearestEssentials, map, sources: sourcesOverride, onClose }: MetricInfoModalProps) {
+export default function MetricInfoModal({ metricKey, value, score, places, center, category, crimeIncidents, searchRadius, detail, comparison, nearestEssentials, map, sources: sourcesOverride, title, onClose }: MetricInfoModalProps) {
   const info = METRIC_INFO[metricKey]
   const sources = sourcesOverride ?? info.sources
 
@@ -134,7 +136,7 @@ export default function MetricInfoModal({ metricKey, value, score, places, cente
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="text-white font-bold text-lg">{info.label}</h3>
+            <h3 className="text-white font-bold text-lg">{title ?? info.label}</h3>
             {value !== undefined && (
               <p className="text-2xl font-bold mt-1" style={{ color: '#f97316' }}>{value}</p>
             )}
