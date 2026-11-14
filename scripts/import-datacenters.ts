@@ -20,7 +20,8 @@
 //
 // De-duplication: two records within 300 m that describe the same facility
 // (same status, and matching names, or matching operators where one side has
-// no name) become one row. The most detailed record supplies the row's
+// no name, or neither has a name or an operator — unnamed halls of one campus)
+// become one row. The most detailed record supplies the row's
 // fields; every contributing record stays listed in `sources`.
 //
 // Each run replaces the table's contents: all rows are upserted with one
@@ -128,6 +129,10 @@ function sameFacility(a: DataCenterSourceRecord, b: DataCenterSourceRecord): boo
   if (haversineKm(a.lat, a.lng, b.lat, b.lng) * 1000 > MERGE_METERS) return false
   const [na, nb, oa, ob] = [normalize(a.name), normalize(b.name), normalize(a.operator), normalize(b.operator)]
   if (namesConflict(na, nb)) return false
+  // Neither named nor operated: neighbouring halls of one campus that
+  // OpenStreetMap maps building by building (40 at Abilene's) — one site,
+  // chained across the campus as long as each is within 300 m of the next
+  if (!na && !nb && !oa && !ob) return true
   if (na && nb) return true // overlapping names with matching unit codes
   // "Equinix DC1" and "Equinix DC2" stay separate; an unnamed building of the
   // same operator next to a named one merges
