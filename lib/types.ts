@@ -33,6 +33,8 @@ export interface NearestAmenity {
   polygon?: [number, number][]
   polygonColor?: string
   popupLines?: string[]
+  /** Marker colour on the map; grey when unset */
+  markerColor?: string
 }
 
 export interface TransitDeparture {

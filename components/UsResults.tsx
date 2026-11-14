@@ -120,7 +120,7 @@ export default function UsResults({ location }: { location: GeoLocation }) {
       <UsCommunitySection community={d.community} safety={d.safety} rent={d.rent} />
       <UsDailyLifeSection data={d} location={location} />
       <UsEnvironmentSection data={d} location={location} />
-      <UsRisksSection risks={d.risks} location={location} />
+      <UsRisksSection risks={d.risks} dataCenters={d.dataCenters} location={location} />
       <p className="text-xs flex gap-1.5" style={{ color: NEUTRAL }}>
         <TriangleAlert size={12} className="shrink-0 mt-0.5" />
         <span>Each card comes from its own public source and says so; nothing is estimated where a source has no data.</span>

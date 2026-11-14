@@ -77,9 +77,11 @@ export interface CardShellProps {
   onOpen?: () => void
   /** Small print at the bottom; defaults to the "check the cantonal map" note */
   footer?: string
+  /** A required data credit, under the small print */
+  credit?: React.ReactNode
 }
 
-export function CardShell({ icon: Icon, label, value, valueColor, sub, onOpen, footer = RISK_NOTE }: CardShellProps) {
+export function CardShell({ icon: Icon, label, value, valueColor, sub, onOpen, footer = RISK_NOTE, credit }: CardShellProps) {
   return (
     <div
       style={{ backgroundColor: '#1a1a1a', borderColor: '#2a2a2a' }}
@@ -96,6 +98,7 @@ export function CardShell({ icon: Icon, label, value, valueColor, sub, onOpen, f
       <span className="text-lg font-bold leading-snug" style={{ color: valueColor }}>{value}</span>
       <span className="text-xs leading-relaxed" style={{ color: MUTED }}>{sub}</span>
       <span className="text-[11px] leading-snug mt-auto pt-1" style={{ color: NEUTRAL }}>{footer}</span>
+      {credit && <span className="text-[11px] leading-snug" style={{ color: NEUTRAL }}>{credit}</span>}
     </div>
   )
 }

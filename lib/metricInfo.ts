@@ -41,6 +41,7 @@ export type MetricKey =
   | 'usSafety'
   | 'usRent'
   | 'usScore'
+  | 'dataCenters'
 
 // AQI category colors (US EPA category names)
 export function aqiColor(category: string): string {
@@ -383,6 +384,13 @@ export const METRIC_INFO: Record<MetricKey, MetricInfo> = {
       { label: 'HUD Small Area Fair Market Rents (HUD Open Data)', url: 'https://hudgis-hud.opendata.arcgis.com/' },
       { label: 'HUD Fair Market Rents', url: 'https://www.huduser.gov/portal/datasets/fmr.html' },
     ],
+  },
+  dataCenters: {
+    label: 'Data centers nearby',
+    description:
+      'Data centers within 10 miles of this address, from public trackers: existing facilities from the PNNL IM3 Open Source Data Center Atlas, which is derived from OpenStreetMap.',
+    source: 'PNNL IM3 Open Source Data Center Atlas',
+    sourceUrl: 'https://doi.org/10.57931/17054299',
   },
   usScore: {
     label: 'Liveability Score',

@@ -7,6 +7,8 @@ import MetricCard from './MetricCard'
 import MetricInfoModal from './MetricInfoModal'
 import { CardShell, NoteBox } from './RiskCards'
 import type { LegendItem } from './MetricInfoMap'
+import UsDataCentersCard from './UsDataCentersCard'
+import type { UsDataCentersResult } from '@/lib/dataCenters'
 import { aqiColor, METRIC_INFO } from '@/lib/metricInfo'
 import { formatDistanceFor } from '@/lib/country'
 import {
@@ -682,7 +684,7 @@ export function UsEnvironmentSection({ data, location }: { data: EnvData; locati
 }
 
 /** Risk cards for a US address */
-export function UsRisksSection({ risks, location }: { risks: UsRisksResult | undefined; location: GeoLocation }) {
+export function UsRisksSection({ risks, dataCenters, location }: { risks: UsRisksResult | undefined; dataCenters: UsDataCentersResult | undefined; location: GeoLocation }) {
   const center = { lat: location.lat, lng: location.lng }
   return (
     <div className="flex flex-col gap-4">
@@ -693,9 +695,10 @@ export function UsRisksSection({ risks, location }: { risks: UsRisksResult | und
           <NriCard n={risks.nri} />
           <WildfireCard w={risks.wildfire} countyName={risks.nri.county?.name ?? null} />
           <EpaSitesCard e={risks.epa} center={center} />
+          {dataCenters ? <UsDataCentersCard d={dataCenters} center={center} /> : <CardSkeleton />}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">{[0, 1, 2, 3].map(i => <CardSkeleton key={i} />)}</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">{[0, 1, 2, 3, 4].map(i => <CardSkeleton key={i} />)}</div>
       )}
     </div>
   )

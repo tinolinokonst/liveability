@@ -284,7 +284,7 @@ export default function MetricInfoMap({
           )
         }
         return (
-          <Marker key={i} position={[m.lat as number, m.lng as number]} icon={dotIcon('#9ca3af', 10)}>
+          <Marker key={i} position={[m.lat as number, m.lng as number]} icon={dotIcon(m.markerColor ?? '#9ca3af', 10)}>
             {popup}
           </Marker>
         )

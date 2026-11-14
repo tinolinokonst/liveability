@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { communityProvidersFor, dailyLifeProvidersFor, environmentProvidersFor } from '@/lib/providers'
+import { fetchUsDataCenters } from '@/lib/usMetrics'
+import type { UsDataCentersResult } from '@/lib/dataCenters'
 import type {
   GeoLocation,
   UsAirQualityResult,
@@ -35,6 +37,7 @@ export interface UsResults {
   community: UsCommunityResult
   safety: UsSafetyResult
   rent: UsRentResult
+  dataCenters: UsDataCentersResult
 }
 
 /**
@@ -70,6 +73,7 @@ export function useUsResults(location: GeoLocation): Partial<UsResults> {
     community.community(lat, lng).then(put('community'))
     community.safety(lat, lng).then(put('safety'))
     community.rent(lat, lng).then(put('rent'))
+    fetchUsDataCenters(lat, lng).then(put('dataCenters'))
     return () => { cancelled = true }
   }, [lat, lng])
 

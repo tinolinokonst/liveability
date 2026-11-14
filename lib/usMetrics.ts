@@ -23,6 +23,7 @@ import type {
   UsSunlightResult,
   UsWeatherResult,
 } from './types'
+import { DATA_CENTER_RADIUS_MILES, EMPTY_COUNTS, type UsDataCentersResult } from './dataCenters'
 
 async function getJson<T>(path: string, lat: number, lng: number, fallback: T): Promise<T> {
   try {
@@ -56,6 +57,11 @@ export const fetchUsWeather = (lat: number, lng: number) => getJson('weather', l
 export const fetchUsNoise = (lat: number, lng: number) => getJson('noise', lat, lng, NOISE_ERROR)
 export const fetchUsSunlight = (lat: number, lng: number) => getJson('sunlight', lat, lng, SUN_ERROR)
 export const fetchUsRisks = (lat: number, lng: number) => getJson('risks', lat, lng, US_RISKS_ERROR)
+
+const DATA_CENTERS_ERROR: UsDataCentersResult = {
+  status: 'error', radiusMiles: DATA_CENTER_RADIUS_MILES, fracTracker: false, facilities: [], counts: { ...EMPTY_COUNTS },
+}
+export const fetchUsDataCenters = (lat: number, lng: number) => getJson('datacenters', lat, lng, DATA_CENTERS_ERROR)
 
 // Getting around and daily life
 const WALK_ERROR: UsWalkabilityResult = { status: 'error', index: null, score: null, ranks: null, blockGroup: null }

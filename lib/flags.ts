@@ -15,3 +15,16 @@ export function usEnabled(): boolean {
 export function radonEnabled(): boolean {
   return process.env.RADON_ENABLED === 'true'
 }
+
+/**
+ * FracTracker Alliance's U.S. Data Centers Tracker (approved and proposed
+ * projects). Off until FracTracker confirms our use fits its Terms of Service:
+ * the data has no open licence, the tracker pages say non-commercial use only,
+ * and the ToS grants a revocable licence conditioned on supporting its mission.
+ * Off: the import skips FracTracker, the API serves PNNL (OpenStreetMap)
+ * operating facilities only, and the card reads "Operating data centers
+ * nearby". On: operating, approved and proposed projects from both trackers.
+ */
+export function fracTrackerEnabled(): boolean {
+  return process.env.ENABLE_FRACTRACKER === 'true'
+}

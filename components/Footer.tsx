@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { useFeatureFlags } from "./FeatureFlags";
 import { RADON_ATTRIBUTION, RADON_INFO_URL } from "@/lib/radon";
+import { PNNL_ATLAS } from "@/lib/dataCenters";
+import DataCenterAtlasCredit from "./DataCenterAtlasCredit";
 
 const GENERAL_LINKS = [
   { label: "About Us", href: "/about" },
@@ -33,6 +35,7 @@ const US_DATA_SOURCES = [
   { label: "NCES, USDA ERS, FCC, BTS, NLR", href: "/how-it-works" },
   { label: "Opportunity Insights (Opportunity Atlas)", href: "https://www.opportunityatlas.org/" },
   { label: "USGS The National Map (US map tiles)", href: USGS_NATIONAL_MAP_URL },
+  { label: "PNNL IM3 Data Center Atlas (ODbL)", href: PNNL_ATLAS.url },
 ];
 
 export default function Footer() {
@@ -121,6 +124,12 @@ export default function Footer() {
                 USGS The National Map
               </a>
             </span>
+          )}
+          {us && (
+            <DataCenterAtlasCredit
+              className="text-xs"
+              linkClassName="transition-colors hover:text-[#f97316]"
+            />
           )}
         </div>
       </div>
