@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { User, Shield, Trash2, LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import AppHeader from '@/components/AppHeader'
+import { ViewSwap } from '@/components/motion'
 
 type NavSection = 'profile' | 'security' | 'signout' | 'delete'
 
@@ -223,13 +224,13 @@ export default function SettingsPage() {
 
           {/* Content */}
           <div className="flex-1 min-w-0">
-            {renderContent()}
+            <ViewSwap viewKey={activeSection} depth={NAV.findIndex(n => n.key === activeSection)}>{renderContent()}</ViewSwap>
           </div>
         </div>
 
         {/* Mobile content */}
         <div className="sm:hidden">
-          {renderContent()}
+          <ViewSwap viewKey={activeSection} depth={NAV.findIndex(n => n.key === activeSection)}>{renderContent()}</ViewSwap>
         </div>
       </div>
     </div>

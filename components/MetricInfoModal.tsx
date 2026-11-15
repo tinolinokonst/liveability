@@ -1,12 +1,13 @@
 "use client"
 
-import { useEffect } from 'react'
+import { useEffect, useId } from 'react'
 import dynamic from 'next/dynamic'
 import { X } from 'lucide-react'
 import { aqiColor, METRIC_INFO, MetricKey } from '@/lib/metricInfo'
 import { CrimeIncidentLocation, NearestAmenity, NearestEssentialItem, NearestEssentials } from '@/lib/types'
 import { formatDistance } from '@/lib/format'
 import { capture, SENSITIVE_TEXT } from '@/lib/analytics'
+import Modal from './motion/Modal'
 
 const MetricInfoMap = dynamic(() => import('./MetricInfoMap'), { ssr: false })
 
@@ -112,31 +113,21 @@ export default function MetricInfoModal({ metricKey, value, score, places, cente
     capture('metric_opened', { metric: metricKey })
   }, [metricKey])
 
-  useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', onKeyDown)
-    return () => document.removeEventListener('keydown', onKeyDown)
-  }, [onClose])
+  const titleId = useId()
 
+  // Escape, backdrop, focus and the open/close animation: components/motion/Modal
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)' }}
-      onClick={onClose}
+    <Modal
+      onClose={onClose}
+      ariaLabelledBy={titleId}
+      // The budget breakdown is all income-derived: mask its text in session replays
+      panelClassName={`w-full max-w-md rounded-2xl p-6 flex flex-col gap-4 max-h-[85vh] overflow-y-auto ${metricKey === 'budget' ? SENSITIVE_TEXT : ''}`}
+      panelStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
     >
-      <div
-        role="dialog"
-        aria-modal="true"
-        onClick={e => e.stopPropagation()}
-        // The budget breakdown is all income-derived: mask its text in session replays
-        className={`w-full max-w-md rounded-2xl p-6 flex flex-col gap-4 max-h-[85vh] overflow-y-auto ${metricKey === 'budget' ? SENSITIVE_TEXT : ''}`}
-        style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
-      >
+      {close => (<>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="text-white font-bold text-lg">{title ?? info.label}</h3>
+            <h3 id={titleId} className="text-white font-bold text-lg">{title ?? info.label}</h3>
             {value !== undefined && (
               <p className="text-2xl font-bold mt-1" style={{ color: '#f97316' }}>{value}</p>
             )}
@@ -145,7 +136,7 @@ export default function MetricInfoModal({ metricKey, value, score, places, cente
             )}
           </div>
           <button
-            onClick={onClose}
+            onClick={close}
             aria-label="Close"
             className="leading-none transition-colors"
             style={{ color: '#a0a0a0' }}
@@ -290,7 +281,7 @@ export default function MetricInfoModal({ metricKey, value, score, places, cente
             </p>
           )}
         </div>
-      </div>
-    </div>
+      </>)}
+    </Modal>
   )
 }

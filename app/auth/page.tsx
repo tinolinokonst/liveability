@@ -7,6 +7,7 @@ import { authCallbackUrl } from '@/lib/site'
 import { capture } from '@/lib/analytics'
 import Link from 'next/link'
 import CoverageNote from '@/components/CoverageNote'
+import { Expand, ViewSwap } from '@/components/motion'
 
 // Reasons the /auth/callback route can bounce someone back here. Mapped to
 // readable copy so a failed confirmation link never fails silently.
@@ -21,6 +22,12 @@ const CALLBACK_ERRORS: Record<string, string> = {
 }
 
 type Mode = 'login' | 'signup' | 'forgot'
+/** The confirmation cards shown after a reset link or a sign-up email is sent */
+type Sent = 'reset-sent' | 'check-email'
+type View = Mode | Sent
+
+// Slide direction between views: deeper slides in from the right, back from the left
+const VIEW_DEPTH: Record<View, number> = { login: 0, signup: 1, forgot: 1, 'reset-sent': 2, 'check-email': 2 }
 
 function initialMode(param: string | null): Mode {
   return param === 'signup' || param === 'forgot' ? param : 'login'
@@ -38,7 +45,14 @@ function AuthForm() {
     if (!reason) return null
     return CALLBACK_ERRORS[reason] ?? 'We could not complete sign-in. Please try again.'
   })
-  const [message, setMessage] = useState<string | null>(null)
+  const [sent, setSent] = useState<Sent | null>(null)
+  const view: View = sent ?? mode
+
+  function goTo(m: Mode) {
+    setMode(m)
+    setSent(null)
+    setError(null)
+  }
 
   useEffect(() => {
     const supabase = createClient()
@@ -51,7 +65,6 @@ function AuthForm() {
     e.preventDefault()
     setLoading(true)
     setError(null)
-    setMessage(null)
 
     const supabase = createClient()
 
@@ -64,9 +77,9 @@ function AuthForm() {
       if (error) {
         setError(error.message)
       } else {
-        // Same message whether or not the address has an account, so this form
-        // can't be used to discover which emails are registered.
-        setMessage('If an account exists for that email, a password reset link is on its way. Open it in this browser.')
+        // Same confirmation whether or not the address has an account, so this
+        // form can't be used to discover which emails are registered.
+        setSent('reset-sent')
       }
     } else if (mode === 'login') {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
@@ -93,7 +106,7 @@ function AuthForm() {
         setError(error.message)
       } else {
         capture('signup_completed')
-        setMessage('Check your email to confirm your account — the link will sign you in.')
+        setSent('check-email')
       }
     }
 
@@ -118,131 +131,168 @@ function AuthForm() {
           </p>
         </div>
 
-        {/* Card */}
+        {/* Card: its height eases between views (Expand) while the views
+            crossfade (ViewSwap). Log in and Sign up share the tab bar, so only
+            the form below it swaps between those two. */}
         <div
           className="rounded-2xl p-8"
           style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
         >
-          {/* Mode toggle */}
-          {mode === 'forgot' ? (
-            <div className="mb-6">
-              <h1 className="text-white font-bold">Reset your password</h1>
-              <p className="text-xs mt-1" style={{ color: '#a0a0a0' }}>
-                Enter your account email and we&apos;ll send you a link to set a new password.
-              </p>
-            </div>
-          ) : (
-            <div
-              className="flex p-1 rounded-xl mb-6"
-              style={{ backgroundColor: '#0f0f0f' }}
-            >
-              {(['login', 'signup'] as const).map(m => (
-                <button
-                  key={m}
-                  onClick={() => { setMode(m); setError(null); setMessage(null) }}
-                  className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all"
-                  style={{
-                    backgroundColor: mode === m ? '#f97316' : 'transparent',
-                    color: mode === m ? 'white' : '#a0a0a0',
-                  }}
-                >
-                  {m === 'login' ? 'Log in' : 'Sign up'}
-                </button>
-              ))}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div>
-              <label className="text-xs font-medium mb-1.5 block" style={{ color: '#a0a0a0' }}>
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-                placeholder="you@example.com"
-                className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-[#a0a0a0] outline-none focus:ring-2 focus:ring-[#f97316] transition-all"
-                style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}
-              />
-            </div>
-
-            {mode !== 'forgot' && (
-              <div>
-                <div className="flex items-baseline justify-between mb-1.5">
-                  <label className="text-xs font-medium" style={{ color: '#a0a0a0' }}>
-                    Password
-                  </label>
-                  {mode === 'login' && (
-                    <button
-                      type="button"
-                      onClick={() => { setMode('forgot'); setError(null); setMessage(null) }}
-                      className="text-xs hover:underline"
-                      style={{ color: '#f97316' }}
-                    >
-                      Forgot password?
-                    </button>
-                  )}
-                </div>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  required
-                  placeholder="••••••••"
-                  minLength={8}
-                  className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-[#a0a0a0] outline-none focus:ring-2 focus:ring-[#f97316] transition-all"
-                  style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}
+          <Expand>
+            <ViewSwap viewKey={mode === 'forgot' || sent ? view : 'account'} depth={VIEW_DEPTH[view]}>
+              {sent ? (
+                <SentCard
+                  title={sent === 'reset-sent' ? 'Check your inbox' : 'Confirm your email'}
+                  text={sent === 'reset-sent'
+                    ? 'If an account exists for that email, a password reset link is on its way. Open it in this browser.'
+                    : 'Check your email to confirm your account — the link will sign you in.'}
+                  email={email}
+                  onBack={() => goTo('login')}
                 />
-              </div>
-            )}
+              ) : (
+                <>
+                  {mode === 'forgot' ? (
+                    <div className="mb-6">
+                      <h1 className="text-white font-bold">Reset your password</h1>
+                      <p className="text-xs mt-1" style={{ color: '#a0a0a0' }}>
+                        Enter your account email and we&apos;ll send you a link to set a new password.
+                      </p>
+                    </div>
+                  ) : (
+                    <div
+                      className="flex p-1 rounded-xl mb-6"
+                      style={{ backgroundColor: '#0f0f0f' }}
+                    >
+                      {(['login', 'signup'] as const).map(m => (
+                        <button
+                          key={m}
+                          onClick={() => goTo(m)}
+                          className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all"
+                          style={{
+                            backgroundColor: mode === m ? '#f97316' : 'transparent',
+                            color: mode === m ? 'white' : '#a0a0a0',
+                          }}
+                        >
+                          {m === 'login' ? 'Log in' : 'Sign up'}
+                        </button>
+                      ))}
+                    </div>
+                  )}
 
-            {error && (
-              <div
-                className="rounded-xl px-4 py-3 text-sm"
-                style={{ backgroundColor: '#ef44441a', color: '#ef4444', border: '1px solid #ef444433' }}
-              >
-                {error}
-              </div>
-            )}
+                  <ViewSwap viewKey={mode} depth={VIEW_DEPTH[mode]}>
+                    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                      <div>
+                        <label className="text-xs font-medium mb-1.5 block" style={{ color: '#a0a0a0' }}>
+                          Email
+                        </label>
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={e => setEmail(e.target.value)}
+                          required
+                          placeholder="you@example.com"
+                          className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-[#a0a0a0] outline-none focus:ring-2 focus:ring-[#f97316] transition-all"
+                          style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}
+                        />
+                      </div>
 
-            {message && (
-              <div
-                className="rounded-xl px-4 py-3 text-sm"
-                style={{ backgroundColor: '#22c55e1a', color: '#22c55e', border: '1px solid #22c55e33' }}
-              >
-                {message}
-              </div>
-            )}
+                      {mode !== 'forgot' && (
+                        <div>
+                          <div className="flex items-baseline justify-between mb-1.5">
+                            <label className="text-xs font-medium" style={{ color: '#a0a0a0' }}>
+                              Password
+                            </label>
+                            {mode === 'login' && (
+                              <button
+                                type="button"
+                                onClick={() => goTo('forgot')}
+                                className="text-xs hover:underline"
+                                style={{ color: '#f97316' }}
+                              >
+                                Forgot password?
+                              </button>
+                            )}
+                          </div>
+                          <input
+                            type="password"
+                            value={password}
+                            onChange={e => setPassword(e.target.value)}
+                            required
+                            placeholder="••••••••"
+                            minLength={8}
+                            className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-[#a0a0a0] outline-none focus:ring-2 focus:ring-[#f97316] transition-all"
+                            style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}
+                          />
+                        </div>
+                      )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 rounded-xl font-bold text-white text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-1"
-              style={{ backgroundColor: '#f97316' }}
-            >
-              {loading
-                ? '...'
-                : mode === 'login' ? 'Log in' : mode === 'signup' ? 'Create account' : 'Send reset link'}
-            </button>
+                      {error && (
+                        <div
+                          className="rounded-xl px-4 py-3 text-sm"
+                          style={{ backgroundColor: '#ef44441a', color: '#ef4444', border: '1px solid #ef444433' }}
+                        >
+                          {error}
+                        </div>
+                      )}
 
-            {mode === 'forgot' && (
-              <button
-                type="button"
-                onClick={() => { setMode('login'); setError(null); setMessage(null) }}
-                className="text-xs self-center hover:underline"
-                style={{ color: '#a0a0a0' }}
-              >
-                Back to log in
-              </button>
-            )}
-          </form>
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full py-3 rounded-xl font-bold text-white text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-1"
+                        style={{ backgroundColor: '#f97316' }}
+                      >
+                        {loading
+                          ? '...'
+                          : mode === 'login' ? 'Log in' : mode === 'signup' ? 'Create account' : 'Send reset link'}
+                      </button>
+
+                      {mode === 'forgot' && (
+                        <button
+                          type="button"
+                          onClick={() => goTo('login')}
+                          className="text-xs self-center hover:underline"
+                          style={{ color: '#a0a0a0' }}
+                        >
+                          Back to log in
+                        </button>
+                      )}
+                    </form>
+                  </ViewSwap>
+                </>
+              )}
+            </ViewSwap>
+          </Expand>
         </div>
 
       </div>
       </div>
     </>
+  )
+}
+
+/** Shown once a reset link or a confirmation email has been sent */
+function SentCard({ title, text, email, onBack }: { title: string; text: string; email: string; onBack: () => void }) {
+  return (
+    <div className="flex flex-col gap-4" role="status">
+      <div>
+        <h1 className="text-white font-bold">{title}</h1>
+        {email && <p className="text-xs mt-1 break-all" style={{ color: '#a0a0a0' }}>{email}</p>}
+      </div>
+      <div
+        className="rounded-xl px-4 py-3 text-sm"
+        style={{ backgroundColor: '#22c55e1a', color: '#22c55e', border: '1px solid #22c55e33' }}
+      >
+        {text}
+      </div>
+      <button
+        type="button"
+        onClick={onBack}
+        className="text-xs self-center hover:underline"
+        style={{ color: '#a0a0a0' }}
+      >
+        Back to log in
+      </button>
+    </div>
   )
 }
 

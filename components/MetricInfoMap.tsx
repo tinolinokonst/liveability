@@ -8,6 +8,7 @@ import { Maximize2, Minimize2 } from 'lucide-react'
 import { CrimeIncidentLocation, NearestAmenity } from '@/lib/types'
 import { formatDistanceFor } from '@/lib/country'
 import { capture } from '@/lib/analytics'
+import { MOTION_SETTLED_EVENT } from './motion/tokens'
 
 export interface LegendItem {
   color: string
@@ -116,6 +117,17 @@ function MapResizer({ trigger }: { trigger: boolean }) {
     const t = setTimeout(() => map.invalidateSize(), 300)
     return () => clearTimeout(t)
   }, [map, trigger])
+  return null
+}
+
+/** Re-measure once the modal or view this map sits in has finished animating in, so no tiles stay grey */
+function MotionSettledResizer() {
+  const map = useMap()
+  useEffect(() => {
+    const onSettled = () => map.invalidateSize()
+    window.addEventListener(MOTION_SETTLED_EVENT, onSettled)
+    return () => window.removeEventListener(MOTION_SETTLED_EVENT, onSettled)
+  }, [map])
   return null
 }
 
@@ -397,6 +409,7 @@ export default function MetricInfoMap({
         >
           <MapScrollController enabled={fullscreen} />
           <MapResizer trigger={fullscreen} />
+          <MotionSettledResizer />
           {fitRadiusMeters !== undefined && <FitRadius center={center} radiusMeters={fitRadiusMeters} />}
           {mapChildren}
         </MapContainer>

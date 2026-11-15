@@ -53,6 +53,8 @@ export default function MetricCard({ label, value, score, description, source, e
         style={{ backgroundColor: '#1a1a1a', borderColor: '#2a2a2a' }}
         className={`rounded-xl border p-4 flex flex-col gap-3 ${clickable ? 'cursor-pointer transition-colors hover:border-[#f97316]' : ''}`}
         onClick={clickable ? () => setShowInfo(true) : undefined}
+        // A role="button" must open from the keyboard too, as CardShell does
+        onKeyDown={clickable ? e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowInfo(true) } } : undefined}
         role={clickable ? 'button' : undefined}
         tabIndex={clickable ? 0 : undefined}
       >

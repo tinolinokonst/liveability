@@ -5,6 +5,7 @@ import { Sparkles, Send, RotateCcw, Database, Home, ExternalLink, ArrowRight, Lo
 import { MATCHABLE_AREAS, areaDisplayName } from '@/lib/neighborhoods'
 import { AiMatchListingsState, AiRentListing } from '@/lib/types'
 import { useHousehold } from './HouseholdContext'
+import { Expand } from './motion'
 import { HouseholdForm, formatChf } from './MonthlyBudget'
 import { useFeatureFlags } from './FeatureFlags'
 import { useVisitorCountry } from './VisitorCountry'
@@ -511,12 +512,14 @@ export default function AiMatch({
             </span>
             <ChevronDown size={16} className={`shrink-0 transition-transform ${showHousehold ? 'rotate-180' : ''}`} style={{ color: '#a0a0a0' }} />
           </button>
+          <Expand>
           {showHousehold && (
             <div className="px-4 pb-4">
               <HouseholdForm currency={region === 'US' ? 'USD' : 'CHF'} />
               {region === 'US' && <p className="text-xs mt-2" style={{ color: '#6b6b6b' }}>US figures are estimates, not tax or financial advice.</p>}
             </div>
           )}
+          </Expand>
         </div>
         <textarea
           value={description}

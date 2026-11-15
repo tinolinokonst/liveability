@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { Expand, ViewSwap } from '@/components/motion'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
@@ -70,6 +71,9 @@ export default function ResetPasswordPage() {
             style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
           >
             <h1 className="text-white font-bold mb-1">Set a new password</h1>
+            {/* Checking → form → done: crossfade, with the card easing to each height */}
+            <Expand>
+            <ViewSwap viewKey={status} depth={status === 'done' ? 1 : 0}>
 
             {status === 'checking' && (
               <p className="text-sm mt-4" style={{ color: '#a0a0a0' }}>Checking your reset link...</p>
@@ -165,6 +169,8 @@ export default function ResetPasswordPage() {
                 </button>
               </form>
             )}
+            </ViewSwap>
+            </Expand>
           </div>
         </div>
       </div>

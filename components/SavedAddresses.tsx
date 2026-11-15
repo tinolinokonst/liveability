@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from 'react'
+import { ViewSwap } from './motion'
 import { ArrowLeft, MapPin, Building2 } from 'lucide-react'
 import {
   fetchSavedAddresses,
@@ -124,10 +125,12 @@ export default function SavedAddresses({ onAdd, compareCount = 0, onViewNeighbor
 
   const selected = addresses.find(a => a.id === selectedId) ?? null
 
+  // List ↔ one address's detail, swapped with the shared ViewSwap
+  let view: React.ReactNode
   if (selected) {
     const hood = !NEIGHBORHOOD_NAMES.has(selected.address) ? neighborhoodMap.get(selected.id) : null
 
-    return (
+    view = (
       <div className="flex flex-col gap-4">
         {error && (
           <div className="rounded-xl px-4 py-3 text-sm text-[#ef4444]" style={{ backgroundColor: '#ef44441a', border: '1px solid #ef444433' }}>
@@ -213,9 +216,8 @@ export default function SavedAddresses({ onAdd, compareCount = 0, onViewNeighbor
         <AddressResults metrics={selected.metrics} />
       </div>
     )
-  }
-
-  return (
+  } else {
+    view = (
     <div className="flex flex-col gap-4">
       {error && (
         <div className="rounded-xl px-4 py-3 text-sm text-[#ef4444]" style={{ backgroundColor: '#ef44441a', border: '1px solid #ef444433' }}>
@@ -409,5 +411,8 @@ export default function SavedAddresses({ onAdd, compareCount = 0, onViewNeighbor
         )
       })()}
     </div>
-  )
+    )
+  }
+
+  return <ViewSwap viewKey={selected ? `detail:${selected.id}` : 'list'} depth={selected ? 1 : 0}>{view}</ViewSwap>
 }

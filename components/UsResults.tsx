@@ -8,6 +8,7 @@ import { UsCommunitySection } from './UsCommunityCards'
 import { UsDailyLifeSection } from './UsDailyLifeCards'
 import { NEUTRAL, UsEnvironmentSection, UsRisksSection } from './UsMetricCards'
 import { useUsResults } from './useUsResults'
+import { StaggerItem, StaggerScope } from './motion'
 import { computeUsScore, type UsScore } from '@/lib/usScore'
 import type { GeoLocation } from '@/lib/types'
 
@@ -114,9 +115,11 @@ export default function UsResults({ location }: { location: GeoLocation }) {
   const d = useUsResults(location)
   const score = computeUsScore(d)
   return (
+    // Cards fade in one after another (components/motion/Stagger)
+    <StaggerScope>
     <div className="flex flex-col gap-5">
-      <ScoreBanner s={score} />
-      <UsMonthlyBudgetCard lat={location.lat} lng={location.lng} />
+      <StaggerItem><ScoreBanner s={score} /></StaggerItem>
+      <StaggerItem><UsMonthlyBudgetCard lat={location.lat} lng={location.lng} /></StaggerItem>
       <UsCommunitySection community={d.community} safety={d.safety} rent={d.rent} />
       <UsDailyLifeSection data={d} location={location} />
       <UsEnvironmentSection data={d} location={location} />
@@ -126,5 +129,6 @@ export default function UsResults({ location }: { location: GeoLocation }) {
         <span>Each card comes from its own public source and says so; nothing is estimated where a source has no data.</span>
       </p>
     </div>
+    </StaggerScope>
   )
 }

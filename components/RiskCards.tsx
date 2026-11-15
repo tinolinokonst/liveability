@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import { StaggerGrid } from './motion'
 import dynamic from 'next/dynamic'
 import { Mountain, FlaskConical, TriangleAlert, Radiation } from 'lucide-react'
 import MetricInfoModal from './MetricInfoModal'
@@ -437,10 +438,10 @@ export default function RiskCards({ risks, center }: { risks: RisksResult; cente
   // Flag checked here too: radon saved while the feature was on stays hidden when it's off
   const { radon: radonOn } = useFeatureFlags()
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+    <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       <HazardCard h={risks.hazards} center={center} />
       <ContaminationCard c={risks.contamination} center={center} />
       {radonOn && risks.radon && <RadonCard r={risks.radon} center={center} />}
-    </div>
+    </StaggerGrid>
   )
 }

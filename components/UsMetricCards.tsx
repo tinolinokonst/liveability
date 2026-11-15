@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import { StaggerGrid } from './motion'
 import dynamic from 'next/dynamic'
 import { Wind, CloudSun, Volume2, Sun, Waves, ShieldAlert, Flame, FlaskConical } from 'lucide-react'
 import MetricCard from './MetricCard'
@@ -673,12 +674,12 @@ export function UsEnvironmentSection({ data, location }: { data: EnvData; locati
   return (
     <div className="flex flex-col gap-4">
       <SectionTitle>Environment</SectionTitle>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {data.air ? <AirQualityCard a={data.air} center={center} /> : <CardSkeleton />}
         {data.weather ? <WeatherCard w={data.weather} /> : <CardSkeleton />}
         {data.noise ? <NoiseCard n={data.noise} /> : <CardSkeleton />}
         {data.sunlight ? <SunlightCard s={data.sunlight} /> : <CardSkeleton />}
-      </div>
+      </StaggerGrid>
     </div>
   )
 }
@@ -690,13 +691,13 @@ export function UsRisksSection({ risks, dataCenters, location }: { risks: UsRisk
     <div className="flex flex-col gap-4">
       <SectionTitle>Risks</SectionTitle>
       {risks ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <FloodCard f={risks.flood} address={location.formattedAddress} />
           <NriCard n={risks.nri} />
           <WildfireCard w={risks.wildfire} countyName={risks.nri.county?.name ?? null} />
           <EpaSitesCard e={risks.epa} center={center} />
           {dataCenters ? <UsDataCentersCard d={dataCenters} center={center} /> : <CardSkeleton />}
-        </div>
+        </StaggerGrid>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">{[0, 1, 2, 3, 4].map(i => <CardSkeleton key={i} />)}</div>
       )}

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import { StaggerGrid } from './motion'
 import { Users, TrendingUp, ShieldCheck, Home } from 'lucide-react'
 import MetricCard from './MetricCard'
 import MetricInfoModal from './MetricInfoModal'
@@ -268,12 +269,12 @@ export function UsCommunitySection({ community, safety, rent }: { community?: Us
   return (
     <div className="flex flex-col gap-4">
       <SectionTitle>Cost, community &amp; safety</SectionTitle>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {rent ? <RentCard r={rent} /> : <CardSkeleton />}
         {safety ? <SafetyCard s={safety} /> : <CardSkeleton />}
         {community ? <CommunityCard c={community} /> : <CardSkeleton />}
         {community ? <MobilityCard c={community} /> : <CardSkeleton />}
-      </div>
+      </StaggerGrid>
     </div>
   )
 }

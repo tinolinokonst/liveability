@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { MessageSquare, Send, X, Check } from 'lucide-react'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { submitFeedback, MAX_FEEDBACK_LENGTH } from '@/lib/feedback'
+import { panelMotion } from './motion'
 
 type Status = 'idle' | 'sending' | 'sent' | 'error'
 
@@ -14,6 +16,7 @@ interface Props {
 
 export default function FeedbackButton({ userId, page }: Props) {
   const [open, setOpen] = useState(false)
+  const reduceMotion = useReducedMotion()
   const [message, setMessage] = useState('')
   const [status, setStatus] = useState<Status>('idle')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -56,12 +59,16 @@ export default function FeedbackButton({ userId, page }: Props) {
 
   return (
     <div className="fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom))] right-[calc(1.25rem+env(safe-area-inset-right))] z-40 flex flex-col items-end gap-3">
+      {/* Same panel motion as every modal (components/motion), growing from the button's corner */}
+      <AnimatePresence>
       {open && (
-        <div
+        <motion.div
+          key="feedback"
           role="dialog"
           aria-label="Send feedback"
-          className="w-[calc(100vw-2.5rem)] max-w-sm rounded-2xl p-4 shadow-2xl"
+          className="w-[calc(100vw-2.5rem)] max-w-sm rounded-2xl p-4 shadow-2xl origin-bottom-right"
           style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
+          {...panelMotion(reduceMotion)}
         >
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-white font-bold text-sm">Send feedback</h2>
@@ -125,8 +132,9 @@ export default function FeedbackButton({ userId, page }: Props) {
               </div>
             </form>
           )}
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* Icon-only on phones, where a labelled pill covered dashboard content */}
       <button

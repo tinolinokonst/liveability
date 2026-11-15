@@ -17,8 +17,10 @@ import { HouseholdProvider } from '@/components/HouseholdContext'
 import { useFeatureFlags } from '@/components/FeatureFlags'
 import { AddressMetrics, AiMatchListingsState } from '@/lib/types'
 import { APP_WIDTH } from '@/components/appLayout'
+import { Expand, StaggerItem, ViewSwap } from '@/components/motion'
 
 type Tab = 'search' | 'neighborhoods' | 'saved' | 'ai-match'
+const TAB_ORDER: Tab[] = ['search', 'neighborhoods', 'saved', 'ai-match']
 
 function Dashboard() {
   const router = useRouter()
@@ -39,6 +41,14 @@ function Dashboard() {
   const [targetAddress, setTargetAddress] = useState<string | null>(null)
   // Address to pre-fill in Search when navigating from Neighborhoods (no "back" button shown)
   const [neighborhoodSearchAddress, setNeighborhoodSearchAddress] = useState<string | null>(null)
+  // Slide direction for the tab swap: following a link into a detail view goes
+  // forward, its "Back to ..." goes back; plain tab clicks follow tab order
+  const [navDir, setNavDir] = useState<1 | -1 | undefined>(undefined)
+
+  function navigate(next: Tab, dir: 1 | -1) {
+    setNavDir(dir)
+    setTab(next)
+  }
 
   useEffect(() => {
     const supabase = createClient()
@@ -70,6 +80,7 @@ function Dashboard() {
     setNeighborhoodNavSource(null)
     setTargetAddress(null)
     setNeighborhoodSearchAddress(null)
+    setNavDir(undefined)
     setTab(newTab)
   }
 
@@ -77,28 +88,28 @@ function Dashboard() {
   function handleViewNeighborhood(name: string) {
     setTargetNeighborhood(name)
     setNeighborhoodNavSource('ai-match')
-    setTab('neighborhoods')
+    navigate('neighborhoods', 1)
   }
 
   // Saved Addresses → neighborhood detail
   function handleViewNeighborhoodFromSaved(name: string) {
     setTargetNeighborhood(name)
     setNeighborhoodNavSource('saved')
-    setTab('neighborhoods')
+    navigate('neighborhoods', 1)
   }
 
   // AI Match → address search (shows "back to AI Match" button)
   function handleViewAddress(address: string) {
     setTargetAddress(address)
     setNeighborhoodSearchAddress(null)
-    setTab('search')
+    navigate('search', 1)
   }
 
   // Neighborhood detail → address search (no back button — neutral navigation)
   function handleViewAddressFromNeighborhood(address: string) {
     setNeighborhoodSearchAddress(address)
     setTargetAddress(null)
-    setTab('search')
+    navigate('search', 1)
   }
 
   if (loading) {
@@ -161,8 +172,9 @@ function Dashboard() {
           })}
         </div>
 
+        <ViewSwap viewKey={tab} depth={TAB_ORDER.indexOf(tab)} direction={navDir}>
         {tab === 'search' && (
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col">
             {/* Search panel */}
             <div
               className="rounded-2xl p-4 sm:p-6"
@@ -177,12 +189,14 @@ function Dashboard() {
                 compareCount={compared.length}
                 userId={userId}
                 initialAddress={targetAddress ?? neighborhoodSearchAddress}
-                onBack={targetAddress ? () => setTab('ai-match') : undefined}
+                onBack={targetAddress ? () => navigate('ai-match', -1) : undefined}
               />
             </div>
 
-            {/* Comparison panel */}
+            {/* Comparison panel: grows into place and fades in */}
+            <Expand>
             {compared.length > 0 && (
+              <StaggerItem className="pt-8">
               <div
                 className="rounded-2xl p-4 sm:p-6"
                 style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
@@ -209,7 +223,9 @@ function Dashboard() {
                 </div>
                 <AddressCompare addresses={compared} onRemove={removeFromCompare} />
               </div>
+              </StaggerItem>
             )}
+            </Expand>
           </div>
         )}
 
@@ -231,7 +247,7 @@ function Dashboard() {
               key={targetNeighborhood ?? '__list__'}
               userId={userId}
               initialNeighborhoodName={targetNeighborhood}
-              onBack={neighborhoodNavSource ? () => setTab(neighborhoodNavSource === 'ai-match' ? 'ai-match' : 'saved') : undefined}
+              onBack={neighborhoodNavSource ? () => navigate(neighborhoodNavSource === 'ai-match' ? 'ai-match' : 'saved', -1) : undefined}
               backLabel={neighborhoodNavSource === 'ai-match' ? 'Back to AI Match results' : neighborhoodNavSource === 'saved' ? 'Back to saved addresses' : undefined}
               onViewAddress={handleViewAddressFromNeighborhood}
             />
@@ -268,6 +284,7 @@ function Dashboard() {
             />
           </div>
         )}
+        </ViewSwap>
       </div>
 
       {userId && <FeedbackButton userId={userId} page={`/dashboard?tab=${tab}`} />}

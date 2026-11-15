@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import { StaggerGrid } from './motion'
 import dynamic from 'next/dynamic'
 import { Footprints, Bus, School, ShoppingBasket, Wifi, HeartPulse } from 'lucide-react'
 import MetricCard from './MetricCard'
@@ -523,14 +524,14 @@ export function UsDailyLifeSection({ data, location }: { data: DailyData; locati
   return (
     <div className="flex flex-col gap-4">
       <SectionTitle>Getting around &amp; daily life</SectionTitle>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {data.walk ? <WalkabilityCard w={data.walk} /> : <CardSkeleton />}
         {data.transit ? <TransitCard t={data.transit} center={center} /> : <CardSkeleton />}
         {data.schools ? <SchoolsCard r={data.schools} center={center} /> : <CardSkeleton />}
         {data.food ? <FoodCard f={data.food} center={center} /> : <CardSkeleton />}
         {data.broadband ? <BroadbandCard b={data.broadband} /> : <CardSkeleton />}
         {data.health ? <HealthCard h={data.health} /> : <CardSkeleton />}
-      </div>
+      </StaggerGrid>
     </div>
   )
 }

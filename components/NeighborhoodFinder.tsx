@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import { Expand, ViewSwap } from './motion'
 import { ArrowLeft, Bookmark, Check, MapPin } from 'lucide-react'
 import { Neighborhood, WeightConfig, Profile, PROFILE_WEIGHTS, AddressMetrics, SavedAddress } from '@/lib/types'
 import { fetchFullMetrics } from '@/lib/metrics'
@@ -229,8 +230,16 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
 
   const selectedArea = selectedName ? ALL_AREAS.find(n => n.name === selectedName) ?? null : null
 
+  // Ranked list → a city's districts → an area's detail, and back: one view at a
+  // time, swapped with the shared ViewSwap (deeper slides in from the right)
+  let view: React.ReactNode
+  let viewKey: string
+  let depth: number
+
   if (selectedName) {
-    return (
+    viewKey = `detail:${selectedName}`
+    depth = 2
+    view = (
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-3">
           {onBack ? (
@@ -343,15 +352,15 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
         )}
       </div>
     )
-  }
-
+  } else if (expandedCity) {
   // ── District list for an expanded city (Zürich / Geneva / Basel) ───────────
-  if (expandedCity) {
     const districtsRanked = getDistricts(expandedCity)
       .map(d => ({ ...d, score: scoreNeighborhood(d, weights) }))
       .sort((a, b) => b.score - a.score)
 
-    return (
+    viewKey = `districts:${expandedCity}`
+    depth = 1
+    view = (
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-3">
           <button
@@ -434,9 +443,10 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
         </div>
       </div>
     )
-  }
-
-  return (
+  } else {
+    viewKey = 'list'
+    depth = 0
+    view = (
     <div className="flex flex-col gap-6">
       {/* Search */}
       <div className="relative">
@@ -661,11 +671,13 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
                   </button>
                 </div>
 
-                {expandedNews === n.name && (
-                  <div className="mt-3">
-                    <LocalNews query={n.name} />
-                  </div>
-                )}
+                <Expand>
+                  {expandedNews === n.name && (
+                    <div className="pt-3">
+                      <LocalNews query={n.name} />
+                    </div>
+                  )}
+                </Expand>
               </div>
             </div>
           )
@@ -705,5 +717,8 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
         Scores based on real characteristics of each Swiss area. Adjust weights to match your priorities.
       </p>
     </div>
-  )
+    )
+  }
+
+  return <ViewSwap viewKey={viewKey} depth={depth}>{view}</ViewSwap>
 }

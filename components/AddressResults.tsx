@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import { StaggerGrid, StaggerItem, StaggerScope } from './motion'
 import { Wind, Shield, Navigation, ShoppingBag, Sun, Volume2, Users, Leaf, DollarSign, TriangleAlert, LucideIcon } from 'lucide-react'
 import { AddressMetrics, AmenityPlaces, NearestAmenity, TransitCHResult } from '@/lib/types'
 import { roundKm, formatDistance } from '@/lib/format'
@@ -640,29 +641,33 @@ export default function AddressResults({ metrics }: AddressResultsProps) {
     : undefined
 
   return (
+    // Cards fade in one after another (components/motion/Stagger)
+    <StaggerScope>
     <div className="flex flex-col gap-5">
       {/* Composite score banner */}
-      <CompositeScoreBanner metrics={metrics} />
+      <StaggerItem><CompositeScoreBanner metrics={metrics} /></StaggerItem>
 
       {/* Monthly Budget: household inputs live in HouseholdContext, never in metrics */}
-      <MonthlyBudgetCard metrics={metrics} />
+      <StaggerItem><MonthlyBudgetCard metrics={metrics} /></StaggerItem>
 
       {/* Cost of Living */}
-      <RentCostCard center={center} />
+      <StaggerItem><RentCostCard center={center} /></StaggerItem>
 
       {/* Nearest Essentials */}
       {metrics.nearestEssentials && (
-        <NearestEssentials
-          data={metrics.nearestEssentials}
-          metrics={metrics}
-          center={center}
-        />
+        <StaggerItem>
+          <NearestEssentials
+            data={metrics.nearestEssentials}
+            metrics={metrics}
+            center={center}
+          />
+        </StaggerItem>
       )}
 
       {/* Environment */}
       <div className="flex flex-col gap-3">
         <SectionHeader icon={Wind} label="Environment" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <StaggerGrid className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           <MetricCard
             label="Air Quality (AQI)"
             value={metrics.aqi === undefined ? NA : `${metrics.aqi}`}
@@ -717,7 +722,7 @@ export default function AddressResults({ metrics }: AddressResultsProps) {
             icon={Volume2}
             detail={buildDetail('noise', metrics)}
           />
-        </div>
+        </StaggerGrid>
       </div>
 
       {/* Risks: address searches only — area results and older saved addresses have none */}
@@ -731,7 +736,7 @@ export default function AddressResults({ metrics }: AddressResultsProps) {
       {/* Getting Around */}
       <div className="flex flex-col gap-3">
         <SectionHeader icon={Navigation} label="Getting Around" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <StaggerGrid className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           <MetricCard
             label="Transit Access"
             value={metrics.transitCh?.available
@@ -782,13 +787,13 @@ export default function AddressResults({ metrics }: AddressResultsProps) {
             detail={buildDetail('parking', metrics)}
             nearestEssentials={metrics.nearestEssentials}
           />
-        </div>
+        </StaggerGrid>
       </div>
 
       {/* Daily Life */}
       <div className="flex flex-col gap-3">
         <SectionHeader icon={ShoppingBag} label="Daily Life" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <StaggerGrid className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           <MetricCard
             label="Grocery Access"
             value={fmtCount(metrics.groceryCount, 'stores')}
@@ -889,13 +894,13 @@ export default function AddressResults({ metrics }: AddressResultsProps) {
             detail={buildDetail('bank', metrics)}
             nearestEssentials={metrics.nearestEssentials}
           />
-        </div>
+        </StaggerGrid>
       </div>
 
       {/* Safety & Community */}
       <div className="flex flex-col gap-3">
         <SectionHeader icon={Shield} label="Safety & Community" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <StaggerGrid className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           <MetricCard
             label="Safety / Crime"
             value={(metrics.crimeIncidents?.length ?? 0) > 0
@@ -935,14 +940,15 @@ export default function AddressResults({ metrics }: AddressResultsProps) {
             detail={buildDetail('worship', metrics)}
             nearestEssentials={metrics.nearestEssentials}
           />
-        </div>
+        </StaggerGrid>
       </div>
 
       {/* Query the commune, not the street address. Searching Google News for
           "Bahnhofstrasse 1, 8001 Zürich, Switzerland" matched almost nothing
           local — the panel filled up with national corporate filings. The
           commune is already resolved from the coordinate by /api/census. */}
-      <LocalNews query={metrics.censusData?.commune ?? metrics.address ?? location.formattedAddress} />
+      <StaggerItem><LocalNews query={metrics.censusData?.commune ?? metrics.address ?? location.formattedAddress} /></StaggerItem>
     </div>
+    </StaggerScope>
   )
 }
