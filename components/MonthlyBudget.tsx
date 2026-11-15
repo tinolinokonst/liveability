@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Wallet, Minus, Plus, Pencil } from 'lucide-react'
 import type { MonthlyBudget } from '@/lib/budget'
 import { AddressMetrics } from '@/lib/types'
@@ -10,7 +10,8 @@ import { SENSITIVE_BLOCK, SENSITIVE_TEXT } from '@/lib/analytics'
 
 export const INCOME_NOTE = 'Your income is used only to calculate this estimate and is never stored.'
 const EXCLUDED_NOTE = 'Estimate — pension contributions, deductions and your actual insurer not included.'
-const DEBOUNCE_MS = 600
+// One request for a burst of +/− clicks
+export const BUDGET_DEBOUNCE_MS = 400
 
 export function formatChf(n: number): string {
   const abs = Math.abs(Math.round(n)).toLocaleString('de-CH')
@@ -39,9 +40,10 @@ function cacheKey(t: BudgetTarget, h: Household): string {
   return [t.lat.toFixed(5), t.lng.toFixed(5), t.bfsNumber ?? '', h.grossIncome, h.status, h.adults, h.children].join('|')
 }
 
-async function fetchBudget(t: BudgetTarget, h: Household): Promise<MonthlyBudget> {
+async function fetchBudget(t: BudgetTarget, h: Household, signal: AbortSignal): Promise<MonthlyBudget> {
   const res = await fetch('/api/budget', {
     method: 'POST',
+    signal,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       lat: t.lat,
@@ -74,12 +76,15 @@ export function useMonthlyBudgets(targets: BudgetTarget[]): BudgetState[] {
       return
     }
 
+    // A newer household change aborts this one and ignores anything it still
+    // returns, so an older answer can never overwrite a newer one
     let cancelled = false
+    const controller = new AbortController()
     setStates(targets.map((_, i) => (cached[i] ? { status: 'ok', budget: cached[i]! } : { status: 'loading' })))
     const timer = setTimeout(() => {
       targets.forEach((t, i) => {
         if (cached[i]) return
-        fetchBudget(t, household)
+        fetchBudget(t, household, controller.signal)
           .then(budget => {
             budgetCache.set(cacheKey(t, household), budget)
             if (!cancelled) setStates(prev => prev.map((s, j) => (j === i ? { status: 'ok', budget } : s)))
@@ -88,8 +93,8 @@ export function useMonthlyBudgets(targets: BudgetTarget[]): BudgetState[] {
             if (!cancelled) setStates(prev => prev.map((s, j) => (j === i ? { status: 'error', message: err instanceof Error ? err.message : 'Budget unavailable' } : s)))
           })
       })
-    }, DEBOUNCE_MS)
-    return () => { cancelled = true; clearTimeout(timer) }
+    }, BUDGET_DEBOUNCE_MS)
+    return () => { cancelled = true; clearTimeout(timer); controller.abort() }
     // targetsKey/householdKey capture the inputs; the arrays themselves change identity every render
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targetsKey, householdKey])
@@ -99,6 +104,51 @@ export function useMonthlyBudgets(targets: BudgetTarget[]): BudgetState[] {
 
 export function budgetTarget(metrics: AddressMetrics): BudgetTarget {
   return { lat: metrics.location.lat, lng: metrics.location.lng, bfsNumber: metrics.censusData?.bfsNumber }
+}
+
+// ─── results area while loading ──────────────────────────────────────────────
+
+/**
+ * Holds the budget results area at its last loaded height while a new estimate
+ * loads (or fails), so the card never shrinks under the +/− buttons. Measured
+ * only while loaded, so a shorter result can still shrink it.
+ */
+export function useReservedHeight(loaded: boolean): { ref: React.RefObject<HTMLDivElement | null>; minHeight: number | undefined } {
+  const ref = useRef<HTMLDivElement>(null)
+  const [height, setHeight] = useState<number>()
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!loaded || !el) return
+    setHeight(el.offsetHeight)
+    const ro = new ResizeObserver(() => setHeight(el.offsetHeight))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [loaded])
+  return { ref, minHeight: loaded ? undefined : height }
+}
+
+/** Same rows and spacing as the loaded lines and total, so even a first load keeps its size */
+export function BudgetSkeleton() {
+  const bar = { backgroundColor: '#2a2a2a' }
+  return (
+    <div className="flex flex-col gap-3 animate-pulse" aria-label="Calculating budget" role="status">
+      <div className="flex flex-col divide-y divide-[#2a2a2a]">
+        {[0, 1, 2, 3, 4].map(i => (
+          <div key={i} className="flex items-baseline justify-between gap-3 py-1.5">
+            <div className="flex flex-col gap-1 py-0.5">
+              <div className="h-4 w-36 rounded" style={bar} />
+              {i > 0 && <div className="h-3 w-24 rounded" style={bar} />}
+            </div>
+            <div className="h-4 w-20 rounded" style={bar} />
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center justify-between gap-3 pt-3" style={{ borderTop: '1px solid #2a2a2a' }}>
+        <div className="h-4 w-32 rounded" style={bar} />
+        <div className="h-8 sm:h-9 w-36 rounded-lg" style={bar} />
+      </div>
+    </div>
+  )
 }
 
 // ─── household inputs ────────────────────────────────────────────────────────
@@ -291,6 +341,7 @@ export function MonthlyBudgetCard({ metrics }: { metrics: AddressMetrics }) {
   const [editing, setEditing] = useState(false)
   const [showDetail, setShowDetail] = useState(false)
   const hasIncome = !!household.grossIncome
+  const reserved = useReservedHeight(state.status === 'ok')
 
   return (
     // Every figure here is income-derived: masked in session replays
@@ -312,33 +363,33 @@ export function MonthlyBudgetCard({ metrics }: { metrics: AddressMetrics }) {
         </p>
       )}
 
-      {hasIncome && state.status === 'loading' && (
-        <div className="flex flex-col gap-2 animate-pulse" aria-label="Calculating budget">
-          {[...Array(5)].map((_, i) => <div key={i} className="h-5 rounded" style={{ backgroundColor: '#2a2a2a' }} />)}
-          <div className="h-9 w-40 rounded-lg self-end" style={{ backgroundColor: '#2a2a2a' }} />
+      {/* Only this area changes while recalculating; the inputs below stay put */}
+      {hasIncome && (
+        <div ref={reserved.ref} className="flex flex-col gap-3" style={{ minHeight: reserved.minHeight }} aria-busy={state.status !== 'ok' && state.status !== 'error'}>
+          {(state.status === 'loading' || state.status === 'idle') && <BudgetSkeleton />}
+
+          {state.status === 'error' && (
+            <p className="text-sm" style={{ color: '#ef4444' }}>{state.message}</p>
+          )}
+
+          {state.status === 'ok' && (
+            <>
+              <BudgetLines b={state.budget} />
+              <div className="flex items-center justify-between gap-3 pt-3" style={{ borderTop: '1px solid #2a2a2a' }}>
+                <p className="text-sm text-white font-semibold">= Left each month</p>
+                <button
+                  type="button"
+                  onClick={() => setShowDetail(true)}
+                  className="text-2xl sm:text-3xl font-black tabular-nums rounded-lg px-2 -mr-2 transition-colors hover:bg-[#f973161a]"
+                  style={{ color: state.budget.leftMonthly < 0 ? '#ef4444' : '#f97316' }}
+                  title="See the full breakdown"
+                >
+                  {formatChf(state.budget.leftMonthly)}
+                </button>
+              </div>
+            </>
+          )}
         </div>
-      )}
-
-      {hasIncome && state.status === 'error' && (
-        <p className="text-sm" style={{ color: '#ef4444' }}>{state.message}</p>
-      )}
-
-      {hasIncome && state.status === 'ok' && (
-        <>
-          <BudgetLines b={state.budget} />
-          <div className="flex items-center justify-between gap-3 pt-3" style={{ borderTop: '1px solid #2a2a2a' }}>
-            <p className="text-sm text-white font-semibold">= Left each month</p>
-            <button
-              type="button"
-              onClick={() => setShowDetail(true)}
-              className="text-2xl sm:text-3xl font-black tabular-nums rounded-lg px-2 -mr-2 transition-colors hover:bg-[#f973161a]"
-              style={{ color: state.budget.leftMonthly < 0 ? '#ef4444' : '#f97316' }}
-              title="See the full breakdown"
-            >
-              {formatChf(state.budget.leftMonthly)}
-            </button>
-          </div>
-        </>
       )}
 
       {hasIncome && (

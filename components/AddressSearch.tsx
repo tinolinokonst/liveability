@@ -348,7 +348,7 @@ export default function AddressSearch({ onAdd, compareCount = 0, userId, initial
               <div className="h-9 w-28 rounded-lg" style={{ backgroundColor: '#2a2a2a' }} />
             </div>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="rounded-xl p-4" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
                 <div className="h-3 w-20 rounded mb-3" style={{ backgroundColor: '#2a2a2a' }} />

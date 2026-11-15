@@ -673,7 +673,7 @@ export function UsEnvironmentSection({ data, location }: { data: EnvData; locati
   return (
     <div className="flex flex-col gap-4">
       <SectionTitle>Environment</SectionTitle>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {data.air ? <AirQualityCard a={data.air} center={center} /> : <CardSkeleton />}
         {data.weather ? <WeatherCard w={data.weather} /> : <CardSkeleton />}
         {data.noise ? <NoiseCard n={data.noise} /> : <CardSkeleton />}
@@ -690,7 +690,7 @@ export function UsRisksSection({ risks, dataCenters, location }: { risks: UsRisk
     <div className="flex flex-col gap-4">
       <SectionTitle>Risks</SectionTitle>
       {risks ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <FloodCard f={risks.flood} address={location.formattedAddress} />
           <NriCard n={risks.nri} />
           <WildfireCard w={risks.wildfire} countyName={risks.nri.county?.name ?? null} />
@@ -698,7 +698,7 @@ export function UsRisksSection({ risks, dataCenters, location }: { risks: UsRisk
           {dataCenters ? <UsDataCentersCard d={dataCenters} center={center} /> : <CardSkeleton />}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">{[0, 1, 2, 3, 4].map(i => <CardSkeleton key={i} />)}</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">{[0, 1, 2, 3, 4].map(i => <CardSkeleton key={i} />)}</div>
       )}
     </div>
   )

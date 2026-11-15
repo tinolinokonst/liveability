@@ -662,7 +662,7 @@ export default function AddressResults({ metrics }: AddressResultsProps) {
       {/* Environment */}
       <div className="flex flex-col gap-3">
         <SectionHeader icon={Wind} label="Environment" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           <MetricCard
             label="Air Quality (AQI)"
             value={metrics.aqi === undefined ? NA : `${metrics.aqi}`}
@@ -731,7 +731,7 @@ export default function AddressResults({ metrics }: AddressResultsProps) {
       {/* Getting Around */}
       <div className="flex flex-col gap-3">
         <SectionHeader icon={Navigation} label="Getting Around" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           <MetricCard
             label="Transit Access"
             value={metrics.transitCh?.available
@@ -788,7 +788,7 @@ export default function AddressResults({ metrics }: AddressResultsProps) {
       {/* Daily Life */}
       <div className="flex flex-col gap-3">
         <SectionHeader icon={ShoppingBag} label="Daily Life" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           <MetricCard
             label="Grocery Access"
             value={fmtCount(metrics.groceryCount, 'stores')}
@@ -895,7 +895,7 @@ export default function AddressResults({ metrics }: AddressResultsProps) {
       {/* Safety & Community */}
       <div className="flex flex-col gap-3">
         <SectionHeader icon={Shield} label="Safety & Community" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           <MetricCard
             label="Safety / Crime"
             value={(metrics.crimeIncidents?.length ?? 0) > 0

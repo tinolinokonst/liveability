@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Settings } from 'lucide-react'
+import { APP_WIDTH } from './appLayout'
 
 interface AppHeaderProps {
   currentPage: 'dashboard' | 'settings'
@@ -13,7 +14,8 @@ export default function AppHeader({ currentPage }: AppHeaderProps) {
       className="sticky top-0 z-10 px-6 py-4"
       style={{ backgroundColor: '#0f0f0f', borderBottom: '1px solid #1a1a1a' }}
     >
-      <div className="max-w-4xl mx-auto flex items-center justify-between">
+      {/* Lined up with the page body: the dashboard's widens from lg up, Settings' doesn't */}
+      <div className={`${currentPage === 'dashboard' ? APP_WIDTH : 'max-w-4xl'} mx-auto flex items-center justify-between`}>
         <Link href="/" className="font-black text-white text-lg tracking-tight">
           Liveability
         </Link>

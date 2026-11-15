@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { connection } from "next/server";
 import { headers } from "next/headers";
 import { Analytics } from "@vercel/analytics/next";
@@ -20,6 +20,15 @@ export { SITE_URL };
 // Site-wide defaults. Each public page sets its own title, description,
 // canonical and social tags (lib/seo.ts); the signed-in and auth routes keep
 // these and no canonical, rather than all claiming the homepage's.
+// viewport-fit=cover lets the page use the whole iPhone screen, so
+// env(safe-area-inset-*) report real values: the footers pad the bottom by
+// them (home indicator) and body pads the sides (notch, in landscape)
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export async function generateMetadata(): Promise<Metadata> {
   const description = `Find where to live beyond just rent. Currently available for ${coverageName()}.`;
   const image = ogImage();

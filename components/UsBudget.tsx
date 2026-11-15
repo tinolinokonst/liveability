@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Wallet, Pencil } from 'lucide-react'
 import type { UsMonthlyBudget } from '@/lib/usBudget'
 import { useHousehold, Household } from './HouseholdContext'
-import { HouseholdForm, INCOME_NOTE } from './MonthlyBudget'
+import { BUDGET_DEBOUNCE_MS, BudgetSkeleton, HouseholdForm, INCOME_NOTE, useReservedHeight } from './MonthlyBudget'
 import MetricInfoModal from './MetricInfoModal'
 import { SENSITIVE_TEXT } from '@/lib/analytics'
 import { usd } from '@/lib/usMetrics'
@@ -15,7 +15,6 @@ import { usd } from '@/lib/usMetrics'
 // is masked in session replays, and the input itself is blocked from them.
 
 export const US_BUDGET_DISCLAIMER = 'An estimate, not tax or financial advice.'
-const DEBOUNCE_MS = 600
 
 type State = { status: 'idle' } | { status: 'loading' } | { status: 'ok'; budget: UsMonthlyBudget } | { status: 'error'; message: string }
 
@@ -101,19 +100,24 @@ export function UsMonthlyBudgetCard({ lat, lng }: { lat: number; lng: number }) 
   const [editing, setEditing] = useState(false)
   const [showDetail, setShowDetail] = useState(false)
   const hasIncome = !!household.grossIncome
+  const reserved = useReservedHeight(state.status === 'ok')
   const key = [lat.toFixed(5), lng.toFixed(5), household.grossIncome, household.status, household.adults, household.children].join('|')
 
   useEffect(() => {
     if (!household.grossIncome) { setState({ status: 'idle' }); return }
     const hit = cache.get(key)
     if (hit) { setState({ status: 'ok', budget: hit }); return }
+    // A newer household change aborts this one and ignores anything it still
+    // returns, so an older answer can never overwrite a newer one
     let cancelled = false
+    const controller = new AbortController()
     setState({ status: 'loading' })
     const timer = setTimeout(async () => {
       try {
         // POST only: the income must never appear in a URL or an access log
         const res = await fetch('/api/us/budget', {
           method: 'POST',
+          signal: controller.signal,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lat, lng, household: { grossIncome: household.grossIncome, status: household.status, adults: household.adults, children: household.children } }),
         })
@@ -124,8 +128,8 @@ export function UsMonthlyBudgetCard({ lat, lng }: { lat: number; lng: number }) 
       } catch (err) {
         if (!cancelled) setState({ status: 'error', message: err instanceof Error ? err.message : 'Budget unavailable' })
       }
-    }, DEBOUNCE_MS)
-    return () => { cancelled = true; clearTimeout(timer) }
+    }, BUDGET_DEBOUNCE_MS)
+    return () => { cancelled = true; clearTimeout(timer); controller.abort() }
     // key captures every input
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key])
@@ -145,28 +149,29 @@ export function UsMonthlyBudgetCard({ lat, lng }: { lat: number; lng: number }) 
           Enter your household income to see what&apos;s left each month here after FICA, federal and state income tax, and rent.
         </p>
       )}
-      {hasIncome && state.status === 'loading' && (
-        <div className="flex flex-col gap-2 animate-pulse" aria-label="Calculating budget">
-          {[...Array(5)].map((_, i) => <div key={i} className="h-5 rounded" style={{ backgroundColor: '#2a2a2a' }} />)}
+      {/* Only this area changes while recalculating; the inputs below stay put */}
+      {hasIncome && (
+        <div ref={reserved.ref} className="flex flex-col gap-3" style={{ minHeight: reserved.minHeight }} aria-busy={state.status !== 'ok' && state.status !== 'error'}>
+          {(state.status === 'loading' || state.status === 'idle') && <BudgetSkeleton />}
+          {state.status === 'error' && <p className="text-sm" style={{ color: '#ef4444' }}>{state.message}</p>}
+          {state.status === 'ok' && (
+            <>
+              <Lines b={state.budget} />
+              <div className="flex items-center justify-between gap-3 pt-3" style={{ borderTop: '1px solid #2a2a2a' }}>
+                <p className="text-sm text-white font-semibold">= Left each month</p>
+                <button
+                  type="button"
+                  onClick={() => setShowDetail(true)}
+                  className="text-2xl sm:text-3xl font-black tabular-nums rounded-lg px-2 -mr-2 transition-colors hover:bg-[#f973161a]"
+                  style={{ color: state.budget.leftMonthly < 0 ? '#ef4444' : '#f97316' }}
+                  title="See the full breakdown"
+                >
+                  {usd(state.budget.leftMonthly)}
+                </button>
+              </div>
+            </>
+          )}
         </div>
-      )}
-      {hasIncome && state.status === 'error' && <p className="text-sm" style={{ color: '#ef4444' }}>{state.message}</p>}
-      {hasIncome && state.status === 'ok' && (
-        <>
-          <Lines b={state.budget} />
-          <div className="flex items-center justify-between gap-3 pt-3" style={{ borderTop: '1px solid #2a2a2a' }}>
-            <p className="text-sm text-white font-semibold">= Left each month</p>
-            <button
-              type="button"
-              onClick={() => setShowDetail(true)}
-              className="text-2xl sm:text-3xl font-black tabular-nums rounded-lg px-2 -mr-2 transition-colors hover:bg-[#f973161a]"
-              style={{ color: state.budget.leftMonthly < 0 ? '#ef4444' : '#f97316' }}
-              title="See the full breakdown"
-            >
-              {usd(state.budget.leftMonthly)}
-            </button>
-          </div>
-        </>
       )}
 
       {hasIncome && (

@@ -523,7 +523,7 @@ export function UsDailyLifeSection({ data, location }: { data: DailyData; locati
   return (
     <div className="flex flex-col gap-4">
       <SectionTitle>Getting around &amp; daily life</SectionTitle>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {data.walk ? <WalkabilityCard w={data.walk} /> : <CardSkeleton />}
         {data.transit ? <TransitCard t={data.transit} center={center} /> : <CardSkeleton />}
         {data.schools ? <SchoolsCard r={data.schools} center={center} /> : <CardSkeleton />}

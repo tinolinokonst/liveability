@@ -49,9 +49,14 @@ export default function Footer() {
   ];
 
   return (
-    <footer style={{ backgroundColor: "#0f0f0f", borderTop: "1px solid #2a2a2a" }}>
-      <div className="mx-auto max-w-6xl px-6 py-10">
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3">
+    <footer
+      className="pb-[env(safe-area-inset-bottom)]"
+      style={{ backgroundColor: "#0f0f0f", borderTop: "1px solid #2a2a2a" }}
+    >
+      {/* min-w-0 and break-words: a long source name or URL wraps instead of
+          widening the page on a phone */}
+      <div className="mx-auto max-w-6xl px-6 py-10 break-words">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3 [&>*]:min-w-0">
           {/* Brand */}
           <div>
             <Link href="/" className="text-lg font-bold text-white">

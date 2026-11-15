@@ -16,6 +16,7 @@ import CoverageNote, { AddressKind } from '@/components/CoverageNote'
 import { HouseholdProvider } from '@/components/HouseholdContext'
 import { useFeatureFlags } from '@/components/FeatureFlags'
 import { AddressMetrics, AiMatchListingsState } from '@/lib/types'
+import { APP_WIDTH } from '@/components/appLayout'
 
 type Tab = 'search' | 'neighborhoods' | 'saved' | 'ai-match'
 
@@ -112,7 +113,7 @@ function Dashboard() {
     <div className="min-h-screen" style={{ backgroundColor: '#0f0f0f' }}>
       <AppHeader currentPage="dashboard" />
 
-      <div className="max-w-4xl mx-auto px-6 pt-8 pb-24 sm:pb-8">
+      <div className={`${APP_WIDTH} mx-auto px-6 pt-8 pb-24 sm:pb-8`}>
         {/* Page title */}
         <div className="mb-8">
           <h1 className="text-2xl sm:text-3xl font-black text-white mb-2">Find your next home base</h1>

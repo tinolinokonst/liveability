@@ -55,7 +55,7 @@ export default function FeedbackButton({ userId, page }: Props) {
   const tooLong = message.length > MAX_FEEDBACK_LENGTH
 
   return (
-    <div className="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3">
+    <div className="fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom))] right-[calc(1.25rem+env(safe-area-inset-right))] z-40 flex flex-col items-end gap-3">
       {open && (
         <div
           role="dialog"
