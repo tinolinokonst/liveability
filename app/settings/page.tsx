@@ -174,14 +174,16 @@ export default function SettingsPage() {
               <button
                 key={item.key}
                 onClick={() => setActiveSection(item.key)}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all"
+                className="flex-1 flex items-center justify-center gap-1.5 px-1 py-2 rounded-lg text-xs font-semibold leading-tight transition-all"
                 style={{
                   backgroundColor: active ? (item.danger ? '#ef4444' : '#f97316') : '#1a1a1a',
                   color: active ? 'white' : (item.danger ? '#ef4444' : '#a0a0a0'),
                   border: `1px solid ${active ? 'transparent' : (item.danger ? '#ef444422' : '#2a2a2a')}`,
                 }}
               >
-                <Icon size={12} />
+                {/* shrink-0: "Delete Account" wraps to two lines on a phone, and the
+                    row used to squeeze its icon to ~9px against the button's edge */}
+                <Icon size={12} className="shrink-0" />
                 {item.label}
               </button>
             )
