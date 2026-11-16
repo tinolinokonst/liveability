@@ -3,10 +3,10 @@
 // server-side (lib/usAiMatch.ts).
 import areasFile from './data/us-areas.json'
 
-export interface UsAreaRef { name: string; address: string; lat: number; lng: number }
+export interface UsAreaRef { name: string; address: string; lat: number; lng: number; state: string }
 
-export const US_AREA_REFS: UsAreaRef[] = (areasFile as unknown as { areas: Array<{ name: string; city: string; address: string; lat: number; lng: number }> }).areas
-  .map(a => ({ name: `${a.name}, ${a.city}`, address: a.address, lat: a.lat, lng: a.lng }))
+export const US_AREA_REFS: UsAreaRef[] = (areasFile as unknown as { areas: Array<{ name: string; city: string; state: string; address: string; lat: number; lng: number }> }).areas
+  .map(a => ({ name: `${a.name}, ${a.city}`, address: a.address, lat: a.lat, lng: a.lng, state: a.state }))
 
 export function findUsArea(heading: string): UsAreaRef | null {
   const h = heading.toLowerCase().trim()

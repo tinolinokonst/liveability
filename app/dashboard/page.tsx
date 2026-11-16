@@ -12,6 +12,8 @@ import AiMatch from '@/components/AiMatch'
 import AppHeader from '@/components/AppHeader'
 import FeedbackButton from '@/components/FeedbackButton'
 import UsLiveBanner from '@/components/UsLiveBanner'
+import UsAreaFinder from '@/components/UsAreaFinder'
+import { useVisitorCountry } from '@/components/VisitorCountry'
 import CoverageNote, { AddressKind } from '@/components/CoverageNote'
 import { HouseholdProvider } from '@/components/HouseholdContext'
 import { useFeatureFlags } from '@/components/FeatureFlags'
@@ -44,6 +46,11 @@ function Dashboard() {
   // Slide direction for the tab swap: following a link into a detail view goes
   // forward, its "Back to ..." goes back; plain tab clicks follow tab order
   const [navDir, setNavDir] = useState<1 | -1 | undefined>(undefined)
+  // Areas tab country; US visitors start on the US. A Swiss area opened from
+  // AI Match or Saved always shows the Swiss view.
+  const visitorCountry = useVisitorCountry()
+  const [areaCountry, setAreaCountry] = useState<'CH' | 'US'>(() => (us && visitorCountry === 'US' ? 'US' : 'CH'))
+  const areaView = us && !targetNeighborhood ? areaCountry : 'CH'
 
   function navigate(next: Tab, dir: 1 | -1) {
     setNavDir(dir)
@@ -126,7 +133,8 @@ function Dashboard() {
 
       <div className={`${APP_WIDTH} mx-auto px-6 pt-8 pb-24 sm:pb-8`}>
         {/* Page title */}
-        <div className="mb-8">
+        {/* Heading, banner and tab bar are centred on the page */}
+        <div className="mb-8 text-center">
           <h1 className="text-2xl sm:text-3xl font-black text-white mb-2">Find your next home base</h1>
           <p style={{ color: '#a0a0a0' }} className="text-sm">
             Search any address or explore area rankings
@@ -137,11 +145,11 @@ function Dashboard() {
         </div>
 
         {/* US visitors only, while US coverage is on; renders nothing otherwise */}
-        <UsLiveBanner className="mb-8" />
+        <UsLiveBanner className="mb-8 max-w-2xl mx-auto" />
 
         {/* Tabs */}
         <div
-          className="grid grid-cols-2 sm:flex sm:flex-wrap gap-1 p-1 rounded-xl mb-8 sm:w-fit"
+          className="grid grid-cols-2 sm:flex sm:flex-wrap gap-1 p-1 rounded-xl mb-8 sm:w-fit sm:mx-auto"
           style={{ backgroundColor: '#1a1a1a' }}
         >
           {([
@@ -236,21 +244,48 @@ function Dashboard() {
           >
             {!targetNeighborhood && (
               <>
-                <h2 className="text-white font-bold mb-1">Areas</h2>
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-1">
+                  <h2 className="text-white font-bold">Areas</h2>
+                  {us && (
+                    <div className="grid grid-cols-2 gap-1 p-1 rounded-xl" style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }} role="radiogroup" aria-label="Country">
+                      {([['CH', 'Switzerland'], ['US', 'United States']] as const).map(([c, label]) => (
+                        <button
+                          key={c}
+                          type="button"
+                          role="radio"
+                          aria-checked={areaView === c}
+                          onClick={() => setAreaCountry(c)}
+                          className="h-8 px-3 sm:px-4 rounded-lg text-xs sm:text-sm font-semibold transition-colors"
+                          style={areaView === c ? { backgroundColor: '#f97316', color: 'white' } : { color: '#a0a0a0' }}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <p style={{ color: '#a0a0a0' }} className="text-xs mb-6">
-                  Adjust the sliders to rank areas based on what matters to you.{' '}
-                  {us ? 'Area rankings cover Switzerland; for US neighborhoods, try AI Match.' : 'Currently covering Switzerland.'}
+                  {areaView === 'US'
+                    ? 'Pick a state, then any city, town, neighborhood or ZIP code in it.'
+                    : 'Adjust the sliders to rank areas based on what matters to you. Rankings cover Switzerland.'}
                 </p>
               </>
             )}
-            <NeighborhoodFinder
-              key={targetNeighborhood ?? '__list__'}
-              userId={userId}
-              initialNeighborhoodName={targetNeighborhood}
-              onBack={neighborhoodNavSource ? () => navigate(neighborhoodNavSource === 'ai-match' ? 'ai-match' : 'saved', -1) : undefined}
-              backLabel={neighborhoodNavSource === 'ai-match' ? 'Back to AI Match results' : neighborhoodNavSource === 'saved' ? 'Back to saved addresses' : undefined}
-              onViewAddress={handleViewAddressFromNeighborhood}
-            />
+            {/* Switzerland: ranked areas (unchanged). US: state, then an area in it */}
+            <ViewSwap viewKey={areaView} depth={areaView === 'US' ? 1 : 0}>
+              {areaView === 'US' ? (
+                <UsAreaFinder />
+              ) : (
+                <NeighborhoodFinder
+                  key={targetNeighborhood ?? '__list__'}
+                  userId={userId}
+                  initialNeighborhoodName={targetNeighborhood}
+                  onBack={neighborhoodNavSource ? () => navigate(neighborhoodNavSource === 'ai-match' ? 'ai-match' : 'saved', -1) : undefined}
+                  backLabel={neighborhoodNavSource === 'ai-match' ? 'Back to AI Match results' : neighborhoodNavSource === 'saved' ? 'Back to saved addresses' : undefined}
+                  onViewAddress={handleViewAddressFromNeighborhood}
+                />
+              )}
+            </ViewSwap>
           </div>
         )}
 
