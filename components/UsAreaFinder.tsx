@@ -2,11 +2,13 @@
 
 import { useEffect, useId, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { ArrowLeft, MapPin, Search } from 'lucide-react'
+import { ArrowLeft, Check, MapPin, Search } from 'lucide-react'
 import UsResults from './UsResults'
 import { panelMotion, ViewSwap } from './motion'
 import { loadGoogleMapsScript } from '@/lib/googleMaps'
 import { geocodeAddress } from '@/lib/geocoding'
+import { fetchSavedAddresses, isUsArea, sameUsArea, saveUsArea } from '@/lib/savedAddresses'
+import { capture } from '@/lib/analytics'
 import { predictionInState, US_STATES, usStateByAbbr, type UsState } from '@/lib/usStates'
 import { US_AREA_REFS } from '@/lib/usAreaIndex'
 import type { GeoLocation } from '@/lib/types'
@@ -15,7 +17,8 @@ const DEBOUNCE_MS = 250
 const MAX_SUGGESTIONS = 6
 
 interface Suggestion { id: string; main: string; secondary: string; description: string }
-interface OpenArea { label: string; location: GeoLocation }
+interface OpenArea { label: string; state: string; location: GeoLocation }
+type SaveState = 'idle' | 'checking' | 'saving' | 'saved' | 'error'
 
 const fieldStyle = { backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }
 
@@ -26,7 +29,7 @@ const fieldStyle = { backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }
  * chosen state; the pick is then geocoded and its Census state checked, so an
  * area can only open if it really lies in that state.
  */
-export default function UsAreaFinder() {
+export default function UsAreaFinder({ userId }: { userId: string | null }) {
   const [stateAbbr, setStateAbbr] = useState('')
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
@@ -35,6 +38,7 @@ export default function UsAreaFinder() {
   const [opening, setOpening] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [area, setArea] = useState<OpenArea | null>(null)
+  const [save, setSave] = useState<SaveState>('idle')
   const reduce = useReducedMotion()
   const listId = useId()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -46,6 +50,29 @@ export default function UsAreaFinder() {
 
   const state = usStateByAbbr(stateAbbr)
   const profiled = state ? US_AREA_REFS.filter(a => a.state === state.abbr) : []
+
+  // Whether the open area is already in Saved Addresses (the same place, picked again)
+  useEffect(() => {
+    if (!area || !userId) { setSave('idle'); return }
+    let cancelled = false
+    setSave('checking')
+    fetchSavedAddresses()
+      .then(all => { if (!cancelled) setSave(all.some(a => isUsArea(a) && sameUsArea(a, area.location)) ? 'saved' : 'idle') })
+      .catch(() => { if (!cancelled) setSave('idle') })
+    return () => { cancelled = true }
+  }, [area, userId])
+
+  async function handleSave() {
+    if (!area || !userId || save === 'saving' || save === 'saved') return
+    setSave('saving')
+    try {
+      await saveUsArea(userId, area)
+      setSave('saved')
+      capture('address_saved')
+    } catch {
+      setSave('error')
+    }
+  }
 
   useEffect(() => {
     loadGoogleMapsScript()
@@ -112,7 +139,7 @@ export default function UsAreaFinder() {
         setError(`That place is in ${usStateByAbbr(actual)?.name ?? actual}, not ${s.name}. Pick one in ${s.name}, or switch the state.`)
         return
       }
-      setArea({ label, location })
+      setArea({ label, state: s.abbr, location })
     } catch {
       setError('Search is temporarily unavailable. Please try again.')
     } finally {
@@ -151,7 +178,20 @@ export default function UsAreaFinder() {
               <ArrowLeft size={14} /> Back to area search
             </button>
             <span className="text-sm font-semibold text-white">{area.label}</span>
+            {userId && (
+              <button
+                onClick={handleSave}
+                disabled={save === 'checking' || save === 'saving' || save === 'saved'}
+                className="ml-auto px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all disabled:opacity-50 inline-flex items-center gap-1.5"
+                style={{ backgroundColor: '#2a2a2a', border: '1px solid #3a3a3a' }}
+              >
+                {save === 'saved' ? <>Saved <Check size={14} /></> : save === 'saving' ? 'Saving...' : 'Save this area'}
+              </button>
+            )}
           </div>
+          {save === 'error' && (
+            <p className="text-xs" style={{ color: '#ef4444' }} role="alert">Couldn&apos;t save this area. Please try again.</p>
+          )}
           <UsResults location={area.location} />
         </div>
       ) : (

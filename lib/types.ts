@@ -730,13 +730,29 @@ export interface AddressMetrics {
   risks?: RisksResult
 }
 
+/**
+ * A US area saved from the Areas tab. US results are fetched live each time
+ * (components/UsResults.tsx), so only what is needed to reopen it is stored.
+ */
+export interface SavedUsArea {
+  kind: 'us-area'
+  /** As shown, e.g. "Spring, Texas" */
+  label: string
+  /** State abbreviation, e.g. "TX" */
+  state: string
+  /** The geocoded area, with its Census geographies */
+  location: GeoLocation
+  savedAt: string
+}
+
 export interface SavedAddress {
   id: string
   user_id: string
   address: string
   lat: number
   lng: number
-  metrics: AddressMetrics
+  /** Swiss metrics, or a US area (see isUsArea in lib/savedAddresses.ts) */
+  metrics: AddressMetrics | SavedUsArea
   created_at: string
   /** Construction watch (migration 2026-10-12); absent until it's applied */
   watch_enabled?: boolean

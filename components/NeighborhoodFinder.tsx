@@ -5,7 +5,7 @@ import { Expand, ViewSwap } from './motion'
 import { ArrowLeft, Bookmark, Check, MapPin } from 'lucide-react'
 import { Neighborhood, WeightConfig, Profile, PROFILE_WEIGHTS, AddressMetrics, SavedAddress } from '@/lib/types'
 import { fetchFullMetrics } from '@/lib/metrics'
-import { fetchSavedAddresses, saveAddress } from '@/lib/savedAddresses'
+import { fetchSavedAddresses, isUsArea, saveAddress } from '@/lib/savedAddresses'
 import { capture } from '@/lib/analytics'
 import LocalNews from './LocalNews'
 import AddressResults from './AddressResults'
@@ -167,7 +167,8 @@ export default function NeighborhoodFinder({ userId, initialNeighborhoodName, on
     if (!selectedName || !userId) { setSavedInArea([]); return }
     fetchSavedAddresses()
       .then(all => {
-        const street = all.filter(a => !NEIGHBORHOOD_NAME_SET.has(a.address))
+        // US areas are nowhere near a Swiss area, whatever is "nearest"
+        const street = all.filter(a => !NEIGHBORHOOD_NAME_SET.has(a.address) && !isUsArea(a))
         setSavedInArea(street.filter(a => nearestNeighborhood(a.lat, a.lng) === selectedName))
       })
       .catch(() => setSavedInArea([]))

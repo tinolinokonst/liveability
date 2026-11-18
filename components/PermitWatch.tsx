@@ -10,7 +10,7 @@ const MUTED = '#a0a0a0'
 const SUPPORTED_LIST = PERMIT_SOURCES.map(s => s.canton).join(', ')
 
 function cantonOf(saved: SavedAddress): string | undefined {
-  return saved.metrics.censusData?.canton
+  return 'censusData' in saved.metrics ? saved.metrics.censusData?.canton : undefined
 }
 
 /** "Watch for construction nearby" switch on a saved-address card */

@@ -274,7 +274,7 @@ function Dashboard() {
             {/* Switzerland: ranked areas (unchanged). US: state, then an area in it */}
             <ViewSwap viewKey={areaView} depth={areaView === 'US' ? 1 : 0}>
               {areaView === 'US' ? (
-                <UsAreaFinder />
+                <UsAreaFinder userId={userId} />
               ) : (
                 <NeighborhoodFinder
                   key={targetNeighborhood ?? '__list__'}

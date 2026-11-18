@@ -1,5 +1,5 @@
 import { createClient } from './supabase'
-import { AddressMetrics, SavedAddress } from './types'
+import { AddressMetrics, GeoLocation, SavedAddress, SavedUsArea } from './types'
 import { boundingBox, distanceM, Permit, WATCH_RADIUS_M } from './permits'
 
 export async function fetchSavedAddresses(): Promise<SavedAddress[]> {
@@ -11,6 +11,36 @@ export async function fetchSavedAddresses(): Promise<SavedAddress[]> {
 
   if (error) throw error
   return data as SavedAddress[]
+}
+
+export type SwissSavedAddress = SavedAddress & { metrics: AddressMetrics }
+export type UsSavedArea = SavedAddress & { metrics: SavedUsArea }
+
+/** A US area saved from the Areas tab, rather than a Swiss address or area */
+export function isUsArea(a: SavedAddress): a is UsSavedArea {
+  return (a.metrics as Partial<SavedUsArea> | null)?.kind === 'us-area'
+}
+
+export function isSwissSaved(a: SavedAddress): a is SwissSavedAddress {
+  return !isUsArea(a)
+}
+
+/** Within ~100 m: the same area picked again, not a different one */
+export function sameUsArea(a: UsSavedArea, location: GeoLocation): boolean {
+  return Math.abs(a.lat - location.lat) < 0.001 && Math.abs(a.lng - location.lng) < 0.001
+}
+
+export async function saveUsArea(userId: string, area: { label: string; state: string; location: GeoLocation }): Promise<UsSavedArea> {
+  const metrics: SavedUsArea = { kind: 'us-area', label: area.label, state: area.state, location: area.location, savedAt: new Date().toISOString() }
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('saved_addresses')
+    .insert({ user_id: userId, address: area.label, lat: area.location.lat, lng: area.location.lng, metrics })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data as UsSavedArea
 }
 
 export async function saveAddress(userId: string, metrics: AddressMetrics): Promise<SavedAddress> {
